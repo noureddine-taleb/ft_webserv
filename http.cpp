@@ -59,10 +59,10 @@ void parse_http_request(std::string req_str, HttpRequest &req) {
 std::string generate_http_response(HttpResponse &res) {
 	std::stringstream res_str;
 
-    std::time_t t = std::time(nullptr);
+    time_t t = time(NULL);
     char mbstr[100];
  
-    std::strftime(mbstr, sizeof(mbstr), "%a, %d %b %Y %T GMT", std::localtime(&t));
+    strftime(mbstr, sizeof(mbstr), "%a, %d %b %Y %T GMT", localtime(&t));
 
 	res.headers["Server"] = "ft_webserv/0.1";
 	res.headers["Date"] = mbstr;

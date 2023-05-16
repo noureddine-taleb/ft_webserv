@@ -5,11 +5,11 @@
 #include <arpa/inet.h>
 #include <string>
 #include <iostream>
-#include <sys/epoll>
+#include <sys/epoll.h>
 #include "webserv.hpp"
 
 void die(std::string msg) {
-	std::perror(msg.c_str());
+	perror(msg.c_str());
 	exit(1);
 }
 
@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
 	epoll_add_fd(efd, sock, EPOLLIN);
 
 	while (1) {
-		int fd = epoll_wait_fd(int efd)
+		int fd = epoll_wait_fd(efd);
 
 		if (fd == sock) {
 			struct sockaddr_in caddress;
@@ -86,11 +86,11 @@ int main(int argc, char **argv) {
 		res.content = "ft_webserv yor7ibo bikom";
 		res.headers["Content-Type"] = "text/html";
 		std::string res_str = generate_http_response(res);
-		ret = send(client, res_str.c_str(), res_str.length(), 0);
+		ret = send(fd, res_str.c_str(), res_str.length(), 0);
 		if (ret < 0)
 			die("send");
 	}
 	
-	close(client);
+	close(efd);
 	close(sock);
 }
