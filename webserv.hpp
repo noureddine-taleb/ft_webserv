@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 
-#define PORT 8082
+#define PORT 8080
 #define BACKLOG_SIZE 32
 #define HTTP_DEL "\r\n"
 /*
