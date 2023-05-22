@@ -38,3 +38,12 @@ setup default error pages
 
 http parsing + socket handling
 config + responses
+
+todo:
+status code mapping (tostring)
+replace epoll with kqueue
+config structure
+config parsing
+use correct host and port
+
+simple static server
