@@ -1,5 +1,5 @@
-#ifndef WEBSERV
-#define WEBSERV
+#ifndef WEBSERV_HPP
+#define WEBSERV_HPP
 
 #include <string>
 #include <map>
@@ -19,6 +19,7 @@
 	waitpid, kill, signal, access, opendir, readdir
 	and closedir.
 */
+
 class HttpRequest {
 	public:
 		std::string method;
