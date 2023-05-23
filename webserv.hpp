@@ -4,8 +4,8 @@
 #include <string>
 #include <map>
 #include <vector>
+#include "config.hpp"
 
-#define PORT 8080
 #define BACKLOG_SIZE 32
 #define HTTP_DEL "\r\n"
 /*
@@ -26,14 +26,17 @@ class HttpRequest {
 		std::string url;
 		std::string version;
 		std::map<std::string, std::string> headers;
+
+		std::string content;
 };
 
 class HttpResponse {
 	public:
 		std::string version;
 		int code;
-		std::string content;
 		std::map<std::string, std::string> headers;
+
+		std::string content;
 };
 
 void die(std::string msg);

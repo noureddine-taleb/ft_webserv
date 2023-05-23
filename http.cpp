@@ -5,7 +5,6 @@
 #include <vector>
 #include "webserv.hpp"
 
-
 // request
 
 // GET /name HTTP/1.1
@@ -40,20 +39,23 @@
 void parse_http_request(std::string req_str, HttpRequest &req) {
     std::vector<std::string> vec = split(req_str, HTTP_DEL);
     std::vector<std::string> headv = split(vec[0], " ");
+	size_t content_off = 0;
 
 	req.method = headv[0];
 	req.url = headv[1];
 	req.version = headv[2];
+	content_off = req_str.find(HTTP_DEL HTTP_DEL) + sizeof(HTTP_DEL HTTP_DEL);
 	vec.erase(vec.begin());
 
     for (size_t i = 0; i < vec.size(); i++) {
 		std::string line = vec[i];
-		if (line == "")
+		if (line == "") // end of headers
 			break;
    		std::vector<std::string> headerv = split(line, ":", 1);
 		req.headers[headerv[0]] = headerv[1];
    		// std::cout << headerv[0] << '\t' << headerv[1] << std::endl;
 	}
+	req.content = req_str.substr(content_off);
 }
 
 std::string generate_http_response(HttpResponse &res) {

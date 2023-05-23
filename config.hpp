@@ -39,6 +39,7 @@ class Server {
 		std::vector<std::string> server_names;
 		std::vector<Location> routes;
 		std::vector<ErrorPage> error_pages;
+		int __fd;
 };
 
 class Config {
