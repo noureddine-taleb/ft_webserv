@@ -8,6 +8,9 @@
 
 #define BACKLOG_SIZE 32
 #define HTTP_DEL "\r\n"
+// #define assert(cond) if (!(cond)) \
+// 						die("assertion failed: " #cond);
+
 /*
 	execve, dup, dup2, pipe, strerror, gai_strerror,
 	errno, dup, dup2, fork, htons, htonl, ntohs, ntohl,
@@ -47,9 +50,9 @@ void parse_http_request(std::string req_str, HttpRequest &req);
 std::string generate_http_response(HttpResponse &res);
 
 // epoll
-int init_epoll();
-void epoll_add_fd(int efd, int fd, uint32_t events);
-void epoll_del_fd(int efd, int fd);
-int epoll_wait_fd(int efd);
+int init_watchlist();
+void watchlist_add_fd(int efd, int fd, uint32_t events);
+void watchlist_del_fd(int efd, int fd);
+int watchlist_wait_fd(int efd);
 
 #endif // WEBSERV

@@ -5,7 +5,11 @@
 #include <arpa/inet.h>
 #include <string>
 #include <iostream>
+#ifdef __APPLE__
+#include <sys/event.h>
+#elif __linux__
 #include <sys/epoll.h>
+#endif
 #include "webserv.hpp"
 
 void die(std::string msg) {
@@ -21,68 +25,80 @@ int max_server_fd;
  * 
 */
 
-void spawn_servers(int efd) {
+void spawn_servers(int wfd) {
 	for (size_t i = 0; i < config.servers.size(); i++) {
-		int sock = socket(PF_INET, SOCK_STREAM, 0);
-		if (sock < 0)
-			die("socket");
+		int sock;
+		assert((sock = socket(PF_INET, SOCK_STREAM, 0)) != -1);
+
+		int enable = 1;
+		assert(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) == 0);
 
 		struct sockaddr_in address;
 		address.sin_family = AF_INET;
-		address.sin_addr.s_addr = inet_addr(config.servers[i].ip);
+		address.sin_addr.s_addr = inet_addr(config.servers[i].ip.c_str());
 		address.sin_port = htons(config.servers[i].port);
 
-		int ret = bind(sock, (struct sockaddr *)&address, sizeof(address));
-		if (ret < 0)
-			die("bind");
+		assert(bind(sock, (struct sockaddr *)&address, sizeof(address)) == 0);
 
-		ret = listen(sock, BACKLOG_SIZE);
-		if (ret < 0)
-			die("listen");
+		assert(listen(sock, BACKLOG_SIZE) == 0);
 		std::cout << "--------- " << "listening on: " << config.servers[i].ip << ":" << config.servers[i].port << std::endl;
 
-		epoll_add_fd(efd, sock, EPOLLIN);
+#ifdef __APPLE__
+		watchlist_add_fd(wfd, sock, EVFILT_READ);
+#elif __linux__
+		watchlist_add_fd(wfd, sock, EPOLLIN);
+#endif
 		max_server_fd = sock;
 	}
 }
 
-void accept_connection(int efd, int server) {
+void accept_connection(int wfd, int server) {
 	struct sockaddr_in caddress;
 	socklen_t len = sizeof caddress;
-	int client = accept(server, (struct sockaddr *)&caddress, &len);
-	if (client < 0)
-		die("accept");
+	int client;
+	assert((client = accept(server, (struct sockaddr *)&caddress, &len)) != -1);
 	
-	epoll_add_fd(efd, client, EPOLLIN);
+#ifdef __APPLE__
+		watchlist_add_fd(wfd, client, EVFILT_READ);
+#elif __linux__
+		watchlist_add_fd(wfd, client, EPOLLIN);
+#endif
 
 	std::cout << "--------- " << "connection received " << inet_ntoa(caddress.sin_addr) << ":" << ntohs(caddress.sin_port) << std::endl;
 }
 
 void parse_config(std::string config_file) {
 	// TODO:
+	config.servers.resize(2);
+	config.servers[0].ip = "0.0.0.0";
+	config.servers[0].port = 8080;
+
+	config.servers[1].ip = "0.0.0.0";
+	config.servers[1].port = 8090;
 }
 
 int main(int argc, char **argv) {
-	if (argc != 2)
-		die("%s config\n", argv[0]);
+	assert (argc == 2);
+
 	parse_config(argv[1]);
-    int efd = init_epoll();
-	spawn_servers(efd);
+
+    int wfd = init_watchlist();
+	spawn_servers(wfd);
+
+	int ret;
 
 	while (1) {
-		int fd = epoll_wait_fd(efd);
+		int fd = watchlist_wait_fd(wfd);
 
 		if (fd <= max_server_fd) {
-			accept_connection(efd, fd);
+			accept_connection(wfd, fd);
 			continue;
 		}
 
 		std::string request;
 		while (1) {
 			char buffer[255];
-			ret = recv(fd, buffer, sizeof buffer, 0);
-			if (ret <= 0)
-				die("read");
+			assert((ret = recv(fd, buffer, sizeof buffer, 0)) > 0);
 			buffer[ret] = 0;
 			request += buffer;
 			if (ret != sizeof buffer)
@@ -105,11 +121,6 @@ int main(int argc, char **argv) {
 		res.content = "ft_webserv yora7ibo bikom";
 		res.headers["Content-Type"] = "text/html";
 		std::string res_str = generate_http_response(res);
-		ret = send(fd, res_str.c_str(), res_str.length(), 0);
-		if (ret < 0)
-			die("send");
+		assert(send(fd, res_str.c_str(), res_str.length(), 0) == (ssize_t)res_str.length());
 	}
-	
-	close(efd);
-	close(sock);
 }

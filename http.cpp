@@ -44,7 +44,9 @@ void parse_http_request(std::string req_str, HttpRequest &req) {
 	req.method = headv[0];
 	req.url = headv[1];
 	req.version = headv[2];
-	content_off = req_str.find(HTTP_DEL HTTP_DEL) + sizeof(HTTP_DEL HTTP_DEL);
+	assert(req_str.find(HTTP_DEL HTTP_DEL) != std::string::npos);
+	content_off = req_str.find(HTTP_DEL HTTP_DEL) + sizeof(HTTP_DEL HTTP_DEL) - 1;
+
 	vec.erase(vec.begin());
 
     for (size_t i = 0; i < vec.size(); i++) {
@@ -53,7 +55,6 @@ void parse_http_request(std::string req_str, HttpRequest &req) {
 			break;
    		std::vector<std::string> headerv = split(line, ":", 1);
 		req.headers[headerv[0]] = headerv[1];
-   		// std::cout << headerv[0] << '\t' << headerv[1] << std::endl;
 	}
 	req.content = req_str.substr(content_off);
 }
