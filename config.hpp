@@ -18,6 +18,7 @@ class Redirection {
 
 class Location {
 	public:
+		Location(): root(""), index(""), list_dir_content(false) {}
 		std::vector<std::string> methods;
 		std::vector<Redirection> redirections;
 		CGI cgi;
@@ -28,12 +29,14 @@ class Location {
 
 class ErrorPage {
 	public:
+		ErrorPage(): error_code(-1), page("") {}
 		int error_code;
 		std::string page;
 };
 
 class Server {
 	public:
+		Server(): ip("0.0.0.0"), port(0), __fd(-1) {}
 		std::string ip;
 		int port;
 		std::vector<std::string> server_names;

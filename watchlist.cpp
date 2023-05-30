@@ -6,7 +6,6 @@
 
 #include <stdlib.h>
 #include "webserv.hpp"
-#include <sys/event.h>
 
 int init_watchlist() {
 #ifdef __APPLE__
@@ -33,7 +32,7 @@ void watchlist_add_fd(int wfd, int fd, uint32_t events) {
 			.fd = fd,
 		}
 	};
-	assert(epoll_ctl(efd, EPOLL_CTL_ADD, fd, &event) == 0);
+	assert(epoll_ctl(wfd, EPOLL_CTL_ADD, fd, &event) == 0);
 #endif
 }
 
@@ -43,7 +42,7 @@ void watchlist_del_fd(int wfd, int fd) {
 	EV_SET(&event, fd, 0, EV_DELETE, 0, 0, NULL);
 	assert(kevent(wfd, &event, 1, NULL, 0, NULL) == 0);
 #elif __linux__
-	assert(epoll_ctl(efd, EPOLL_CTL_DEL, fd, NULL) == 0);
+	assert(epoll_ctl(wfd, EPOLL_CTL_DEL, fd, NULL) == 0);
 #endif
 }
 
@@ -54,7 +53,7 @@ int watchlist_wait_fd(int wfd) {
 	return (int)(long)event.udata;
 #elif __linux__
     struct epoll_event event;
-	assert(epoll_wait(efd, &event, 1, -1) == 1);
+	assert(epoll_wait(wfd, &event, 1, -1) == 1);
 	return event.data.fd;
 #endif
 }

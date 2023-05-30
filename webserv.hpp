@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <cassert>
 #include "config.hpp"
 
 #define BACKLOG_SIZE 32
@@ -54,5 +55,7 @@ int init_watchlist();
 void watchlist_add_fd(int efd, int fd, uint32_t events);
 void watchlist_del_fd(int efd, int fd);
 int watchlist_wait_fd(int efd);
+std::string trim(std::string s);
+void parse_config(std::string config_file);
 
 #endif // WEBSERV

@@ -67,18 +67,8 @@ void accept_connection(int wfd, int server) {
 	std::cout << "--------- " << "connection received " << inet_ntoa(caddress.sin_addr) << ":" << ntohs(caddress.sin_port) << std::endl;
 }
 
-void parse_config(std::string config_file) {
-	// TODO:
-	config.servers.resize(2);
-	config.servers[0].ip = "0.0.0.0";
-	config.servers[0].port = 8080;
-
-	config.servers[1].ip = "0.0.0.0";
-	config.servers[1].port = 8090;
-}
-
 int main(int argc, char **argv) {
-	assert (argc == 2);
+	assert(argc == 2);
 
 	parse_config(argv[1]);
 
@@ -98,12 +88,20 @@ int main(int argc, char **argv) {
 		std::string request;
 		while (1) {
 			char buffer[255];
-			assert((ret = recv(fd, buffer, sizeof buffer, 0)) > 0);
+			assert((ret = recv(fd, buffer, sizeof buffer, 0)) >= 0);
 			buffer[ret] = 0;
 			request += buffer;
 			if (ret != sizeof buffer)
 				break;
 		}
+
+		if (request.length() == 0) {
+			std::cout << "--------- empty request: closing"<< std::endl;
+			watchlist_del_fd(wfd, fd);
+			close(fd);
+			continue;
+		}
+
 
 		HttpRequest req;
 		parse_http_request(request, req);
