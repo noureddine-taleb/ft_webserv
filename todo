@@ -1,31 +1,17 @@
 nginx HTTP 1.1
-
 status code
-
 default error pages
-
 fork only allowed for cgi
-
 static website
-
 upload file support
-
 methods: GET POST DELETE
-
 ddos immune
-
 multiple port support
-
 config:
-
 port host
-
 server_names (domain)
-
 the first server is the default if none other matches
-
 setup default error pages
-
 	route conf:
 		supported method
 		redirection
@@ -34,13 +20,5 @@ setup default error pages
 		Set a default file to answer if the request is a directory
 		cgi for some file extension (.php)
 
-
-
-http parsing + socket handling
-config + responses
-
 todo:
-config parsing
-status code mapping (tostring)
-
-simple static server
+	simple static server
