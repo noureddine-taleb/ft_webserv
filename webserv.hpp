@@ -57,5 +57,6 @@ void watchlist_del_fd(int efd, int fd);
 int watchlist_wait_fd(int efd);
 std::string trim(std::string s);
 void parse_config(std::string config_file);
+void dump_config(Config config);
 
 #endif // WEBSERV

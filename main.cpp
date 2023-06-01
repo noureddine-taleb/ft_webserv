@@ -71,6 +71,7 @@ int main(int argc, char **argv) {
 	assert(argc == 2);
 
 	parse_config(argv[1]);
+	dump_config(config);
 
     int wfd = init_watchlist();
 	spawn_servers(wfd);

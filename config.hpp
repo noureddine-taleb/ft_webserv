@@ -21,7 +21,7 @@ class Location {
 		Location(): root(""), index(""), list_dir_content(false) {}
 		std::vector<std::string> methods;
 		std::vector<Redirection> redirections;
-		CGI cgi;
+		std::vector<CGI> cgi;
 		std::string root;
 		std::string index;
 		bool list_dir_content;
