@@ -18,13 +18,14 @@ class Redirection {
 
 class Location {
 	public:
-		Location(): dir(""), index(""), list_dir_content(false) {}
+		Location(): dir(""), index(""), list_dir_content(false), target("/") {}
 		std::vector<std::string> methods;
 		std::vector<Redirection> redirections;
 		std::vector<CGI> cgi;
 		std::string dir;
 		std::string index;
 		bool list_dir_content;
+		std::string target;
 };
 
 class ErrorPage {

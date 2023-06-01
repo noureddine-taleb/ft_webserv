@@ -56,7 +56,10 @@ void parse_location(std::vector<std::string> &lines, Location &location, uint32_
 		} else if (lines[i].substr(0, 6) == "index:") {
 			value = lines[i].substr(6), value = trim(value);
 			location.index = value;
-		} else if (lines[i].substr(0, 8) == "listing:") {
+		} else if (lines[i].substr(0, 7) == "target:") {
+			value = lines[i].substr(7), value = trim(value);
+			location.target = value;
+		}  else if (lines[i].substr(0, 8) == "listing:") {
 			value = lines[i].substr(8), value = trim(value);
 			if (value == "true")
 				location.list_dir_content = true;
@@ -161,6 +164,8 @@ void dump_config(Config config) {
 
 			for (uint32_t m=0; m < config.servers[i].routes[j].redirections.size(); m++)
 				std::cout << "\t\trewrite: " << config.servers[i].routes[j].redirections[m].from << " " << config.servers[i].routes[j].redirections[m].to << std::endl;
+
+			std::cout << "\t\ttarget: " << config.servers[i].routes[j].target << std::endl;
 
 			for (uint32_t n=0; n < config.servers[i].routes[j].cgi.size(); n++)
 				std::cout << "\t\tcgi: " << config.servers[i].routes[j].cgi[n].file_extension << " " << config.servers[i].routes[j].cgi[n].cgi_pass << std::endl;
