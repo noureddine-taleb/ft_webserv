@@ -50,9 +50,9 @@ void parse_location(std::vector<std::string> &lines, Location &location, uint32_
 			cgi_inst.file_extension = cgi[0];
 			cgi_inst.cgi_pass = cgi[1];
 			location.cgi.push_back(cgi_inst);
-		} else if (lines[i].substr(0, 5) == "root:") {
-			value = lines[i].substr(5), value = trim(value);
-			location.root = value;
+		} else if (lines[i].substr(0, 4) == "dir:") {
+			value = lines[i].substr(4), value = trim(value);
+			location.dir = value;
 		} else if (lines[i].substr(0, 6) == "index:") {
 			value = lines[i].substr(6), value = trim(value);
 			location.index = value;
@@ -67,7 +67,6 @@ void parse_location(std::vector<std::string> &lines, Location &location, uint32_
 		} else {
 			if (location.methods.size() == 0)
 				location.methods = std::vector<std::string>(all_methods, std::end(all_methods));
-			std::cout << "parse_location done on " << lines[i] << std::endl;
 			return;
 		}
 	}
@@ -93,8 +92,12 @@ void parse_server(std::vector<std::string> &lines, Server &server, uint32_t &i) 
 			server.routes.push_back(location);
 		} else if (lines[i] == "error_pages:") {
 			parse_error_pages(lines, server.error_pages, ++i);
+		} else if (lines[i].substr(0, 5) == "root:") {
+			std::string value;
+			value = lines[i].substr(5), value = trim(value);
+			server.root = value;
+			i++;
 		} else {
-			std::cout << "parse_server done on " << lines[i] << std::endl;
 			return;
 		}
 	}
@@ -136,6 +139,9 @@ void dump_config(Config config) {
 		std::cout << "server:" << std::endl;
 		std::cout << "\tlisten: " << config.servers[i].ip << ":" << config.servers[i].port << std::endl;
 		
+		if (config.servers[i].root.length())
+			std::cout << "\troot: " << config.servers[i].root << std::endl;
+
 		if (config.servers[i].server_names.size())
 			std::cout << "\tserver_names: ";
 		for (uint32_t k=0; k < config.servers[i].server_names.size(); k++)
@@ -159,8 +165,8 @@ void dump_config(Config config) {
 			for (uint32_t n=0; n < config.servers[i].routes[j].cgi.size(); n++)
 				std::cout << "\t\tcgi: " << config.servers[i].routes[j].cgi[n].file_extension << " " << config.servers[i].routes[j].cgi[n].cgi_pass << std::endl;
 
-			if (config.servers[i].routes[j].root.length())
-				std::cout << "\t\troot: " << config.servers[i].routes[j].root << std::endl;
+			if (config.servers[i].routes[j].dir.length())
+				std::cout << "\t\tdir: " << config.servers[i].routes[j].dir << std::endl;
 
 			if (config.servers[i].routes[j].index.length())
 				std::cout << "\t\tindex: " << config.servers[i].routes[j].index << std::endl;
