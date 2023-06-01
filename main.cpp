@@ -68,7 +68,8 @@ void accept_connection(int wfd, int server) {
 }
 
 int main(int argc, char **argv) {
-	assert(argc == 2);
+	if (argc != 2)
+		die("usage: webserv <config_file>\n");
 
 	parse_config(argv[1]);
 	dump_config(config);
@@ -101,6 +102,8 @@ int main(int argc, char **argv) {
 			watchlist_del_fd(wfd, fd);
 			close(fd);
 			continue;
+		} else {
+			std::cout << "--------- request received"<< std::endl;
 		}
 
 
@@ -117,8 +120,8 @@ int main(int argc, char **argv) {
 
 		HttpResponse res;
 		res.code = 200;
-		res.content = "ft_webserv yora7ibo bikom";
-		res.headers["Content-Type"] = "text/html";
+		res.content = "{ \"message\": \"ft_webserv yora7ibo bikom\" }";
+		res.headers["Content-Type"] = "text/json";
 		std::string res_str = generate_http_response(res);
 		assert(send(fd, res_str.c_str(), res_str.length(), 0) == (ssize_t)res_str.length());
 	}

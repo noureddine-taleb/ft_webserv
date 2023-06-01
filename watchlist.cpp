@@ -5,6 +5,7 @@
 #endif
 
 #include <stdlib.h>
+#include <iostream>
 #include "webserv.hpp"
 
 int init_watchlist() {
@@ -40,7 +41,7 @@ void watchlist_del_fd(int wfd, int fd) {
 #ifdef __APPLE__
 	struct kevent event;
 	EV_SET(&event, fd, 0, EV_DELETE, 0, 0, NULL);
-	assert(kevent(wfd, &event, 1, NULL, 0, NULL) == 0);
+	assert(kevent(wfd, &event, 1, NULL, 0, NULL) < 0);
 #elif __linux__
 	assert(epoll_ctl(wfd, EPOLL_CTL_DEL, fd, NULL) == 0);
 #endif

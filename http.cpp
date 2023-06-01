@@ -37,6 +37,8 @@
 
 
 void parse_http_request(std::string req_str, HttpRequest &req) {
+	if (req_str.length() == 0)
+		return;
     std::vector<std::string> vec = split(req_str, HTTP_DEL);
     std::vector<std::string> headv = split(vec[0], " ");
 	size_t content_off = 0;
@@ -75,10 +77,9 @@ std::string generate_http_response(HttpResponse &res) {
 	// Last-Modified: Tue, 28 Mar 2023 15:01:54 GMT
 	// ETag: "64230162-267"
 
-	res_str << "HTTP/1.1" << " " << res.code << "CODE DESC" << HTTP_DEL;
-	for (auto it = res.headers.begin(); it != res.headers.end(); it++) {
+	res_str << "HTTP/1.1" << " " << res.code << "OK" << HTTP_DEL;
+	for (auto it = res.headers.begin(); it != res.headers.end(); it++)
 		res_str << it->first << ": " << it->second << HTTP_DEL;
-	}
 
 	res_str << HTTP_DEL;
 	res_str << res.content;
