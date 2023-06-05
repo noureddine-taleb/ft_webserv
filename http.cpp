@@ -35,7 +35,7 @@
 // Connection: keep-alive
 // ETag: "64230162-267"
 
-static char *http_codes[] = {
+static std::string http_codes[] = {
 	[100] = "Continue",
 	[101] = "Switching Protocols",
 	[102] = "Processing",
@@ -152,7 +152,7 @@ std::string generate_http_response(HttpResponse &res) {
 	// ETag: "64230162-267"
 
 	res_str << "HTTP/1.1" << " " << res.code << http_codes[res.code] << HTTP_DEL;
-	for (auto it = res.headers.begin(); it != res.headers.end(); it++)
+	for (std::map<std::string, std::string>::iterator it = res.headers.begin(); it != res.headers.end(); it++)
 		res_str << it->first << ": " << it->second << HTTP_DEL;
 
 	res_str << HTTP_DEL;

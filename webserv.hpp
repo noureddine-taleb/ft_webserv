@@ -58,5 +58,6 @@ int watchlist_wait_fd(int efd);
 std::string trim(std::string s);
 void parse_config(std::string config_file);
 void dump_config(Config config);
+void handle_http_response(const HttpRequest &req, HttpResponse &res);
 
 #endif // WEBSERV

@@ -110,18 +110,9 @@ int main(int argc, char **argv) {
 		HttpRequest req;
 		parse_http_request(request, req);
 
-		// std::cout << "--------- " << "method: " << req.method << std::endl;
-		// std::cout << "--------- " << "url: " << req.url << std::endl;
-		// std::cout << "--------- " << "version: " << req.version << std::endl;
-
-		// for (auto it = req.headers.begin(); it != req.headers.end(); it++) {
-		// 	std::cout << "--------- " << it->first << ' ' << it->second << std::endl;
-		// }
-
 		HttpResponse res;
-		res.code = 200;
-		res.content = "{ \"message\": \"ft_webserv yora7ibo bikom\" }";
-		res.headers["Content-Type"] = "text/json";
+		handle_http_response(req, res);
+
 		std::string res_str = generate_http_response(res);
 		assert(send(fd, res_str.c_str(), res_str.length(), 0) == (ssize_t)res_str.length());
 	}

@@ -1,7 +1,7 @@
 CXX := g++
-CXXFLAGS := -Wall -Wextra -g #-std=c++98
+CXXFLAGS := -Wall -Wextra -g -std=c++98
 TARGET := webserv
-SRCS := http.cpp lib.cpp main.cpp watchlist.cpp config.cpp
+SRCS := http.cpp lib.cpp main.cpp watchlist.cpp config.cpp response.cpp
 
 all: $(TARGET)
 
