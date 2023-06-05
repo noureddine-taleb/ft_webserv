@@ -106,14 +106,36 @@ int main(int argc, char **argv) {
 			std::cout << "--------- request received"<< std::endl;
 		}
 
-
 		HttpRequest req;
+		HttpResponse response;
 		parse_http_request(request, req);
+		response = response_Http_Request_error(check_req_well_formed(req, config), req, config);
+		std::string res_str = generate_http_response(response);
+		send(fd, res_str.c_str(), res_str.length(), 0);// == (ssize_t)res_str.length();
+		// std::cout << "\033[33m" << check_req_well_formed(req) << "\033[0m" << std::endl;
+		// response = processHttpRequest(req);
+		// std::cout << "********** " << "response.code " << response.code << std::endl;
+		// std::cout << "********** " << "response.reason_phrase " << response.reason_phrase << std::endl;
+		// std::cout << "********** " << "response.content " << response.content << std::endl;
 
-		HttpResponse res;
-		handle_http_response(req, res);
+		for (auto it = response.headers.begin(); it != response.headers.end(); it++) {
+			std::cout << "--------- " << it->first << ' ' << it->second << std::endl;
+		}
+		std::cout << "\033[32m"  << "method: " << req.method<< "\033[0m" << std::endl;
+		std::cout << "\033[32m"  << "url: " << req.url<< "\033[0m" << std::endl;
+		std::cout << "\033[32m"  << "version: " << req.version << "\033[0m" << std::endl;
 
-		std::string res_str = generate_http_response(res);
-		assert(send(fd, res_str.c_str(), res_str.length(), 0) == (ssize_t)res_str.length());
+		for (auto it = req.headers.begin(); it != req.headers.end(); it++) {
+			std::cout << "\033[32m" << it->first << ' ' << it->second << "\033[0m" << std::endl;
+		}
+
+		// HttpRequest req;
+		// parse_http_request(request, req);
+
+		// HttpResponse res;
+		// handle_http_response(req, res);
+
+		// std::string res_str = generate_http_response(res);
+		// assert(send(fd, res_str.c_str(), res_str.length(), 0) == (ssize_t)res_str.length());
 	}
 }

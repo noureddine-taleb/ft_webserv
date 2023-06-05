@@ -135,27 +135,27 @@ void parse_http_request(std::string req_str, HttpRequest &req) {
 	req.content = req_str.substr(content_off);
 }
 
-std::string generate_http_response(HttpResponse &res) {
-	std::stringstream res_str;
+// std::string generate_http_response(HttpResponse &res) {
+// 	std::stringstream res_str;
 
-    time_t t = time(NULL);
-    char mbstr[100];
+//     time_t t = time(NULL);
+//     char mbstr[100];
  
-    strftime(mbstr, sizeof(mbstr), "%a, %d %b %Y %T GMT", localtime(&t));
+//     strftime(mbstr, sizeof(mbstr), "%a, %d %b %Y %T GMT", localtime(&t));
 
-	res.headers["Server"] = "ft_webserv/0.1";
-	res.headers["Date"] = mbstr;
-	res.headers["Connection"] = "keep-alive";
-	res.headers["Content-Length"] = std::to_string(res.content.length());
+// 	res.headers["Server"] = "ft_webserv/0.1";
+// 	res.headers["Date"] = mbstr;
+// 	res.headers["Connection"] = "keep-alive";
+// 	res.headers["Content-Length"] = std::to_string(res.content.length());
 
-	// Last-Modified: Tue, 28 Mar 2023 15:01:54 GMT
-	// ETag: "64230162-267"
+// 	// Last-Modified: Tue, 28 Mar 2023 15:01:54 GMT
+// 	// ETag: "64230162-267"
 
-	res_str << "HTTP/1.1" << " " << res.code << http_codes[res.code] << HTTP_DEL;
-	for (std::map<std::string, std::string>::iterator it = res.headers.begin(); it != res.headers.end(); it++)
-		res_str << it->first << ": " << it->second << HTTP_DEL;
+// 	res_str << "HTTP/1.1" << " " << res.code << http_codes[res.code] << HTTP_DEL;
+// 	for (std::map<std::string, std::string>::iterator it = res.headers.begin(); it != res.headers.end(); it++)
+// 		res_str << it->first << ": " << it->second << HTTP_DEL;
 
-	res_str << HTTP_DEL;
-	res_str << res.content;
-	return res_str.str();
-}
+// 	res_str << HTTP_DEL;
+// 	res_str << res.content;
+// 	return res_str.str();
+// }
