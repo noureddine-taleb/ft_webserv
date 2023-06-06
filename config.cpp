@@ -148,7 +148,7 @@ void parse_config(std::string config_file) {
 		} else if (lines[i] == "default_error_pages:") {
 			parse_error_pages(lines, config.default_error_pages, ++i);
 		} else
-			die("unknowen config in global scope ---" + lines[i] + "--- " + lines[i-1]);
+			die("unknowen config in global scope ---" + lines[i]);
 	}
 }
 
