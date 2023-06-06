@@ -87,31 +87,34 @@ int main(int argc, char **argv) {
 			continue;
 		}
 
-		std::string request;
+		std::string request_buffer;
+		std::string response_buffer;
+		HttpRequest request;
+		HttpResponse response;
+		int status_code;
+
 		while (1) {
 			char buffer[255];
-			assert((ret = recv(fd, buffer, sizeof buffer, 0)) >= 0);
+			if ((ret = recv(fd, buffer, sizeof buffer, 0)) < 0)
+				goto close_socket;
 			buffer[ret] = 0;
-			request += buffer;
+			request_buffer += buffer;
 			if (ret != sizeof buffer)
 				break;
 		}
 
-		if (request.length() == 0) {
-			std::cout << "--------- empty request: closing"<< std::endl;
-			watchlist_del_fd(wfd, fd);
-			close(fd);
-			continue;
-		} else {
+		if (request_buffer.length() == 0)
+			goto close_socket;
+		else
 			std::cout << "--------- request received"<< std::endl;
-		}
 
-		HttpRequest req;
-		HttpResponse response;
-		parse_http_request(request, req);
-		response = response_Http_Request_error(check_req_well_formed(req, config), req, config);
-		std::string res_str = generate_http_response(response);
-		send(fd, res_str.c_str(), res_str.length(), 0);// == (ssize_t)res_str.length();
+		if (parse_http_request(request_buffer, request) < 0)
+			status_code = 400;
+		else
+			status_code = check_req_well_formed(request, config);
+		response = response_Http_Request_error(status_code, request, config);
+		response_buffer = generate_http_response(response);
+		send(fd, response_buffer.c_str(), response_buffer.length(), 0);// == (ssize_t)response_buffer.length();
 		// std::cout << "\033[33m" << check_req_well_formed(req) << "\033[0m" << std::endl;
 		// response = processHttpRequest(req);
 		// std::cout << "********** " << "response.code " << response.code << std::endl;
@@ -121,11 +124,11 @@ int main(int argc, char **argv) {
 		for (auto it = response.headers.begin(); it != response.headers.end(); it++) {
 			std::cout << "--------- " << it->first << ' ' << it->second << std::endl;
 		}
-		std::cout << "\033[32m"  << "method: " << req.method<< "\033[0m" << std::endl;
-		std::cout << "\033[32m"  << "url: " << req.url<< "\033[0m" << std::endl;
-		std::cout << "\033[32m"  << "version: " << req.version << "\033[0m" << std::endl;
+		std::cout << "\033[32m"  << "method: " << request.method<< "\033[0m" << std::endl;
+		std::cout << "\033[32m"  << "url: " << request.url<< "\033[0m" << std::endl;
+		std::cout << "\033[32m"  << "version: " << request.version << "\033[0m" << std::endl;
 
-		for (auto it = req.headers.begin(); it != req.headers.end(); it++) {
+		for (auto it = request.headers.begin(); it != request.headers.end(); it++) {
 			std::cout << "\033[32m" << it->first << ' ' << it->second << "\033[0m" << std::endl;
 		}
 
@@ -135,7 +138,17 @@ int main(int argc, char **argv) {
 		// HttpResponse res;
 		// handle_http_response(req, res);
 
-		// std::string res_str = generate_http_response(res);
-		// assert(send(fd, res_str.c_str(), res_str.length(), 0) == (ssize_t)res_str.length());
+		// std::string response_buffer = generate_http_response(res);
+		// assert(send(fd, response_buffer.c_str(), response_buffer.length(), 0) == (ssize_t)response_buffer.length());
+		if (response.code == 400)
+			goto close_socket;
+
+		continue;
+
+close_socket:
+			std::cout << "--------- invalid request: close socket"<< std::endl;
+			watchlist_del_fd(wfd, fd);
+			close(fd);
+			continue;
 	}
 }

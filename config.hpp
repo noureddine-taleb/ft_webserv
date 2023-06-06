@@ -16,16 +16,24 @@ class Redirection {
 		std::string to;
 };
 
+class Return {
+	public:
+		Return(): code(0), to("") {}
+		int code;
+		std::string to;
+};
+
 class Location {
 	public:
-		Location(): dir(""), index(""), list_dir_content(false), target("/") {}
+		Location(): dir(""), index(""), autoindex(false), target("/") {}
 		std::vector<std::string> methods;
 		std::vector<Redirection> redirections;
 		std::vector<CGI> cgi;
 		std::string dir;
 		std::string index;
-		bool list_dir_content;
+		bool autoindex;
 		std::string target;
+		Return creturn;
 };
 
 class ErrorPage {

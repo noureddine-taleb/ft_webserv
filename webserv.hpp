@@ -47,7 +47,7 @@ void die(std::string msg);
 
 // http
 std::vector<std::string> split(std::string s, std::string delimiter, unsigned int max_splits = -1);
-void parse_http_request(std::string req_str, HttpRequest &req);
+int parse_http_request(std::string req_str, HttpRequest &req);
 std::string generate_http_response(HttpResponse &res);
 
 // epoll

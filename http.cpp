@@ -110,9 +110,9 @@ static std::string http_codes[] = {
 	[599] = "Network connect timeout error",
 };
 
-void parse_http_request(std::string req_str, HttpRequest &req) {
-	if (req_str.length() == 0)
-		return;
+int parse_http_request(std::string req_str, HttpRequest &req) {
+	if (req_str.length() == 0 || req_str.find(HTTP_DEL HTTP_DEL) == std::string::npos)
+		return -1;
     std::vector<std::string> vec = split(req_str, HTTP_DEL);
     std::vector<std::string> headv = split(vec[0], " ");
 	size_t content_off = 0;
@@ -120,7 +120,6 @@ void parse_http_request(std::string req_str, HttpRequest &req) {
 	req.method = headv[0];
 	req.url = headv[1];
 	req.version = headv[2];
-	assert(req_str.find(HTTP_DEL HTTP_DEL) != std::string::npos);
 	content_off = req_str.find(HTTP_DEL HTTP_DEL) + sizeof(HTTP_DEL HTTP_DEL) - 1;
 
 	vec.erase(vec.begin());
@@ -133,6 +132,7 @@ void parse_http_request(std::string req_str, HttpRequest &req) {
 		req.headers[headerv[0]] = headerv[1];
 	}
 	req.content = req_str.substr(content_off);
+	return 0;
 }
 
 // std::string generate_http_response(HttpResponse &res) {

@@ -26,8 +26,10 @@ void parse_error_pages(std::vector<std::string> &lines, std::vector<ErrorPage> &
 void parse_location(std::vector<std::string> &lines, Location &location, uint32_t &i) {
 	std::string value;
 	static const char *all_methods[] = { "GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS", "CONNECT", "TRACE" };
+			
+	value = lines[i].substr(8), value = split(value, ":")[0], value = trim(value), location.target = value;
 
-	for (; i < lines.size(); i++) {
+	for (i++; i < lines.size(); i++) {
 		if (lines[i].substr(0, 8) == "methods:") {
 			value = lines[i].substr(8), value = trim(value);
 			if (value == "*") {
@@ -56,17 +58,30 @@ void parse_location(std::vector<std::string> &lines, Location &location, uint32_
 		} else if (lines[i].substr(0, 6) == "index:") {
 			value = lines[i].substr(6), value = trim(value);
 			location.index = value;
-		} else if (lines[i].substr(0, 7) == "target:") {
-			value = lines[i].substr(7), value = trim(value);
-			location.target = value;
-		}  else if (lines[i].substr(0, 8) == "listing:") {
-			value = lines[i].substr(8), value = trim(value);
+		} else if (lines[i].substr(0, 10) == "autoindex:") {
+			value = lines[i].substr(10), value = trim(value);
 			if (value == "true")
-				location.list_dir_content = true;
+				location.autoindex = true;
 			else if (value == "false")
-				location.list_dir_content = false;
+				location.autoindex = false;
 			else
-				die("unknowen value for listing in location scope: " + value);
+				die("unknowen value for autoindex in location scope: " + value);
+		} else if (lines[i].substr(0, 7) == "return:") {
+			value = lines[i].substr(7), value = trim(value);
+			std::vector<std::string> parts = split(value, " ");
+			if (parts.size() != 2)
+				die("invalid value for location.return\n");
+			
+			int code;
+			try {
+				code = std::stoi(parts[0]);
+			} catch (std::invalid_argument) {
+				die("invalid value for location.return code\n");
+			}
+
+			location.creturn.code = code;
+			location.creturn.to = parts[1];
+
 		} else {
 			if (location.methods.size() == 0)
 				location.methods = std::vector<std::string>(all_methods, std::end(all_methods));
@@ -89,9 +104,9 @@ void parse_server(std::vector<std::string> &lines, Server &server, uint32_t &i) 
 			server.port = std::stoi(listen[1]);
 			assert(server.port > 0);
 			i++;
-		} else if (lines[i] == "location:") {
+		} else if (lines[i].substr(0, 8) == "location") {
 			Location location;
-			parse_location(lines, location, ++i);
+			parse_location(lines, location, i);
 			server.routes.push_back(location);
 		} else if (lines[i] == "error_pages:") {
 			parse_error_pages(lines, server.error_pages, ++i);
@@ -152,9 +167,8 @@ void dump_config(Config config) {
 		if (config.servers[i].server_names.size())
 			std::cout << std::endl;
 
-		if (config.servers[i].routes.size())
-			std::cout << "\tlocation:" << std::endl;
 		for (uint32_t j=0; j < config.servers[i].routes.size(); j++) {
+			std::cout << "\tlocation " << config.servers[i].routes[j].target << ":" << std::endl;
 			if (config.servers[i].routes[j].methods.size())
 				std::cout << "\t\tmethods: ";
 			for (uint32_t l=0; l < config.servers[i].routes[j].methods.size(); l++)
@@ -165,8 +179,6 @@ void dump_config(Config config) {
 			for (uint32_t m=0; m < config.servers[i].routes[j].redirections.size(); m++)
 				std::cout << "\t\trewrite: " << config.servers[i].routes[j].redirections[m].from << " " << config.servers[i].routes[j].redirections[m].to << std::endl;
 
-			std::cout << "\t\ttarget: " << config.servers[i].routes[j].target << std::endl;
-
 			for (uint32_t n=0; n < config.servers[i].routes[j].cgi.size(); n++)
 				std::cout << "\t\tcgi: " << config.servers[i].routes[j].cgi[n].file_extension << " " << config.servers[i].routes[j].cgi[n].cgi_pass << std::endl;
 
@@ -176,7 +188,10 @@ void dump_config(Config config) {
 			if (config.servers[i].routes[j].index.length())
 				std::cout << "\t\tindex: " << config.servers[i].routes[j].index << std::endl;
 
-			std::cout << "\t\tlisting: " << (config.servers[i].routes[j].list_dir_content == true ? "true" : "false") << std::endl;
+			if (config.servers[i].routes[j].creturn.code)
+				std::cout << "\t\treturn: " << config.servers[i].routes[j].creturn.code << " " << config.servers[i].routes[j].creturn.to << std::endl;
+			
+			std::cout << "\t\tautoindex: " << (config.servers[i].routes[j].autoindex == true ? "true" : "false") << std::endl;
 		}
 
 		if (config.servers[i].error_pages.size())
