@@ -67,18 +67,21 @@ void accept_connection(int wfd, int server) {
 	std::cout << "--------- " << "connection received " << inet_ntoa(caddress.sin_addr) << ":" << ntohs(caddress.sin_port) << std::endl;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char **argv) {
 	if (argc != 2)
 		die("usage: webserv <config_file>\n");
 
 	parse_config(argv[1]);
-	dump_config(config);
+	// dump_config(config);
 
     int wfd = init_watchlist();
 	spawn_servers(wfd);
 
 	int ret;
 
+	std::map<int,HttpResponse>	clients;
 	while (1) {
 		int fd = watchlist_wait_fd(wfd);
 
@@ -87,11 +90,14 @@ int main(int argc, char **argv) {
 			continue;
 		}
 
-		std::string request_buffer;
-		std::string response_buffer;
-		HttpRequest request;
-		HttpResponse response;
-		int status_code;
+		std::string	request_buffer;
+		HttpRequest	request;
+
+		int							status_code;
+		HttpResponse				response;
+		std::string					response_buffer;
+		std::string					content_length;
+		std::map<int, HttpResponse>::iterator clients_it = clients.find(fd);
 
 		while (1) {
 			char buffer[255];
@@ -111,44 +117,89 @@ int main(int argc, char **argv) {
 		if (parse_http_request(request_buffer, request) < 0)
 			status_code = 400;
 		else
-			status_code = check_req_well_formed(request, config);
-		response = response_Http_Request_error(status_code, request, config);
-		response_buffer = generate_http_response(response);
-		send(fd, response_buffer.c_str(), response_buffer.length(), 0);// == (ssize_t)response_buffer.length();
-		// std::cout << "\033[33m" << check_req_well_formed(req) << "\033[0m" << std::endl;
-		// response = processHttpRequest(req);
-		// std::cout << "********** " << "response.code " << response.code << std::endl;
-		// std::cout << "********** " << "response.reason_phrase " << response.reason_phrase << std::endl;
-		// std::cout << "********** " << "response.content " << response.content << std::endl;
+			status_code = check_req_line_headers(config, request);
+		// std::cout << "status_code " << status_code << std::endl;
+		// status_code = parse_http_request(config, request_buffer, request);
+		// if (status_code != 1 || status_code != 2 || status_code != 3)
+		// {
+		// 	response_Http_Request_error(status_code, config, response);
+		// 	response_buffer = generate_http_response(response);
+		// 	response_buffer += response.content;
+		// 	send(fd, response_buffer.c_str(), response_buffer.length(), 0) ;
+		// }
+		if (clients.empty() || clients_it == clients.end())
+		{
 
-		for (auto it = response.headers.begin(); it != response.headers.end(); it++) {
-			std::cout << "--------- " << it->first << ' ' << it->second << std::endl;
+			response.finish_reading = false;
+			response.byte_reading = 0;
+			response.get_length = false;
+			response.request = request;
+			response.server_it = server(config, response.request);
+			response.location_it = location(response.request, response.server_it);
+			if (status_code == 1)
+			{
+				response_get(config, response);
+				content_length = read_File(response);
+				if (content_length == "404")
+				{
+					response_Http_Request_error(404, config, response);
+					response_buffer = generate_http_response(response);
+					response_buffer += response.content;
+					send(fd, response_buffer.c_str(), response_buffer.length(), 0) ;
+				}
+				else
+				{
+					response.headers["content-length"] = content_length;
+					response_buffer = generate_http_response(response);
+					send(fd, response_buffer.c_str(), response_buffer.length(), 0) ;
+					response.content = read_File(response);
+					if (response.finish_reading)
+					{
+						send(fd, response.content.c_str(), response.content.length(), 0);
+						goto close_socket;
+					}
+				}
+			}
+			else
+			{
+				response_Http_Request_error(status_code, config, response);
+				response_buffer = generate_http_response(response);
+				response_buffer += response.content;
+				send(fd, response_buffer.c_str(), response_buffer.length(), 0) ;
+				goto close_socket;
+			}
+
+			// else if (status_code == 2)
+			// 	response_post(req, config, response);
+			// else if (status_code == 3)
+			// 	response_delete(req, config, response);
+			clients[fd] = response;
 		}
-		std::cout << "\033[32m"  << "method: " << request.method<< "\033[0m" << std::endl;
-		std::cout << "\033[32m"  << "url: " << request.url<< "\033[0m" << std::endl;
-		std::cout << "\033[32m"  << "version: " << request.version << "\033[0m" << std::endl;
-
-		for (auto it = request.headers.begin(); it != request.headers.end(); it++) {
-			std::cout << "\033[32m" << it->first << ' ' << it->second << "\033[0m" << std::endl;
+		else
+		{
+			clients[fd].content = read_File(clients[fd]);
+			send(fd, clients[fd].content.c_str(), clients[fd].content.length(), 0);
 		}
-
-		// HttpRequest req;
-		// parse_http_request(request, req);
-
-		// HttpResponse res;
-		// handle_http_response(req, res);
-
-		// std::string response_buffer = generate_http_response(res);
-		// assert(send(fd, response_buffer.c_str(), response_buffer.length(), 0) == (ssize_t)response_buffer.length());
-		if (response.code == 400)
-			goto close_socket;
-
 		continue;
-
 close_socket:
 			std::cout << "--------- invalid request: close socket"<< std::endl;
+			clients.erase(fd);
 			watchlist_del_fd(wfd, fd);
 			close(fd);
 			continue;
 	}
 }
+
+
+
+
+		// std::cout << "\033[32m"  << "method: " << request.method<< "\033[0m" << std::endl;
+		// std::cout << "\033[32m"  << "url: " << request.url<< "\033[0m" << std::endl;
+		// std::cout << "\033[32m"  << "version: " << request.version << "\033[0m" << std::endl;
+		// for (auto it = request.headers.begin(); it != request.headers.end(); it++) {
+		// 	std::cout << "\033[32m" << it->first << ' ' << it->second << "\033[0m" << std::endl;
+		// }
+
+//add time out
+
+
