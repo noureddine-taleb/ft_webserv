@@ -1,9 +1,6 @@
 #include "webserv.hpp"
 #include "config.hpp"
 #include <iostream>
-// #include <fstream>
-// #include <sstream>
-// #include <sys/stat.h>
 
 int ft_atoi(std::string s) {
 	int					sign = 1;
@@ -24,7 +21,6 @@ int ft_atoi(std::string s) {
 		nbr = nbr * 10 + (*(it++) - '0');
 	return (sign * nbr);
 }
-
 std::string get_content_type(HttpRequest& req)
 {
 	std::map<std::string, std::string> content_type;
@@ -64,15 +60,28 @@ std::vector<Server>::iterator server(Config& config, HttpRequest& request)
 
 std::vector<Location>::iterator location(HttpRequest& req, std::vector<Server>::iterator server)
 {
-	for (std::vector<Location>::iterator it2 = server->routes.begin(); it2 != server->routes.end();it2++)
-		if (req.url.find(it2->target) != std::string::npos && req.url.find(it2->target) == 0)
-			return (it2);
-	return (server->routes.end());
+	unsigned long	length_location(0);
+	std::vector<Location>::iterator location = server->routes.end();
+
+	for (std::vector<Location>::iterator location_it = server->routes.begin(); location_it != server->routes.end();location_it++)
+	{
+		if (req.url.find(location_it->target) != std::string::npos)
+		{
+			if ((location_it->target.length()) > length_location)
+			{
+				length_location = location_it->target.length();
+				location = location_it;
+			}
+		}
+	}
+	return (location);
 }
 
 std::string read_File(HttpResponse& response)
 {
 	std::ifstream file;
+	std::string res = "";
+	std::stringstream hex;
 	file.open(response.path_file, std::ifstream::binary);
 
 	if (file.is_open())
@@ -85,21 +94,28 @@ std::string read_File(HttpResponse& response)
 		if (response.get_length == false)
 		{
 			response.get_length = true;
-			return (std::to_string(length));
+			return (ft_tostring(length));
 		}
 		if (response.byte_reading < length)
 		{
 			// int chunkSize = std::min(BUFF_SIZE, length - byte_reading);
 			int chunkSize = std::min(length, length - response.byte_reading);
+			hex << std::hex << chunkSize;
 			buffer.resize(chunkSize);
-			file.seekg(response.position);
+			res += hex.str() + HTTP_DEL;
+			file.seekg(response.byte_reading);
 			file.read(buffer.data(), chunkSize);
-			response.position = file.tellg();
 			response.byte_reading += file.gcount();
+
+			std::string content(buffer.begin(), buffer.end());
+			res += content + HTTP_DEL;
 			if (file.gcount() == length)
 			{
+				hex.str("");
+				chunkSize = 0;
+				hex << std::hex << chunkSize;
 				response.finish_reading = true;
-				response.position = 0;
+				res += hex.str() + HTTP_DEL + HTTP_DEL;
 				file.close();
 			}
 			// if (file.gcount() == 0)
@@ -108,8 +124,7 @@ std::string read_File(HttpResponse& response)
 			// 	return ("finish_reading");
 			// }
 		}
-		std::string content(buffer.begin(), buffer.end());
-		return (content);
+		return (res);
 	}
 	return ("404");
 }
@@ -130,7 +145,7 @@ std::string type_repo(std::string path)
 	struct stat info;
 
 	if (*(path.end() - 1) == '/')
-		return ("is_directory with /");
+		return ("is_directory");
 	if (!stat(path.c_str(), &info))
 	{
 		if (S_ISREG(info.st_mode))
@@ -188,10 +203,6 @@ void fill_response(int status_code, HttpResponse& response)
 
 void get_path(HttpResponse& response)
 {
-// 	std::cout << "*********************** dir = " << response.location_it->dir << std::endl;
-// 	std::cout << "*********************** target = " << response.location_it->target << std::endl;
-// 	std::cout << "*********************** url = " << response.request.url << std::endl;
-// 	std::cout << "*********************** " << response.request.url.substr(response.location_it->target.length(), response.request.url.length()) << std::endl;
 	if (!response.location_it->dir.empty())
 		response.path_file = response.location_it->dir + response.request.url.substr(response.location_it->target.length(), response.request.url.length());
 	else if (!response.server_it->root.empty())
@@ -213,4 +224,18 @@ std::string	get_reason_phase(int status_code)
 	reason_phase[200] = "ok";
 
 	return(reason_phase[status_code]);
+}
+
+std::string	ft_tostring(int nbr)
+{
+	std::string	str;
+
+	while (nbr > 10)
+	{
+		str.insert(0,1, static_cast<char>((nbr % 10) + '0'));
+		nbr /= 10;
+	}
+	if (nbr > 0)
+		str.insert(0,1, static_cast<char>(nbr+ '0'));
+	return (str);
 }

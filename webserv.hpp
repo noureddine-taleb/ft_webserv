@@ -65,7 +65,6 @@ class HttpResponse {
 		HttpRequest request;
 		int byte_reading;
 		int	fd;
-		int position;
 		// std::ifstream	open_file()
 		// {
 		// 	std::ifstream file;
@@ -114,6 +113,7 @@ void			init_response(Config& config, HttpResponse& response, HttpRequest& reques
 void			fill_response(int status_code, HttpResponse& response);
 void			get_path(HttpResponse& response);
 std::string		get_reason_phase(int status_code);
+std::string		ft_tostring(int nbr);
 // int			check_req_well_formed(int fd,Config& config, std::map<int,HttpResponse>& responses);
 // std::string	read_File(std::map<int,HttpResponse>& responses, int fd );
 // void			response_get(int fd, Config& config, std::map<int,HttpResponse>& responses);

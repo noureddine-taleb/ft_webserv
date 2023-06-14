@@ -127,6 +127,14 @@ int main(int argc, char **argv) {
 		// 	response_buffer += response.content;
 		// 	send(fd, response_buffer.c_str(), response_buffer.length(), 0) ;
 		// }
+		////////////////////////////////////////////////////////////////////////////////////////
+		// std::cout << "\033[32m"  << "method: " << request.method<< "\033[0m" << std::endl;
+		// std::cout << "\033[32m"  << "url: " << request.url<< "\033[0m" << std::endl;
+		// std::cout << "\033[32m"  << "version: " << request.version << "\033[0m" << std::endl;
+		// for (auto it = request.headers.begin(); it != request.headers.end(); it++) {
+		// 	std::cout << "\033[32m" << it->first << ' ' << it->second << "\033[0m" << std::endl;
+		// }
+		///////////////////////////////////////////////////////////////////////////////////////////
 		if (clients.empty() || clients_it == clients.end())
 		{
 			init_response(config, response, request, fd);
@@ -143,6 +151,7 @@ int main(int argc, char **argv) {
 					else
 					{
 						response.headers["content-length"] = content_length;
+						response.headers["Transfer-Encoding"] = "chunked";
 						response_buffer = generate_http_response(response);
 						send(response.fd, response_buffer.c_str(), response_buffer.length(), 0) ;
 						response.content = read_File(response);
@@ -185,12 +194,6 @@ close_socket:
 
 
 
-// std::cout << "\033[32m"  << "method: " << request.method<< "\033[0m" << std::endl;
-// std::cout << "\033[32m"  << "url: " << request.url<< "\033[0m" << std::endl;
-// std::cout << "\033[32m"  << "version: " << request.version << "\033[0m" << std::endl;
-// for (auto it = request.headers.begin(); it != request.headers.end(); it++) {
-// 	std::cout << "\033[32m" << it->first << ' ' << it->second << "\033[0m" << std::endl;
-// }
 
 //add time out
 

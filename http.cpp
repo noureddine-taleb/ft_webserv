@@ -146,7 +146,7 @@ int parse_http_request(std::string req_str, HttpRequest &req) {
 // 	res.headers["Server"] = "ft_webserv/0.1";
 // 	res.headers["Date"] = mbstr;
 // 	res.headers["Connection"] = "keep-alive";
-// 	res.headers["Content-Length"] = std::to_string(res.content.length());
+// 	res.headers["Content-Length"] = (res.content.length());
 
 // 	// Last-Modified: Tue, 28 Mar 2023 15:01:54 GMT
 // 	// ETag: "64230162-267"

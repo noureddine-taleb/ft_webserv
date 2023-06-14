@@ -85,7 +85,7 @@ void response_Http_Request_error(int status_code, Config& config, HttpResponse& 
 			if (response.content == "not found")
 				response.content = read_File_error("www/403.html");
 	}
-	response.headers["Content-Length"] = std::to_string(response.content.length());
+	response.headers["Content-Length"] = ft_tostring(response.content.length());
 }
 
 // 0.0.0.0:8080/srcs/
