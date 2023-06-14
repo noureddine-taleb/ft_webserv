@@ -1,10 +1,10 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <string>
-#include <iostream>
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <unistd.h>
+// #include <sys/socket.h>
+// #include <arpa/inet.h>
+// #include <string>
+// #include <iostream>
 #ifdef __APPLE__
 #include <sys/event.h>
 #elif __linux__
@@ -129,46 +129,38 @@ int main(int argc, char **argv) {
 		// }
 		if (clients.empty() || clients_it == clients.end())
 		{
-
-			response.finish_reading = false;
-			response.byte_reading = 0;
-			response.get_length = false;
-			response.request = request;
-			response.server_it = server(config, response.request);
-			response.location_it = location(response.request, response.server_it);
+			init_response(config, response, request, fd);
 			if (status_code == 1)
 			{
-				response_get(config, response);
-				content_length = read_File(response);
-				if (content_length == "404")
+				if (response_get(config, response))
 				{
-					response_Http_Request_error(404, config, response);
-					response_buffer = generate_http_response(response);
-					response_buffer += response.content;
-					send(fd, response_buffer.c_str(), response_buffer.length(), 0) ;
-				}
-				else
-				{
-					response.headers["content-length"] = content_length;
-					response_buffer = generate_http_response(response);
-					send(fd, response_buffer.c_str(), response_buffer.length(), 0) ;
-					response.content = read_File(response);
-					if (response.finish_reading)
+					content_length = read_File(response);
+					if (content_length == "404")
 					{
-						send(fd, response.content.c_str(), response.content.length(), 0);
+						ft_send_error(404, config, response);
 						goto close_socket;
 					}
+					else
+					{
+						response.headers["content-length"] = content_length;
+						response_buffer = generate_http_response(response);
+						send(response.fd, response_buffer.c_str(), response_buffer.length(), 0) ;
+						response.content = read_File(response);
+						if (response.finish_reading)
+						{
+							send(response.fd, response.content.c_str(), response.content.length(), 0);
+							goto close_socket;
+						}
+					}
 				}
+				else
+					goto close_socket;
 			}
 			else
 			{
-				response_Http_Request_error(status_code, config, response);
-				response_buffer = generate_http_response(response);
-				response_buffer += response.content;
-				send(fd, response_buffer.c_str(), response_buffer.length(), 0) ;
+				ft_send_error(status_code, config, response);
 				goto close_socket;
 			}
-
 			// else if (status_code == 2)
 			// 	response_post(req, config, response);
 			// else if (status_code == 3)
@@ -193,13 +185,16 @@ close_socket:
 
 
 
-		// std::cout << "\033[32m"  << "method: " << request.method<< "\033[0m" << std::endl;
-		// std::cout << "\033[32m"  << "url: " << request.url<< "\033[0m" << std::endl;
-		// std::cout << "\033[32m"  << "version: " << request.version << "\033[0m" << std::endl;
-		// for (auto it = request.headers.begin(); it != request.headers.end(); it++) {
-		// 	std::cout << "\033[32m" << it->first << ' ' << it->second << "\033[0m" << std::endl;
-		// }
+// std::cout << "\033[32m"  << "method: " << request.method<< "\033[0m" << std::endl;
+// std::cout << "\033[32m"  << "url: " << request.url<< "\033[0m" << std::endl;
+// std::cout << "\033[32m"  << "version: " << request.version << "\033[0m" << std::endl;
+// for (auto it = request.headers.begin(); it != request.headers.end(); it++) {
+// 	std::cout << "\033[32m" << it->first << ' ' << it->second << "\033[0m" << std::endl;
+// }
 
 //add time out
 
 
+
+
+//type content

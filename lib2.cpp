@@ -1,8 +1,8 @@
 #include "webserv.hpp"
 #include "config.hpp"
 #include <iostream>
-#include <fstream>
-#include <sstream>
+// #include <fstream>
+// #include <sstream>
 // #include <sys/stat.h>
 
 int ft_atoi(std::string s) {
@@ -72,14 +72,16 @@ std::vector<Location>::iterator location(HttpRequest& req, std::vector<Server>::
 
 std::string read_File(HttpResponse& response)
 {
-	std::ifstream file(response.path_file, std::ifstream::binary);
+	std::ifstream file;
+	file.open(response.path_file, std::ifstream::binary);
 
-	if (file)
+	if (file.is_open())
 	{
 		file.seekg (0, file.end);
 		int length = file.tellg();
 		file.seekg (0, file.beg);
 		std::vector<char> buffer(length);
+
 		if (response.get_length == false)
 		{
 			response.get_length = true;
@@ -87,14 +89,17 @@ std::string read_File(HttpResponse& response)
 		}
 		if (response.byte_reading < length)
 		{
-			// int chunkSize = std::min(BUFF_SIZE, length - response.byte_reading);
+			// int chunkSize = std::min(BUFF_SIZE, length - byte_reading);
 			int chunkSize = std::min(length, length - response.byte_reading);
 			buffer.resize(chunkSize);
+			file.seekg(response.position);
 			file.read(buffer.data(), chunkSize);
+			response.position = file.tellg();
 			response.byte_reading += file.gcount();
 			if (file.gcount() == length)
 			{
 				response.finish_reading = true;
+				response.position = 0;
 				file.close();
 			}
 			// if (file.gcount() == 0)
@@ -149,4 +154,63 @@ std::string content_dir(std::string dir, std::vector<std::string>& content)
 		return("found");
 	}
 	return ("not found");
+}
+
+void	ft_send_error(int status_code, Config config, HttpResponse& response)
+{
+	std::string		response_buffer;
+
+	response_Http_Request_error(status_code, config, response);
+	response_buffer = generate_http_response(response);
+	response_buffer += response.content;
+	send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
+}
+
+void init_response(Config& config, HttpResponse& response, HttpRequest& request, int fd)
+{
+	response.fd = fd;
+	response.byte_reading = 0;
+	response.request = request;
+	response.get_length = false;
+	response.finish_reading = false;
+	response.server_it = server(config, response.request);
+	response.location_it = location(response.request, response.server_it);
+}
+
+void fill_response(int status_code, HttpResponse& response)
+{
+	response.version = response.request.version;
+	response.code = status_code;
+	response.reason_phrase = get_reason_phase(status_code);
+	response.headers["Connection"] = "keep-alive";
+	response.headers["Content-Type"] = get_content_type(response.request);
+}
+
+void get_path(HttpResponse& response)
+{
+// 	std::cout << "*********************** dir = " << response.location_it->dir << std::endl;
+// 	std::cout << "*********************** target = " << response.location_it->target << std::endl;
+// 	std::cout << "*********************** url = " << response.request.url << std::endl;
+// 	std::cout << "*********************** " << response.request.url.substr(response.location_it->target.length(), response.request.url.length()) << std::endl;
+	if (!response.location_it->dir.empty())
+		response.path_file = response.location_it->dir + response.request.url.substr(response.location_it->target.length(), response.request.url.length());
+	else if (!response.server_it->root.empty())
+		response.path_file = response.server_it->root + response.request.url.substr(response.location_it->target.length(), response.request.url.length());
+}
+
+std::string	get_reason_phase(int status_code)
+{
+	std::map<int, std::string> reason_phase;
+
+	reason_phase[301] = "Moved Permanently"; 
+	reason_phase[400] = "Bad Request";
+	reason_phase[403] = "403 Forbidden";
+	reason_phase[404] = "Not Found";
+	reason_phase[405] = "Method Not Allowed";
+	reason_phase[413] = "Request Entity Too Large";
+	reason_phase[414] = "Request-URI Too Long";
+	reason_phase[501] = "not implemented";
+	reason_phase[200] = "ok";
+
+	return(reason_phase[status_code]);
 }

@@ -1,6 +1,12 @@
 #ifndef WEBSERV_HPP
 #define WEBSERV_HPP
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <iostream>
 #include <string>
 #include <map>
 #include <vector>
@@ -12,6 +18,8 @@
 #include <sstream>
 #include <algorithm>
 #include <cassert>
+#include <fstream>
+#include <sstream>
 
 #define BACKLOG_SIZE 32
 #define HTTP_DEL "\r\n"
@@ -56,6 +64,15 @@ class HttpResponse {
 		bool finish_reading;
 		HttpRequest request;
 		int byte_reading;
+		int	fd;
+		int position;
+		// std::ifstream	open_file()
+		// {
+		// 	std::ifstream file;
+		// 	file.open(path_file, std::ifstream::binary);
+		// 	return (file);
+		// }
+		// std::ifstream file;
 };
 
 void die(std::string msg);
@@ -85,13 +102,18 @@ void			response_Http_Request_error(int status_code, Config& config, HttpResponse
 std::string		res_content(int status_code, Config& config, HttpResponse& response);
 std::string		read_File_error(std::string Path);
 int				ft_atoi(std::string s);
-void			response_get(Config& config, HttpResponse& response);
+int				response_get(Config& config, HttpResponse& response);
 std::string		get_content_type(HttpRequest& req);
 std::string		type_repo(std::string path);
 std::string		content_dir(std::string dir, std::vector<std::string>& content);
-std::string		res_content_dir(int status_code, HttpRequest& request, Config& config, HttpResponse& response, std::string path);
+int				res_content_dir(int status_code, Config& config, HttpResponse& response);
 std::string		res_content_file(int status_code, HttpRequest& request, Config& config, HttpResponse& response, std::string path);
 std::string		read_File(HttpResponse& response);
+void			ft_send_error(int status_code, Config config, HttpResponse& response);
+void			init_response(Config& config, HttpResponse& response, HttpRequest& request, int fd);
+void			fill_response(int status_code, HttpResponse& response);
+void			get_path(HttpResponse& response);
+std::string		get_reason_phase(int status_code);
 // int			check_req_well_formed(int fd,Config& config, std::map<int,HttpResponse>& responses);
 // std::string	read_File(std::map<int,HttpResponse>& responses, int fd );
 // void			response_get(int fd, Config& config, std::map<int,HttpResponse>& responses);
