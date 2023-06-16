@@ -29,3 +29,5 @@ if method = Get => ignore the body
 handel transfer encoding = chunked
 add client_max_body_size 10M
 
+handel 301 rewrite
+handel 301 return

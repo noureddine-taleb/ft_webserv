@@ -8,7 +8,7 @@
 int	check_req_line_headers(Config& config, HttpRequest &request)
 {
 	std::vector<Server>::iterator server_it = server(config, request);
-	std::vector<Location>::iterator location_it = location(request, server_it);
+	std::vector<Location>::iterator location_it = location(config, request, server_it);
 	std::map<std::string, std::string>::iterator header_it = request.headers.find("Transfer-Encoding");
 	std::vector<std::string>::iterator methods_it;
 	std::string client_max_body_size = "100M";//the maximum size limit in megabytes (MB) for the request body.

@@ -23,7 +23,7 @@
 
 #define BACKLOG_SIZE 32
 #define HTTP_DEL "\r\n"
-#define BUFF_SIZE 8419815
+#define BUFF_SIZE 1024
 // #define assert(cond) if (!(cond)) \
 // die("assertion failed: " #cond);
 
@@ -59,6 +59,7 @@ class HttpResponse {
 		std::vector<Server>::iterator server_it;
 		std::vector<Location>::iterator location_it;
 		std::string    path_file;
+		std::string old_url;
 		bool get_length;
 		int size_file;
 		bool finish_reading;
@@ -94,7 +95,7 @@ void handle_http_response(const HttpRequest &req, HttpResponse &res);
 //----------------------------------------------------------------------------
 
 std::vector<Server>::iterator server(Config& config, HttpRequest& request);
-std::vector<Location>::iterator	location(HttpRequest& req, std::vector<Server>::iterator server);
+std::vector<Location>::iterator	location(Config& config, HttpRequest& req, std::vector<Server>::iterator server);
 int				check_req_line_headers(Config& config, HttpRequest &request);
 void			response_Http_Request(int status_code, HttpRequest& request, Config& config, HttpResponse& response, std::string path);
 void			response_Http_Request_error(int status_code, Config& config, HttpResponse& response);
@@ -102,7 +103,7 @@ std::string		res_content(int status_code, Config& config, HttpResponse& response
 std::string		read_File_error(std::string Path);
 int				ft_atoi(std::string s);
 int				response_get(Config& config, HttpResponse& response);
-std::string		get_content_type(HttpRequest& req);
+std::string get_content_type(std::string path);
 std::string		type_repo(std::string path);
 std::string		content_dir(std::string dir, std::vector<std::string>& content);
 int				res_content_dir(int status_code, Config& config, HttpResponse& response);
@@ -111,9 +112,11 @@ std::string		read_File(HttpResponse& response);
 void			ft_send_error(int status_code, Config config, HttpResponse& response);
 void			init_response(Config& config, HttpResponse& response, HttpRequest& request, int fd);
 void			fill_response(int status_code, HttpResponse& response);
-void			get_path(HttpResponse& response);
+int				get_path(Config config, HttpResponse& response);
 std::string		get_reason_phase(int status_code);
 std::string		ft_tostring(int nbr);
+int				response_redirect(HttpResponse& response, Config& config);
+int response_Http_Request(int status_code , Config& config, HttpResponse& response);
 // int			check_req_well_formed(int fd,Config& config, std::map<int,HttpResponse>& responses);
 // std::string	read_File(std::map<int,HttpResponse>& responses, int fd );
 // void			response_get(int fd, Config& config, std::map<int,HttpResponse>& responses);

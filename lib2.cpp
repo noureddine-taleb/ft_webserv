@@ -4,7 +4,7 @@
 
 int ft_atoi(std::string s) {
 	int					sign = 1;
-	int				  /*frac = 0.1,*/ nbr = 0;
+	int					nbr = 0;
 	std::string::iterator it;
 
 	for (it = s.begin(); *it == ' '; ++it)
@@ -20,11 +20,12 @@ int ft_atoi(std::string s) {
 	while (it != s.end() && isdigit(*it))
 		nbr = nbr * 10 + (*(it++) - '0');
 	return (sign * nbr);
-}
-std::string get_content_type(HttpRequest& req)
+} 
+
+std::string get_content_type(std::string path)
 {
 	std::map<std::string, std::string> content_type;
-	std::string type = req.url.substr(req.url.rfind(".") + 1,req.url.length());
+	std::string type = path.substr(path.rfind(".") + 1,path.length());
 
 	content_type["html"] = "text/html";
 	content_type["htm"] = "text/html";
@@ -58,11 +59,13 @@ std::vector<Server>::iterator server(Config& config, HttpRequest& request)
 	return (config.servers.begin());
 }
 
-std::vector<Location>::iterator location(HttpRequest& req, std::vector<Server>::iterator server)
+std::vector<Location>::iterator location(Config& config, HttpRequest& req, std::vector<Server>::iterator server)
 {
 	unsigned long	length_location(0);
 	std::vector<Location>::iterator location = server->routes.end();
+	std::vector<Redirection>::iterator redirection_it;
 
+	(void)config;
 	for (std::vector<Location>::iterator location_it = server->routes.begin(); location_it != server->routes.end();location_it++)
 	{
 		if (req.url.find(location_it->target) != std::string::npos)
@@ -74,11 +77,26 @@ std::vector<Location>::iterator location(HttpRequest& req, std::vector<Server>::
 			}
 		}
 	}
+	if (location != server->routes.end() && !location->redirections.empty())
+	{
+		for (redirection_it = location->redirections.begin(); redirection_it != location->redirections.end(); redirection_it++)
+		{
+			size_t find_from = req.url.find(redirection_it->from);
+			size_t find_to = req.url.find(redirection_it->to);
+
+			if (find_from != std::string::npos && find_to == std::string::npos)
+			{
+				req.url = req.url.substr(0,find_from) + redirection_it->to + req.url.substr((find_from + redirection_it->from.length()),req.url.length());
+				break;
+			}
+		}
+	}
 	return (location);
 }
 
 std::string read_File(HttpResponse& response)
 {
+
 	std::ifstream file;
 	std::string res = "";
 	std::stringstream hex;
@@ -89,7 +107,7 @@ std::string read_File(HttpResponse& response)
 		file.seekg (0, file.end);
 		int length = file.tellg();
 		file.seekg (0, file.beg);
-		std::vector<char> buffer(length);
+		std::vector<char> buffer(BUFF_SIZE);
 
 		if (response.get_length == false)
 		{
@@ -98,11 +116,11 @@ std::string read_File(HttpResponse& response)
 		}
 		if (response.byte_reading < length)
 		{
-			// int chunkSize = std::min(BUFF_SIZE, length - byte_reading);
+			// int chunkSize = std::min(BUFF_SIZE, length - response.byte_reading);
 			int chunkSize = std::min(length, length - response.byte_reading);
 			hex << std::hex << chunkSize;
 			buffer.resize(chunkSize);
-			res += hex.str() + HTTP_DEL;
+			res += hex.str() + "\r\n";
 			file.seekg(response.byte_reading);
 			file.read(buffer.data(), chunkSize);
 			response.byte_reading += file.gcount();
@@ -120,8 +138,12 @@ std::string read_File(HttpResponse& response)
 			}
 			// if (file.gcount() == 0)
 			// {
-			// file.close();
-			// 	return ("finish_reading");
+				// hex.str("");
+				// chunkSize = 0;
+				// hex << std::hex << chunkSize;
+				// response.finish_reading = true;
+				// res += hex.str() + HTTP_DEL + HTTP_DEL;
+				// file.close();
 			// }
 		}
 		return (res);
@@ -189,7 +211,7 @@ void init_response(Config& config, HttpResponse& response, HttpRequest& request,
 	response.get_length = false;
 	response.finish_reading = false;
 	response.server_it = server(config, response.request);
-	response.location_it = location(response.request, response.server_it);
+	response.location_it = location(config, response.request, response.server_it);
 }
 
 void fill_response(int status_code, HttpResponse& response)
@@ -198,15 +220,23 @@ void fill_response(int status_code, HttpResponse& response)
 	response.code = status_code;
 	response.reason_phrase = get_reason_phase(status_code);
 	response.headers["Connection"] = "keep-alive";
-	response.headers["Content-Type"] = get_content_type(response.request);
+	response.headers["Content-Type"] = get_content_type(response.path_file);
 }
 
-void get_path(HttpResponse& response)
+int get_path(Config config, HttpResponse& response)
 {
 	if (!response.location_it->dir.empty())
+	{
 		response.path_file = response.location_it->dir + response.request.url.substr(response.location_it->target.length(), response.request.url.length());
-	else if (!response.server_it->root.empty())
+		return (1);
+	}
+	if (!response.server_it->root.empty())
+	{
 		response.path_file = response.server_it->root + response.request.url.substr(response.location_it->target.length(), response.request.url.length());
+		return (1);
+	}
+	ft_send_error(404, config, response);
+	return (0);
 }
 
 std::string	get_reason_phase(int status_code)
@@ -214,6 +244,7 @@ std::string	get_reason_phase(int status_code)
 	std::map<int, std::string> reason_phase;
 
 	reason_phase[301] = "Moved Permanently"; 
+	reason_phase[302] = "Found"; 
 	reason_phase[400] = "Bad Request";
 	reason_phase[403] = "403 Forbidden";
 	reason_phase[404] = "Not Found";
@@ -238,4 +269,37 @@ std::string	ft_tostring(int nbr)
 	if (nbr > 0)
 		str.insert(0,1, static_cast<char>(nbr+ '0'));
 	return (str);
+}
+
+int	response_redirect(HttpResponse& response, Config& config)
+{
+	std::string type_rep;
+	std::string	response_buffer;
+
+	response.path_file = response.location_it->creturn.to;
+	type_rep = type_repo(response.path_file);
+	if (type_rep == "is_file")
+	{
+		if (response.location_it->cgi.empty())
+		{
+			response_Http_Request(200, config, response);
+			return (1);
+		}
+	}
+	else if (type_rep == "is_directory")
+	{
+		if (response_Http_Request(301,config, response))
+			return (1);
+	}
+	else
+	{
+		if (response.location_it->creturn.code)
+			fill_response(response.location_it->creturn.code, response);
+		else
+			fill_response(302, response);
+		response.headers["location"] = response.location_it->creturn.to;
+		response_buffer = generate_http_response(response);
+		send(response.fd, response_buffer.c_str(), response_buffer.size(), 0);
+	}
+	return (0);
 }
