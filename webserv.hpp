@@ -23,7 +23,7 @@
 
 #define BACKLOG_SIZE 32
 #define HTTP_DEL "\r\n"
-#define BUFF_SIZE 1024
+#define BUFF_SIZE 8419815
 // #define assert(cond) if (!(cond)) \
 // die("assertion failed: " #cond);
 
@@ -66,13 +66,6 @@ class HttpResponse {
 		HttpRequest request;
 		int byte_reading;
 		int	fd;
-		// std::ifstream	open_file()
-		// {
-		// 	std::ifstream file;
-		// 	file.open(path_file, std::ifstream::binary);
-		// 	return (file);
-		// }
-		// std::ifstream file;
 };
 
 void die(std::string msg);
@@ -105,7 +98,7 @@ int				ft_atoi(std::string s);
 int				response_get(Config& config, HttpResponse& response);
 std::string get_content_type(std::string path);
 std::string		type_repo(std::string path);
-std::string		content_dir(std::string dir, std::vector<std::string>& content);
+std::string		content_dir(std::string dir,HttpResponse& response, std::vector<std::string>& content);
 int				res_content_dir(int status_code, Config& config, HttpResponse& response);
 std::string		res_content_file(int status_code, HttpRequest& request, Config& config, HttpResponse& response, std::string path);
 std::string		read_File(HttpResponse& response);
@@ -117,6 +110,12 @@ std::string		get_reason_phase(int status_code);
 std::string		ft_tostring(int nbr);
 int				response_redirect(HttpResponse& response, Config& config);
 int response_Http_Request(int status_code , Config& config, HttpResponse& response);
+std::string	generate_filename();
+int response_post(Config& config, HttpResponse& response);
+void	add_extention(std::string& filename,HttpResponse& response);
+void	upload_exist(Config& config, HttpResponse& response, std::string& upload_path);
+void	upload_not_exist(Config& config, HttpResponse& response);
+int response_delete(Config& config, HttpResponse& response);
 // int			check_req_well_formed(int fd,Config& config, std::map<int,HttpResponse>& responses);
 // std::string	read_File(std::map<int,HttpResponse>& responses, int fd );
 // void			response_get(int fd, Config& config, std::map<int,HttpResponse>& responses);

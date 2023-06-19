@@ -25,9 +25,14 @@ todo:
 
 ////////////////////////////////////////////////////////////////////
 
-if method = Get => ignore the body
-handel transfer encoding = chunked
-add client_max_body_size 10M
+=> if method = Get => ignore the body
+=> handel transfer encoding = chunked 
+=> add client_max_body_size 10M
+=> if file binary not work with content string
+=> add "upload_path path_dir" in config file
+=> if i have two same host => "Assertion failed: (bind(sock, (struct sockaddr *)&address, sizeof(address)) == 0), function spawn_servers, file main.cpp, line 34."
+"[1]    10020 abort      ./webserv webserv.conf "
 
-handel 301 rewrite
-handel 301 return
+////////////////////////////////////////////////////////////////////
+
+
