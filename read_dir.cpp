@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <dirent.h>
+#include <cstring>
 
 std::string content_dir(std::string dir,HttpResponse& response, std::vector<std::string>& content)
 {

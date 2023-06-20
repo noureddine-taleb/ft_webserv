@@ -5,6 +5,8 @@
 #endif
 #include "webserv.hpp"
 
+#define debug(msg) std::cerr << msg << __FILE__ << ":" << __LINE__;
+
 void die(std::string msg) {
 	perror(msg.c_str());
 	exit(1);
@@ -60,7 +62,56 @@ void accept_connection(int wfd, int server) {
 	std::cout << "--------- " << "connection received " << inet_ntoa(caddress.sin_addr) << ":" << ntohs(caddress.sin_port) << std::endl;
 }
 
+/**
+ * get and parse http request from fd
+ * @return:
+ * 0: success
+ * -1: connection is broken and should be closed
+ * -x: http status code
+*/
+int get_request(int fd, HttpRequest &request) {
+	int ret;
+	char buffer[255];
+	std::string	http_rem;
+	bool done;
 
+	while (1) {
+		done = false;
+		if ((ret = recv(fd, buffer, sizeof(buffer) - 1, 0)) < 0)
+			return -1;
+		if (ret == 0) {
+			debug("recv == 0\n");
+			return -1;
+		}
+		buffer[ret] = 0;
+		http_rem += buffer;
+		int parsed = parse_partial_http_request(http_rem, request, &done);
+		if (parsed < 0)
+			return parsed;
+		http_rem.erase(0, parsed);
+		if (done)
+			break;
+	}
+	if (http_rem.length())
+		debug("http_rem still contains data\n");
+	return 0;
+}
+
+int check_request_handler(HttpRequest &request) {
+	std::vector<Server>::iterator server_it;
+	std::vector<Location>::iterator location_it;
+
+	server_it = server(config, request);
+	location_it = location(config, request, server_it);
+
+	if (location_it == server_it->routes.end())
+		return -404;
+
+	if (std::find(location_it->methods.begin(), location_it->methods.end(), request.method) == location_it->methods.end())
+		return -405;
+
+	return 0;
+}
 ////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char **argv) {
 	if (argc != 2)
@@ -78,53 +129,40 @@ int main(int argc, char **argv) {
 	while (1) {
 		int fd = watchlist_wait_fd(wfd);
 
+		assert(fd >= 0);
 		if (fd <= max_server_fd) {
 			accept_connection(wfd, fd);
 			continue;
 		}
 
-		std::string	request_buffer;
-		HttpRequest	request;
-
 		int							status_code;
+		HttpRequest					request;
 		HttpResponse				response;
 		std::string					response_buffer;
 		std::string					content_length;
 		std::map<int, HttpResponse>::iterator clients_it = clients.find(fd);
+		
+		status_code = get_request(fd, request);
 
-		while (1) {
-			char buffer[255];
-			// std::cout << "################ " << std::endl;
-			if ((ret = recv(fd, buffer, sizeof buffer, 0)) < 0)
+		if (status_code < 0) {
+			if (status_code == -1)
 				goto close_socket;
-			buffer[ret] = 0;
-			request_buffer += buffer;
-			if (ret != sizeof buffer)
-				break;
+			goto error_response;
 		}
 
-		if (request_buffer.length() == 0)
-			goto close_socket;
-		else
-			std::cout << "--------- request received"<< std::endl;
+		// request parsed
+		// todo: check client_max_body
+		status_code = check_request_handler(request);
 
-		if (parse_http_request(request_buffer, request) < 0)
-			status_code = 400;
-		else
-		{
-			response.old_url = request.url;
-			status_code = check_req_line_headers(config, request);
-		}
-		// std::cout << "status_code " << status_code << std::endl;
-		// status_code = parse_http_request(config, request_buffer, request);
-		// if (status_code != 1 || status_code != 2 || status_code != 3)
-		// {
-		// 	response_Http_Request_error(status_code, config, response);
-		// 	response_buffer = generate_http_response(response);
-		// 	response_buffer += response.content;
-		// 	send(fd, response_buffer.c_str(), response_buffer.length(), 0) ;
-		// }
+		if (status_code < 0)
+			goto error_response;
+
+		std::cout << "--------- handleable request received"<< std::endl;
+
 		////////////////////////////////////////////////////////////////////////////////////////
+		response.old_url = request.url;
+		response.version = request.version;
+
 		std::cout << "\033[32m"  << "method: " << request.method<< "\033[0m" << std::endl;
 		std::cout << "\033[32m"  << "url: " << request.url<< "\033[0m" << std::endl;
 		std::cout << "\033[32m"  << "version: " << request.version << "\033[0m" << std::endl;
@@ -134,12 +172,12 @@ int main(int argc, char **argv) {
 		///////////////////////////////////////////////////////////////////////////////////////////
 		if (clients.empty() || clients_it == clients.end())
 		{
-			
 			init_response(config, response, request, fd);
-			if (status_code == 1)
+			if (request.method == "GET")
 			{
 				if (response_get(config, response))
 				{
+					std::cout << "version --" << response.version << std::endl;
 					content_length = read_File(response);
 					if (content_length == "404")
 					{
@@ -163,26 +201,16 @@ int main(int argc, char **argv) {
 				}
 				else
 					goto close_socket;
-				// else
-				// {
-				// 	ft_send_error(status_code, config, response);
-				// 	goto close_socket;
-				// }
 			}
-			else if (status_code == 2)
+			else if (request.method == "POST")
 			{
 				if(!response_post(config, response))
 					goto close_socket;
 			}
-			else if (status_code == 3)
+			else if (request.method == "DELETE")
 			{
 				if(!response_delete(config, response))
 					goto close_socket;
-			}
-			else
-			{
-				ft_send_error(status_code, config, response);
-				goto close_socket;
 			}
 			clients[fd] = response;
 		}
@@ -192,6 +220,10 @@ int main(int argc, char **argv) {
 			send(fd, clients[fd].content.c_str(), clients[fd].content.length(), 0);
 		}
 		continue;
+
+error_response:
+			std::cout << "--------- bad request"<< std::endl;
+			ft_send_error(-status_code, config, response);
 close_socket:
 			std::cout << "--------- invalid request: close socket"<< std::endl;
 			clients.erase(fd);
