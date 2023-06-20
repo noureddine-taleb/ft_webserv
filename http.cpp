@@ -110,30 +110,74 @@
 // 	[599] = "Network connect timeout error",
 // };
 
-int parse_http_request(std::string req_str, HttpRequest &req) {
-	if (req_str.length() == 0 || req_str.find(HTTP_DEL HTTP_DEL) == std::string::npos)
-		return -1;
-    std::vector<std::string> vec = split(req_str, HTTP_DEL);
-    std::vector<std::string> headv = split(vec[0], " ");
-	size_t content_off = 0;
+enum {
+	BadRequest = 400,
+	RequestURITooLong = 414,
+	MethodNotAllowed = 405,
+	NotImplemented = 501,
+};
 
-	req.method = headv[0];
-	req.url = headv[1];
-	req.version = headv[2];
-	content_off = req_str.find(HTTP_DEL HTTP_DEL) + sizeof(HTTP_DEL HTTP_DEL) - 1;
-
-	vec.erase(vec.begin());
-
-    for (size_t i = 0; i < vec.size(); i++) {
-		std::string line = vec[i];
-		if (line == "") // end of headers
-			break;
-   		std::vector<std::string> headerv = split(line, ":", 1);
-		req.headers[headerv[0]] = headerv[1];
-	}
-	req.content = req_str.substr(content_off);
-	return 0;
+int http_req_valid(HttpRequest &request) {
+	return (request.method.length() && request.url.length() && request.version.length());
 }
+
+int parse_partial_http_request(std::string partial_req, HttpRequest &request) {
+	if (!request.__http_headers_end && partial_req.find(HTTP_DEL) == std::string::npos)
+		return 0;
+#define HTTP_DEL_LEN (sizeof(HTTP_DEL) - 1)
+
+	// parse http header
+	if (!request.__http_top_header_parsed) {
+		std::string http_line = partial_req.substr(0, partial_req.find(HTTP_DEL));
+		std::vector<std::string> http_headerv = split(http_line, " ");
+		if (http_headerv.size() != 3)
+			return -BadRequest;
+
+		request.method = http_headerv[0];
+		request.url = http_headerv[1];
+		request.version = http_headerv[2];
+
+		if (request.method != "GET" || request.method != "POST" || request.method != "DELETE")
+			return -MethodNotAllowed;
+		if (request.url.find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%") != std::string::npos)
+			return -BadRequest;
+		if (request.url.length() > 2048)
+			return (-RequestURITooLong);
+		if (request.version != "HTTP/1.1")
+			return -BadRequest;
+		request.__http_top_header_parsed = true;
+		return http_line.length() + HTTP_DEL_LEN;
+	} else if (!request.__http_headers_end) {
+		std::string http_line = partial_req.substr(0, partial_req.find(HTTP_DEL));
+		// end of headers
+		if (http_line.length() == 0) {
+			if (!request.headers.count("Host"))
+				return -BadRequest;
+			// for post at least one header should be specified: Transfer-Encoding or Content-Length
+			if (request.method == "POST" && !request.headers.count("Transfer-Encoding") && !request.headers.count("Content-Length"))
+				return -BadRequest;
+			request.__http_headers_end = true;
+			return HTTP_DEL_LEN;
+		}
+		std::vector<std::string> headerv = split(http_line, ":", 1);
+		if (headerv.size() != 2)
+			return -BadRequest;
+		headerv[0] = trim(headerv[0]);
+		headerv[1] = trim(headerv[1]);
+		if (headerv[0].length() == 0 || headerv[1].length() == 0)
+			return -BadRequest;
+		if (headerv[0] == "Transfer-Encoding" && headerv[1] != "chunked")
+			return -NotImplemented;
+		request.headers[headerv[0]] = headerv[1];
+		return http_line.length() + HTTP_DEL_LEN;
+	} else {
+		if (request.method != "POST")
+			return -BadRequest;
+		request.content += partial_req;
+		return partial_req.length();
+	}
+}
+
 
 // std::string generate_http_response(HttpResponse &res) {
 // 	std::stringstream res_str;

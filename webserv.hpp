@@ -41,11 +41,16 @@
 
 class HttpRequest {
 	public:
+		HttpRequest() : method(""), url(""), version(""), content(""), __http_top_header_parsed(false), __http_headers_end(false) {}
 		std::string method;
 		std::string url;
 		std::string version;
 		std::map<std::string, std::string> headers;
 		std::string content;
+
+		// pcb stuff
+		bool __http_top_header_parsed;
+		bool __http_headers_end;
 };
 
 class HttpResponse {
@@ -73,8 +78,10 @@ void die(std::string msg);
 // http
 std::vector<std::string> split(std::string s, std::string delimiter, unsigned int max_splits = -1);
 int parse_http_request(std::string req_str, HttpRequest &req);
+int parse_partial_http_request(std::string req_str, HttpRequest &req);
 // int parse_http_request(Config config, std::string req_str, HttpRequest &req);
 std::string generate_http_response(HttpResponse &res);
+int http_req_valid(HttpRequest &req);
 
 // epoll
 int init_watchlist();

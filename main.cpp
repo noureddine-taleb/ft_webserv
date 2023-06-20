@@ -78,12 +78,13 @@ int main(int argc, char **argv) {
 	while (1) {
 		int fd = watchlist_wait_fd(wfd);
 
+		assert(fd >= 0);
 		if (fd <= max_server_fd) {
 			accept_connection(wfd, fd);
 			continue;
 		}
 
-		std::string	request_buffer;
+		std::string	http_rem;
 		HttpRequest	request;
 
 		int							status_code;
@@ -91,30 +92,54 @@ int main(int argc, char **argv) {
 		std::string					response_buffer;
 		std::string					content_length;
 		std::map<int, HttpResponse>::iterator clients_it = clients.find(fd);
-
+		std::vector<Server>::iterator server_it;
+		std::vector<Location>::iterator location_it;
+		
 		while (1) {
 			char buffer[255];
-			// std::cout << "################ " << std::endl;
-			if ((ret = recv(fd, buffer, sizeof buffer, 0)) < 0)
+			if ((ret = recv(fd, buffer, sizeof(buffer) - 1, 0)) < 0)
 				goto close_socket;
-			buffer[ret] = 0;
-			request_buffer += buffer;
-			if (ret != sizeof buffer)
+			if (ret == 0)
 				break;
+			buffer[ret] = 0;
+			http_rem += buffer;
+			int parsed = parse_partial_http_request(http_rem, request);
+			if (parsed < 0) {
+				status_code = -parsed;
+				goto process;
+			}
+			http_rem.erase(0, parsed);
 		}
 
-		if (request_buffer.length() == 0)
-			goto close_socket;
-		else
-			std::cout << "--------- request received"<< std::endl;
-
-		if (parse_http_request(request_buffer, request) < 0)
+		if (http_rem.length() || !http_req_valid(request)) {
 			status_code = 400;
-		else
-		{
-			response.old_url = request.url;
-			status_code = check_req_line_headers(config, request);
+			goto process;
 		}
+
+		// request parsed
+		// todo: check client_max_body
+		server_it = server(config, request);
+		location_it = location(config, request, server_it);
+
+		if (location_it == server_it->routes.end()) {
+			status_code = 404;
+			goto process;
+		}
+
+		if (std::find(location_it->methods.begin(), location_it->methods.end(), request.method) == location_it->methods.end()) {
+			status_code = 405;
+			goto process;
+		}
+
+		std::cout << "--------- valid request received"<< std::endl;
+
+		if (request.method == "GET")
+			status_code = 1;
+		if (request.method == "POST")
+			status_code = 2;
+		if (request.method == "DELETE")
+			status_code = 3;
+
 		// std::cout << "status_code " << status_code << std::endl;
 		// status_code = parse_http_request(config, request_buffer, request);
 		// if (status_code != 1 || status_code != 2 || status_code != 3)
@@ -125,6 +150,10 @@ int main(int argc, char **argv) {
 		// 	send(fd, response_buffer.c_str(), response_buffer.length(), 0) ;
 		// }
 		////////////////////////////////////////////////////////////////////////////////////////
+process:
+		response.old_url = request.url;
+		response.version = request.version;
+
 		std::cout << "\033[32m"  << "method: " << request.method<< "\033[0m" << std::endl;
 		std::cout << "\033[32m"  << "url: " << request.url<< "\033[0m" << std::endl;
 		std::cout << "\033[32m"  << "version: " << request.version << "\033[0m" << std::endl;
@@ -134,12 +163,12 @@ int main(int argc, char **argv) {
 		///////////////////////////////////////////////////////////////////////////////////////////
 		if (clients.empty() || clients_it == clients.end())
 		{
-			
 			init_response(config, response, request, fd);
 			if (status_code == 1)
 			{
 				if (response_get(config, response))
 				{
+					std::cout << "version --" << response.version << std::endl;
 					content_length = read_File(response);
 					if (content_length == "404")
 					{
@@ -192,6 +221,10 @@ int main(int argc, char **argv) {
 			send(fd, clients[fd].content.c_str(), clients[fd].content.length(), 0);
 		}
 		continue;
+
+bad_request:
+			std::cout << "--------- bad request"<< std::endl;
+			exit(1);
 close_socket:
 			std::cout << "--------- invalid request: close socket"<< std::endl;
 			clients.erase(fd);
