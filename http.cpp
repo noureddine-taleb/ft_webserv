@@ -137,7 +137,7 @@ int parse_partial_http_request(std::string partial_req, HttpRequest &request) {
 		request.url = http_headerv[1];
 		request.version = http_headerv[2];
 
-		if (request.method != "GET" || request.method != "POST" || request.method != "DELETE")
+		if (request.method != "GET" && request.method != "POST" && request.method != "DELETE")
 			return -MethodNotAllowed;
 		if (request.url.find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%") != std::string::npos)
 			return -BadRequest;
