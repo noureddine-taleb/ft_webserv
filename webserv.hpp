@@ -23,6 +23,7 @@
 
 #define BACKLOG_SIZE 32
 #define HTTP_DEL "\r\n"
+#define HTTP_DEL_LEN (sizeof(HTTP_DEL) - 1)
 #define BUFF_SIZE 8419815
 // #define assert(cond) if (!(cond)) \
 // die("assertion failed: " #cond);
@@ -78,7 +79,7 @@ void die(std::string msg);
 // http
 std::vector<std::string> split(std::string s, std::string delimiter, unsigned int max_splits = -1);
 int parse_http_request(std::string req_str, HttpRequest &req);
-int parse_partial_http_request(std::string req_str, HttpRequest &req);
+int parse_partial_http_request(std::string req_str, HttpRequest &req, bool *done);
 // int parse_http_request(Config config, std::string req_str, HttpRequest &req);
 std::string generate_http_response(HttpResponse &res);
 int http_req_valid(HttpRequest &req);

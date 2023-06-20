@@ -97,18 +97,21 @@ int main(int argc, char **argv) {
 		
 		while (1) {
 			char buffer[255];
+			bool done = false;
 			if ((ret = recv(fd, buffer, sizeof(buffer) - 1, 0)) < 0)
 				goto close_socket;
 			if (ret == 0)
 				break;
 			buffer[ret] = 0;
 			http_rem += buffer;
-			int parsed = parse_partial_http_request(http_rem, request);
+			int parsed = parse_partial_http_request(http_rem, request, &done);
 			if (parsed < 0) {
 				status_code = -parsed;
 				goto process;
 			}
 			http_rem.erase(0, parsed);
+			if (done)
+				break;
 		}
 
 		if (http_rem.length() || !http_req_valid(request)) {

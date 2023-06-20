@@ -6,6 +6,7 @@
 #include <dirent.h>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 
 
 void	del_content_dir(Config config, HttpResponse& response, std::string& path_dir)
