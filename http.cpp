@@ -117,10 +117,6 @@ enum {
 	NotImplemented = 501,
 };
 
-int http_req_valid(HttpRequest &request) {
-	return (request.method.length() && request.url.length() && request.version.length());
-}
-
 int parse_partial_http_request(std::string partial_req, HttpRequest &request, bool *done) {
 	// parse http header
 	int count = 0;
@@ -145,6 +141,7 @@ int parse_partial_http_request(std::string partial_req, HttpRequest &request, bo
 				return -BadRequest;
 			if (request.url.length() > 2048)
 				return (-RequestURITooLong);
+			// todo: maybe other versions should be supported
 			if (request.version != "HTTP/1.1")
 				return -BadRequest;
 			request.__http_top_header_parsed = true;
