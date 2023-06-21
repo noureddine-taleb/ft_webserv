@@ -3,6 +3,7 @@
 #include <map>
 #include <sstream>
 #include <vector>
+#include <cstring>
 #include "webserv.hpp"
 
 // request
@@ -117,16 +118,23 @@ enum {
 	NotImplemented = 501,
 };
 
-int parse_partial_http_request(std::string partial_req, HttpRequest &request, bool *done) {
+std::vector<char>::iterator find(std::string str, std::vector<char> vec) {
+	void *pos = memmem(&vec[0], vec.size(), str.c_str(), str.length());
+
+	if (pos != NULL)
+		return vec.begin() + ((char *)pos - &vec[0]);
+	return vec.end();
+}
+
+int parse_partial_http_request(std::vector<char> &partial_req, HttpRequest &request, bool *done) {
 	// parse http header
-	int count = 0;
 	int parsed = 0;
-	for (; partial_req.length(); count += parsed, partial_req.erase(0, parsed)) {
+	for (; partial_req.size(); partial_req.erase(partial_req.begin(), partial_req.begin() + parsed)) {
 		parsed = 0;
-		if (!request.__http_headers_end && partial_req.find(HTTP_DEL) == std::string::npos)
+		if (!request.__http_headers_end && find(HTTP_DEL, partial_req) == partial_req.end())
 			break;
 		if (!request.__http_top_header_parsed) {
-			std::string http_line = partial_req.substr(0, partial_req.find(HTTP_DEL));
+			std::string http_line (partial_req.begin(), find(HTTP_DEL, partial_req));
 			std::vector<std::string> http_headerv = split(http_line, " ");
 			if (http_headerv.size() != 3)
 				return -BadRequest;
@@ -147,7 +155,7 @@ int parse_partial_http_request(std::string partial_req, HttpRequest &request, bo
 			request.__http_top_header_parsed = true;
 			parsed += http_line.length() + HTTP_DEL_LEN;
 		} else if (!request.__http_headers_end) {
-			std::string http_line = partial_req.substr(0, partial_req.find(HTTP_DEL));
+			std::string http_line (partial_req.begin(), find(HTTP_DEL, partial_req));
 			// end of headers
 			if (http_line.length() == 0) {
 				if (!request.headers.count("Host"))
@@ -174,13 +182,13 @@ int parse_partial_http_request(std::string partial_req, HttpRequest &request, bo
 			// todo: support chunked
 			if (request.method != "POST")
 				return -BadRequest;
-			request.content += partial_req;
-			parsed += partial_req.length();
+			request.content.insert(request.content.end(), partial_req.begin(), partial_req.end());
+			parsed += partial_req.size();
 		}
 	}
 	*done = (request.__http_headers_end && (request.method == "GET" || request.method == "DELETE"))
-			|| (request.__http_headers_end && request.method == "POST" && std::stoi(request.headers["Content-Length"]) <= request.content.length() );
-	return count;
+			|| (request.__http_headers_end && request.method == "POST" && std::stoi(request.headers["Content-Length"]) <= request.content.size() );
+	return 0;
 }
 
 

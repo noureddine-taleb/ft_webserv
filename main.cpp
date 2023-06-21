@@ -4,6 +4,7 @@
 #include <sys/epoll.h>
 #endif
 #include "webserv.hpp"
+#include <cstring>
 
 #define debug(msg) std::cerr << msg << __FILE__ << ":" << __LINE__;
 
@@ -72,7 +73,7 @@ void accept_connection(int wfd, int server) {
 int get_request(int fd, HttpRequest &request) {
 	int ret;
 	char buffer[255];
-	std::string	http_rem;
+	std::vector<char>	http_rem;
 	bool done;
 
 	while (1) {
@@ -83,16 +84,17 @@ int get_request(int fd, HttpRequest &request) {
 			debug("recv == 0\n");
 			return -1;
 		}
-		buffer[ret] = 0;
-		http_rem += buffer;
+		int last_size = http_rem.size();
+		http_rem.resize(last_size + ret);
+		memcpy(&http_rem[last_size], buffer, ret);
 		int parsed = parse_partial_http_request(http_rem, request, &done);
 		if (parsed < 0)
 			return parsed;
-		http_rem.erase(0, parsed);
+		// http_rem.erase(http_rem.begin(), http_rem.begin() + parsed);
 		if (done)
 			break;
 	}
-	if (http_rem.length())
+	if (http_rem.size())
 		debug("http_rem still contains data\n");
 	return 0;
 }
@@ -191,10 +193,11 @@ int main(int argc, char **argv) {
 						response_buffer = generate_http_response(response);
 						// std::cout << "+++++++++++> " << response_buffer << std::endl;
 						send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
-						response.content = read_File(response);
+						std::string str = read_File(response);
+						response.content = std::vector<char>(str.begin(), str.end());
 						if (response.finish_reading)
 						{
-							send(response.fd, response.content.c_str(), response.content.length(), 0);
+							send(response.fd, response.content.data(), response.content.size(), 0);
 							goto close_socket;
 						}
 					}
@@ -216,8 +219,9 @@ int main(int argc, char **argv) {
 		}
 		else
 		{
-			clients[fd].content = read_File(clients[fd]);
-			send(fd, clients[fd].content.c_str(), clients[fd].content.length(), 0);
+			std::string str = read_File(clients[fd]);
+			clients[fd].content = std::vector<char>(str.begin(), str.end());
+			send(fd, clients[fd].content.data(), clients[fd].content.size(), 0);
 		}
 		continue;
 

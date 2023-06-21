@@ -42,12 +42,12 @@
 
 class HttpRequest {
 	public:
-		HttpRequest() : method(""), url(""), version(""), content(""), __http_top_header_parsed(false), __http_headers_end(false) {}
+		HttpRequest() : method(""), url(""), version(""), __http_top_header_parsed(false), __http_headers_end(false) {}
 		std::string method;
 		std::string url;
 		std::string version;
 		std::map<std::string, std::string> headers;
-		std::string content;
+		std::vector<char> content;
 
 		// pcb stuff
 		bool __http_top_header_parsed;
@@ -61,7 +61,7 @@ class HttpResponse {
 		int code;
 		std::string reason_phrase;
 		std::map<std::string, std::string> headers;
-		std::string content;
+		std::vector<char> content;
 		std::vector<Server>::iterator server_it;
 		std::vector<Location>::iterator location_it;
 		std::string    path_file;
@@ -79,7 +79,7 @@ void die(std::string msg);
 // http
 std::vector<std::string> split(std::string s, std::string delimiter, unsigned int max_splits = -1);
 int parse_http_request(std::string req_str, HttpRequest &req);
-int parse_partial_http_request(std::string req_str, HttpRequest &req, bool *done);
+int parse_partial_http_request(std::vector<char> req_str, HttpRequest &req, bool *done);
 // int parse_http_request(Config config, std::string req_str, HttpRequest &req);
 std::string generate_http_response(HttpResponse &res);
 int http_req_valid(HttpRequest &req);
