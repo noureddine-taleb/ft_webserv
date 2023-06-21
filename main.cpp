@@ -4,6 +4,7 @@
 #include <sys/epoll.h>
 #endif
 #include "webserv.hpp"
+#include <cstring>
 
 #define debug(msg) std::cerr << msg << __FILE__ << ":" << __LINE__;
 
@@ -73,7 +74,7 @@ void accept_connection(int wfd, int server) {
 int get_request(int fd, HttpRequest &request) {
 	int ret;
 	char buffer[255];
-	std::string	http_rem;
+	std::vector<char>	http_rem;
 	bool done;
 
 	while (1) {
@@ -84,16 +85,17 @@ int get_request(int fd, HttpRequest &request) {
 			debug("recv == 0\n");
 			return -1;
 		}
-		buffer[ret] = 0;
-		http_rem += buffer;
+		int last_size = http_rem.size();
+		http_rem.resize(last_size + ret);
+		memcpy(&http_rem[last_size], buffer, ret);
 		int parsed = parse_partial_http_request(http_rem, request, &done);
 		if (parsed < 0)
 			return parsed;
-		http_rem.erase(0, parsed);
+		// http_rem.erase(http_rem.begin(), http_rem.begin() + parsed);
 		if (done)
 			break;
 	}
-	if (http_rem.length())
+	if (http_rem.size())
 		debug("http_rem still contains data\n");
 	return 0;
 }
