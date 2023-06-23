@@ -74,6 +74,8 @@ class HttpResponse {
 		int	fd;
 };
 
+extern Config config;
+
 void die(std::string msg);
 
 // http
@@ -124,9 +126,8 @@ void	add_extention(std::string& filename,HttpResponse& response);
 void	upload_exist(Config& config, HttpResponse& response, std::string& upload_path);
 void	upload_not_exist(Config& config, HttpResponse& response);
 int response_delete(Config& config, HttpResponse& response);
-// int			check_req_well_formed(int fd,Config& config, std::map<int,HttpResponse>& responses);
-// std::string	read_File(std::map<int,HttpResponse>& responses, int fd );
-// void			response_get(int fd, Config& config, std::map<int,HttpResponse>& responses);
+int continue_previous_response(HttpResponse &response);
+int new_request(HttpRequest &request);
 
 
 #endif // WEBSERV
