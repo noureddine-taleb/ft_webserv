@@ -15,10 +15,11 @@ void die(std::string msg) {
 Config config;
 int max_server_fd;
 // todo: move these functions into a separate files
+// todo: connection: keep-alive
 /**
  * spawn servers and add their sockets to watchlist
  * wait for events (connections, requests) and handle them serially
- * 
+ * todo: multiple servers could use the same port
 */
 void spawn_servers(int wfd) {
 	for (size_t i = 0; i < config.servers.size(); i++) {

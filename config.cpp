@@ -1,6 +1,8 @@
 #include "webserv.hpp"
 #include <iostream>
 #include <fstream>
+#include <fcntl.h>
+#include <unistd.h>
 
 extern Config config;
 
@@ -55,6 +57,9 @@ void parse_location(std::vector<std::string> &lines, Location &location, uint32_
 		} else if (lines[i].substr(0, 4) == "dir:") {
 			value = lines[i].substr(4), value = trim(value);
 			location.dir = value;
+			int fd = open(value.c_str(), O_RDONLY);
+			if (fd < 0)
+				die("config: dir is not accessible\n");
 		} else if (lines[i].substr(0, 6) == "index:") {
 			value = lines[i].substr(6), value = trim(value);
 			location.index = value;
