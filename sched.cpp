@@ -8,43 +8,47 @@
  * -1: map is empty
  * else: fd
 */
-int sched_get_starved(std::map<int, SchedulableEntity> &tasks) {
+int sched_get_starved(std::map<int, SchedulableEntity *> &tasks) {
 	int last = 0;
 	int fd;
 	if (tasks.empty())
 		return Q_EMPTY;
-	for (std::map<int, SchedulableEntity>::iterator it = tasks.begin();
+	for (std::map<int, SchedulableEntity *>::iterator it = tasks.begin();
 			it != tasks.end();
 			it++
 		) {
-			if (tasks[it->first].index < last) {
-				last = tasks[it->first].index;
+			if (tasks[it->first]->index < last) {
+				last = tasks[it->first]->index;
 				fd = it->first;
 			}
 		}
 	return fd;
 }
 
-int newest_index(std::map<int, SchedulableEntity> &tasks) {
+int newest_index(std::map<int, SchedulableEntity *> &tasks) {
 	if (tasks.empty())
         return 0;
 	int first = 0;
-    for (std::map<int, SchedulableEntity>::iterator it = tasks.begin();
+    for (std::map<int, SchedulableEntity *>::iterator it = tasks.begin();
 			it != tasks.end();
 			it++
     ) {
-			if (tasks[it->first].index > first) {
-				first = tasks[it->first].index;
+			if (tasks[it->first]->index > first) {
+				first = tasks[it->first]->index;
 			}
     }
     return first;
 }
 
-void sched_queue_task(std::map<int, SchedulableEntity> &tasks, int fd, SchedulableEntity task) {
-    task.index = newest_index(tasks) + 1;
+void sched_queue_task(std::map<int, SchedulableEntity *> &tasks, int fd, SchedulableEntity *task) {
+	sched_unqueue_task(tasks, fd);
+	task->index = newest_index(tasks) + 1;
     tasks[fd] = task;
 }
 
-void sched_unqueue_task(std::map<int, SchedulableEntity> &tasks, int fd) {
-    tasks.erase(fd);
+void sched_unqueue_task(std::map<int, SchedulableEntity *> &tasks, int fd) {
+    if (tasks.find(fd) != tasks.end()) {
+		delete tasks[fd];
+		tasks.erase(fd);
+	}
 }

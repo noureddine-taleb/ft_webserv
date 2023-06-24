@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
 	spawn_servers(wfd);
 
 	int									finished;
-	std::map<int, SchedulableEntity>	tasks;
+	std::map<int, SchedulableEntity *>	tasks;
 
 	while (1) {
 		int							status_code = 0;
@@ -133,11 +133,11 @@ int main(int argc, char **argv) {
 			if (fd == Q_EMPTY)
 				continue;
 
-			if (tasks[fd].type == REQUEST) {
-				request = *dynamic_cast<HttpRequest *>(&tasks[fd]); 
+			if (tasks[fd]->get_type() == REQUEST) {
+				request = *dynamic_cast<HttpRequest *>(tasks[fd]); 
 				goto request;
-			} else if (tasks[fd].type == RESPONSE) {
-				response = *dynamic_cast<HttpResponse *>(&tasks[fd]);
+			} else if (tasks[fd]->get_type() == RESPONSE) {
+				response = *dynamic_cast<HttpResponse *>(tasks[fd]);
 				goto response;
 			}
 		}
@@ -150,7 +150,7 @@ request:
 			goto close_socket;
 			break;
 		case REQ_TO_BE_CONT:
-			sched_queue_task(tasks, fd, request);
+			sched_queue_task(tasks, fd, new HttpRequest(request));
 			continue;
 		default:
 			sched_unqueue_task(tasks, fd);
@@ -162,7 +162,7 @@ response:
 			sched_unqueue_task(tasks, fd);
 			goto close_socket;
 		} else {
-			sched_queue_task(tasks, fd, response);
+			sched_queue_task(tasks, fd, new HttpResponse(response));
 		}
 
 		continue;

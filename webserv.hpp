@@ -13,6 +13,7 @@
 #include <cassert>
 #include <sys/stat.h>
 #include "config.hpp"
+#include "sched.hpp"
 #include <dirent.h>
 #include <fstream>
 #include <sstream>
@@ -60,6 +61,9 @@ class HttpRequest: public SchedulableEntity {
 		std::vector<char>	http_rem;
 		bool __http_top_header_parsed;
 		bool __http_headers_end;
+		enum SchedulableEntityTypes get_type() {
+			return REQUEST;
+		}
 };
 
 class HttpResponse: public SchedulableEntity {
@@ -80,6 +84,9 @@ class HttpResponse: public SchedulableEntity {
 		HttpRequest request;
 		int byte_reading;
 		int	fd;
+		enum SchedulableEntityTypes get_type() {
+			return RESPONSE;
+		}
 };
 
 void die(std::string msg);
