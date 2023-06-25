@@ -119,30 +119,6 @@ void parse_server(std::vector<std::string> &lines, Server &server, uint32_t &i) 
 			value = lines[i].substr(5), value = trim(value);
 			server.root = value;
 			i++;
-		} else if (lines[i].substr(0, 21) == "client_max_body_size:") {
-			std::string value = lines[i].substr(21), value = trim(value);
-			int factor = 1;
-			switch (value.back())
-			{
-			case 'k':
-				factor = 1024;
-				break;
-			case 'm':
-				factor = 1024 * 1024;
-				break;
-			case 'g':
-				factor = 1024 * 1024 * 1024;
-				break;
-			default:
-				break;
-			}
-			if (factor != 1)
-				value = std::string(value.begin(), value.end() - 1);
-			try {
-				server.client_max_body_size = std::stoi(value) * factor;
-			} catch (std::invalid_argument) {
-				die("invalid argument for client_max_body_size\n");
-			}
 		} else {
 			return;
 		}
@@ -175,6 +151,30 @@ void parse_config(std::string config_file) {
 			config.servers.push_back(server);
 		} else if (lines[i] == "default_error_pages:") {
 			parse_error_pages(lines, config.default_error_pages, ++i);
+		} else if (lines[i].substr(0, 21) == "client_max_body_size:") {
+			std::string value = lines[i].substr(21), value = trim(value);
+			int factor = 1;
+			switch (value.back())
+			{
+			case 'k':
+				factor = 1024;
+				break;
+			case 'm':
+				factor = 1024 * 1024;
+				break;
+			case 'g':
+				factor = 1024 * 1024 * 1024;
+				break;
+			default:
+				break;
+			}
+			if (factor != 1)
+				value = std::string(value.begin(), value.end() - 1);
+			try {
+				config.client_max_body_size = std::stoi(value) * factor;
+			} catch (std::invalid_argument) {
+				die("invalid argument for client_max_body_size\n");
+			}
 		} else
 			die("unknowen config in global scope ---" + lines[i]);
 	}

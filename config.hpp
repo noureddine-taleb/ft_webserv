@@ -45,20 +45,21 @@ class ErrorPage {
 #define M (1024 * 1024)
 class Server {
 	public:
-		Server(): ip("0.0.0.0"), port(0), root(""), __fd(-1), client_max_body_size(1 * M) {}
+		Server(): ip("0.0.0.0"), port(0), root(""), __fd(-1) {}
 		std::string ip;
 		int port;
 		std::string root;
 		std::vector<std::string> server_names;
 		std::vector<Location> routes;
 		std::vector<ErrorPage> error_pages;
-		long client_max_body_size;
 		int __fd;
 };
 
 class Config {
 	public:
+		Config(): client_max_body_size(1 * M) {}
 		std::vector<Server> servers;
 		std::vector<ErrorPage> default_error_pages;
+		long client_max_body_size;
 };
 #endif

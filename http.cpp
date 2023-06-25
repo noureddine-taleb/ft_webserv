@@ -116,6 +116,7 @@ enum {
 	RequestURITooLong = 414,
 	MethodNotAllowed = 405,
 	NotImplemented = 501,
+	RequestEntityTooLarge = 413
 };
 
 std::vector<char>::iterator find(std::string str, std::vector<char> vec) {
@@ -181,6 +182,8 @@ int parse_partial_http_request(std::vector<char> &partial_req, HttpRequest &requ
 					int size = std::stoi(headerv[1]);
 					if (size < 0)
 						return -BadRequest;
+					if (size > config.client_max_body_size)
+						return -RequestEntityTooLarge;
 				} catch(std::invalid_argument) {
 					return -BadRequest;
 				}
@@ -211,6 +214,8 @@ int parse_partial_http_request(std::vector<char> &partial_req, HttpRequest &requ
 				}
 				chunk = std::vector(chunk.begin(), chunk.begin() + size);
 				request.content.insert(request.content.end(), chunk.begin(), chunk.end());
+				if (request.content.size() > config.client_max_body_size)
+					return -RequestEntityTooLarge;
 				parsed += chunk_size.size() + HTTP_DEL_LEN + chunk.size() + HTTP_DEL_LEN;
 			} else {
 				int size = std::stoi(request.headers["Content-Length"]);
