@@ -25,13 +25,14 @@ class Return {
 
 class Location {
 	public:
-		Location(): dir(""), index(""), autoindex(false), target("/") {}
+		Location(): dir(""), index(""), autoindex(false), upload(false), target("/") {}
 		std::vector<std::string> methods;
 		std::vector<Redirection> redirections;
 		std::vector<CGI> cgi;
 		std::string dir;
 		std::string index;
 		bool autoindex;
+		bool upload;
 		std::string target;
 		Return creturn;
 };

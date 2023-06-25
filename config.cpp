@@ -71,6 +71,14 @@ void parse_location(std::vector<std::string> &lines, Location &location, uint32_
 				location.autoindex = false;
 			else
 				die("unknowen value for autoindex in location scope: " + value);
+		} else if (lines[i].substr(0, 7) == "upload:") {
+			value = lines[i].substr(7), value = trim(value);
+			if (value == "true")
+				location.upload = true;
+			else if (value == "false")
+				location.upload = false;
+			else
+				die("unknowen value for upload in location scope: " + value);
 		} else if (lines[i].substr(0, 7) == "return:") {
 			value = lines[i].substr(7), value = trim(value);
 			std::vector<std::string> parts = split(value, " ");
