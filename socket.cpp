@@ -85,10 +85,10 @@ int get_request(int fd, HttpRequest &request) {
 			debug("recv == 0\n");
 			return REQ_CONN_BROKEN;
 		}
-		int last_size = request.http_rem.size();
-		request.http_rem.resize(last_size + ret);
-		memcpy(&request.http_rem[last_size], buffer, ret);
-		int ret = parse_partial_http_request(request.http_rem, request, &done);
+		int last_size = request.http_buffer.size();
+		request.http_buffer.resize(last_size + ret);
+		memcpy(&request.http_buffer[last_size], buffer, ret);
+		int ret = parse_partial_http_request(request, &done);
 		if (ret < 0)
 			return -ret;
 		if (done)
@@ -97,7 +97,7 @@ int get_request(int fd, HttpRequest &request) {
 		if (iter >= max_iter)
 			return REQ_TO_BE_CONT;
 	}
-	if (request.http_rem.size())
-		debug("http_rem still contains data\n");
+	if (request.http_buffer.size())
+		debug("http_buffer still contains data\n");
 	return 0;
 }

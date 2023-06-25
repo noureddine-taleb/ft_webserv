@@ -33,9 +33,10 @@
 
 #define debug(msg) std::cerr << msg << __FILE__ << ":" << __LINE__;
 
-#define die(msg)			\
-	perror(std::string(msg).c_str());	\
-	exit(1);
+#define die(msg)	do {					\
+		perror(std::string(msg).c_str());	\
+		exit(1);							\
+	} while (0);
 
 // #define assert(cond) if (!(cond)) \
 // die("assertion failed: " #cond);
@@ -62,7 +63,7 @@ class HttpRequest: public SchedulableEntity {
 		std::vector<char> content;
 
 		// pcb stuff
-		std::vector<char>	http_rem;
+		std::vector<char>	http_buffer;
 		bool __http_top_header_parsed;
 		bool __http_headers_end;
 		enum SchedulableEntityTypes get_type() {
@@ -104,11 +105,8 @@ int get_request(int fd, HttpRequest &request);
 
 // http
 std::vector<std::string> split(std::string s, std::string delimiter, unsigned int max_splits = -1);
-int parse_http_request(std::string req_str, HttpRequest &req);
-int parse_partial_http_request(std::vector<char> req_str, HttpRequest &req, bool *done);
-// int parse_http_request(Config config, std::string req_str, HttpRequest &req);
+int parse_partial_http_request(HttpRequest &req, bool *done);
 std::string generate_http_response(HttpResponse &res);
-int http_req_valid(HttpRequest &req);
 
 // epoll
 int init_watchlist();
@@ -118,7 +116,6 @@ int watchlist_wait_fd(int efd);
 std::string trim(std::string s);
 void parse_config(std::string config_file);
 void dump_config(Config config);
-void handle_http_response(const HttpRequest &req, HttpResponse &res);
 //----------------------------------------------------------------------------
 
 std::vector<Server>::iterator server(Config& config, HttpRequest& request);

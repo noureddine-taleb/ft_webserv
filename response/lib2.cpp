@@ -1,5 +1,5 @@
-#include "webserv.hpp"
-#include "config.hpp"
+#include "../webserv.hpp"
+#include "../config.hpp"
 #include <iostream>
 
 int ft_atoi(std::string s) {

@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
     int wfd = init_watchlist();
 	spawn_servers(wfd);
 
-	int									finished;
+	int									finished = 0;
 	std::map<int, SchedulableEntity *>	tasks;
 
 	while (1) {
@@ -64,7 +64,7 @@ request:
 			break;
 		}
 response:
-		finished = send_response(fd, request, response, status_code);
+		// finished = send_response(fd, request, response, status_code);
 		if (finished) {
 			sched_unqueue_task(tasks, fd);
 			goto close_socket;

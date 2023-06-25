@@ -127,15 +127,15 @@ std::vector<char>::iterator find(std::string str, std::vector<char> vec) {
 	return vec.end();
 }
 
-int parse_partial_http_request(std::vector<char> &partial_req, HttpRequest &request, bool *done) {
+int parse_partial_http_request(HttpRequest &request, bool *done) {
 	// parse http header
 	int parsed = 0;
-	for (; partial_req.size(); partial_req.erase(partial_req.begin(), partial_req.begin() + parsed)) {
+	for (; request.http_buffer.size(); request.http_buffer.erase(request.http_buffer.begin(), request.http_buffer.begin() + parsed)) {
 		parsed = 0;
-		if (!request.__http_headers_end && find(HTTP_DEL, partial_req) == partial_req.end())
+		if (!request.__http_headers_end && find(HTTP_DEL, request.http_buffer) == request.http_buffer.end())
 			break;
 		if (!request.__http_top_header_parsed) {
-			std::string http_line (partial_req.begin(), find(HTTP_DEL, partial_req));
+			std::string http_line (request.http_buffer.begin(), find(HTTP_DEL, request.http_buffer));
 			std::vector<std::string> http_headerv = split(http_line, " ");
 			if (http_headerv.size() != 3)
 				return -BadRequest;
@@ -156,7 +156,7 @@ int parse_partial_http_request(std::vector<char> &partial_req, HttpRequest &requ
 			request.__http_top_header_parsed = true;
 			parsed += http_line.length() + HTTP_DEL_LEN;
 		} else if (!request.__http_headers_end) {
-			std::string http_line (partial_req.begin(), find(HTTP_DEL, partial_req));
+			std::string http_line (request.http_buffer.begin(), find(HTTP_DEL, request.http_buffer));
 			// end of headers
 			if (http_line.length() == 0) {
 				if (!request.headers.count("Host"))
@@ -196,16 +196,16 @@ int parse_partial_http_request(std::vector<char> &partial_req, HttpRequest &requ
 				return 0;
 			}
 			if (request.headers["Transfer-Encoding"] == "chunked") {
-				if (find(HTTP_DEL, partial_req) == partial_req.end())
+				if (find(HTTP_DEL, request.http_buffer) == request.http_buffer.end())
 					return 0;
 				int size;
-				std::vector<char> chunk_size(partial_req.begin(), find(HTTP_DEL, partial_req));
+				std::vector<char> chunk_size(request.http_buffer.begin(), find(HTTP_DEL, request.http_buffer));
 				try {
 					size = std::stoi(std::string(chunk_size.begin(), chunk_size.end()));
 				} catch (std::invalid_argument) {
 					return -BadRequest;
 				}
-				std::vector<char> chunk(find(HTTP_DEL, partial_req) + HTTP_DEL_LEN, partial_req.end());
+				std::vector<char> chunk(find(HTTP_DEL, request.http_buffer) + HTTP_DEL_LEN, request.http_buffer.end());
 				if (chunk.size() < (size + HTTP_DEL_LEN))
 					return 0;
 				if (size == 0) {
@@ -214,18 +214,18 @@ int parse_partial_http_request(std::vector<char> &partial_req, HttpRequest &requ
 				}
 				chunk = std::vector<char>(chunk.begin(), chunk.begin() + size);
 				request.content.insert(request.content.end(), chunk.begin(), chunk.end());
-				if (request.content.size() > config.client_max_body_size)
+				if (request.content.size() > (unsigned int)config.client_max_body_size)
 					return -RequestEntityTooLarge;
 				parsed += chunk_size.size() + HTTP_DEL_LEN + chunk.size() + HTTP_DEL_LEN;
 			} else {
-				int size = std::stoi(request.headers["Content-Length"]);
-				int rem = size - request.content.size();
-				if (partial_req.size() > rem) {
+				unsigned int size = std::stoi(request.headers["Content-Length"]);
+				unsigned int rem = size - request.content.size();
+				if (request.http_buffer.size() > rem) {
 					debug("content size bigger than Content-Length\n");
 					return -BadRequest;
 				}
-				request.content.insert(request.content.end(), partial_req.begin(), partial_req.end());
-				parsed += partial_req.size();
+				request.content.insert(request.content.end(), request.http_buffer.begin(), request.http_buffer.end());
+				parsed += request.http_buffer.size();
 				if (request.content.size() >= size) {
 					*done = true;
 					return 0;

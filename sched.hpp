@@ -15,6 +15,8 @@ class SchedulableEntity {
 	public:
 		int index;
 		virtual enum SchedulableEntityTypes get_type() = 0;
+		// todo: maybe definitions should be in source file
+		virtual ~SchedulableEntity() {};
 };
 
 int sched_get_starved(std::map<int, SchedulableEntity *> &tasks);

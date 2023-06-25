@@ -59,7 +59,7 @@ void parse_location(std::vector<std::string> &lines, Location &location, uint32_
 			location.dir = value;
 			int fd = open(value.c_str(), O_RDONLY);
 			if (fd < 0)
-				die("config: dir is not accessible\n");
+				die("config: dir='" + value + "' is not accessible\n");
 		} else if (lines[i].substr(0, 6) == "index:") {
 			value = lines[i].substr(6), value = trim(value);
 			location.index = value;
@@ -135,6 +135,8 @@ void parse_config(std::string config_file) {
 	std::ifstream cfg(config_file);
 	std::vector<std::string> lines;
 	std::string line;
+	std::string value;
+
 	while (std::getline(cfg, line)) {
 		line = trim(line);
 		if (line.length() == 0)
@@ -152,7 +154,7 @@ void parse_config(std::string config_file) {
 		} else if (lines[i] == "default_error_pages:") {
 			parse_error_pages(lines, config.default_error_pages, ++i);
 		} else if (lines[i].substr(0, 21) == "client_max_body_size:") {
-			std::string value = lines[i].substr(21), value = trim(value);
+			value = lines[i].substr(21), value = trim(value);
 			int factor = 1;
 			switch (value.back())
 			{
@@ -168,19 +170,21 @@ void parse_config(std::string config_file) {
 			default:
 				break;
 			}
-			if (factor != 1)
-				value = std::string(value.begin(), value.end() - 1);
 			try {
 				config.client_max_body_size = std::stoi(value) * factor;
+				if (config.client_max_body_size < 0)
+					throw std::invalid_argument("negative number");
 			} catch (std::invalid_argument) {
 				die("invalid argument for client_max_body_size\n");
 			}
+			i++;
 		} else
 			die("unknowen config in global scope ---" + lines[i]);
 	}
 }
 
 void dump_config(Config config) {
+	std::cout << "client_max_body_size: " << config.client_max_body_size << std::endl;
 	for (uint32_t i=0; i < config.servers.size(); i++) {
 		std::cout << "server:" << std::endl;
 		std::cout << "\tlisten: " << config.servers[i].ip << ":" << config.servers[i].port << std::endl;
