@@ -119,8 +119,8 @@ enum {
 	RequestEntityTooLarge = 413
 };
 
-std::vector<char>::iterator find(std::string str, std::vector<char> vec) {
-	void *pos = memmem(&vec[0], vec.size(), str.c_str(), str.length());
+std::vector<char>::iterator find(std::string str, std::vector<char> &vec) {
+	void *pos = memmem(&vec[0], vec.size(), str.data(), str.length());
 
 	if (pos != NULL)
 		return vec.begin() + ((char *)pos - &vec[0]);
@@ -133,7 +133,7 @@ int parse_partial_http_request(HttpRequest &request, bool *done) {
 	for (; request.http_buffer.size(); request.http_buffer.erase(request.http_buffer.begin(), request.http_buffer.begin() + parsed)) {
 		parsed = 0;
 		if (!request.__http_headers_end && find(HTTP_DEL, request.http_buffer) == request.http_buffer.end())
-			break;
+			return 0;
 		if (!request.__http_top_header_parsed) {
 			std::string http_line (request.http_buffer.begin(), find(HTTP_DEL, request.http_buffer));
 			std::vector<std::string> http_headerv = split(http_line, " ");
@@ -201,7 +201,7 @@ int parse_partial_http_request(HttpRequest &request, bool *done) {
 				int size;
 				std::vector<char> chunk_size(request.http_buffer.begin(), find(HTTP_DEL, request.http_buffer));
 				try {
-					size = std::stoi(std::string(chunk_size.begin(), chunk_size.end()));
+					size = std::stoi(std::string(chunk_size.begin(), chunk_size.end()), 0, 16);
 				} catch (std::invalid_argument) {
 					return -BadRequest;
 				}
@@ -219,13 +219,14 @@ int parse_partial_http_request(HttpRequest &request, bool *done) {
 				parsed += chunk_size.size() + HTTP_DEL_LEN + chunk.size() + HTTP_DEL_LEN;
 			} else {
 				unsigned int size = std::stoi(request.headers["Content-Length"]);
+				unsigned int len = request.http_buffer.size();
 				unsigned int rem = size - request.content.size();
-				if (request.http_buffer.size() > rem) {
+				if (len > rem) {
+					len = rem;
 					debug("content size bigger than Content-Length\n");
-					return -BadRequest;
 				}
-				request.content.insert(request.content.end(), request.http_buffer.begin(), request.http_buffer.end());
-				parsed += request.http_buffer.size();
+				request.content.insert(request.content.end(), request.http_buffer.begin(), request.http_buffer.begin() + len);
+				parsed += len;
 				if (request.content.size() >= size) {
 					*done = true;
 					return 0;
@@ -234,4 +235,59 @@ int parse_partial_http_request(HttpRequest &request, bool *done) {
 		}
 	}
 	return 0;
+}
+
+/**
+ * get and parse http request from fd
+ * @return:
+ * 0: success
+ * -1: connection is broken and should be closed
+ * -2: request not finished yet: to be continued
+ * x: http failure status code (4xx, 5xx)
+*/
+int get_request(int fd, HttpRequest &request) {
+	int ret;
+	char buffer[255];
+	bool done;
+	int iter = 0;
+	int max_iter = 5;
+
+	while (1) {
+		done = false;
+		// todo: check if the socket would block
+		if ((ret = recv(fd, buffer, sizeof(buffer) - 1, 0)) < 0)
+			return REQ_CONN_BROKEN;
+		if (ret == 0) {
+			debug("recv == 0\n");
+			return REQ_CONN_BROKEN;
+		}
+		int last_size = request.http_buffer.size();
+		request.http_buffer.resize(last_size + ret);
+		memcpy(&request.http_buffer[last_size], buffer, ret);
+		int ret = parse_partial_http_request(request, &done);
+		if (ret < 0)
+			return -ret;
+		if (done)
+			break;
+		iter++;
+		if (iter >= max_iter)
+			return REQ_TO_BE_CONT;
+	}
+	return 0;
+}
+
+void dump_request(HttpRequest &request) {
+	std::cout << "method: " << request.method << std::endl;
+	std::cout << "url: " << request.url << std::endl;
+	std::cout << "version: " << request.version << std::endl;
+	for (std::map<std::string, std::string>::iterator it = request.headers.begin(); it != request.headers.end(); it++) {
+		std::cout << it->first << " : " << it->second << std::endl;
+	}
+
+	std::cout << std::endl;
+	std::cout << "+++++++++++++++++++++++++++++++++" << std::endl;
+	for (std::vector<char>::iterator it = request.content.begin(); it != request.content.end(); it++) {
+		std::cout << *it;
+	}
+	std::cout << "+++++++++++++++++++++++++++++++++" << std::endl;
 }

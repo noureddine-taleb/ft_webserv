@@ -31,7 +31,7 @@
 #define REQ_CONN_BROKEN -1
 #define REQ_TO_BE_CONT -2
 
-#define debug(msg) std::cerr << msg << __FILE__ << ":" << __LINE__;
+#define debug(msg) std::cerr << __FILE__ << ":" << __LINE__ << " " << msg;
 
 #define die(msg)	do {					\
 		perror(std::string(msg).c_str());	\
@@ -149,6 +149,7 @@ void	upload_not_exist(Config& config, HttpResponse& response);
 int response_delete(Config& config, HttpResponse& response);
 int continue_previous_response(HttpResponse &response);
 int new_request(HttpRequest &request);
+void dump_request(HttpRequest &request);
 
 
 #endif // WEBSERV

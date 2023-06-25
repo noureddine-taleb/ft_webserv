@@ -9,16 +9,16 @@
  * else: fd
 */
 int sched_get_starved(std::map<int, SchedulableEntity *> &tasks) {
-	int last = 0;
-	int fd;
 	if (tasks.empty())
 		return Q_EMPTY;
+	int last = tasks.begin()->second->index;
+	int fd = tasks.begin()->first;
 	for (std::map<int, SchedulableEntity *>::iterator it = tasks.begin();
 			it != tasks.end();
 			it++
 		) {
-			if (tasks[it->first]->index < last) {
-				last = tasks[it->first]->index;
+			if (it->second->index < last) {
+				last = it->second->index;
 				fd = it->first;
 			}
 		}

@@ -13,12 +13,10 @@ int init_watchlist() {
 #ifdef __APPLE__
 	int kfd;
 	assert((kfd = kqueue()) != -1);
-	fcntl(kfd, F_SETFL, O_NONBLOCK);
 	return kfd;
 #elif __linux__
 	int efd;
 	assert((efd = epoll_create1(0)) != -1);
-	fcntl(efd, F_SETFL, O_NONBLOCK);
 	return efd;
 #endif
 }
@@ -56,15 +54,16 @@ void watchlist_del_fd(int wfd, int fd) {
 int watchlist_wait_fd(int wfd) {
 #ifdef __APPLE__
 	struct kevent event;
-	int ret = kevent(wfd, NULL, 0, &event, 1, NULL);
-	if (ret == -EWOULDBLOCK)
+	struct timespec ts = {.tv_nsec = 1000 };
+	int ret = kevent(wfd, NULL, 0, &event, 1, &ts);
+	if (ret == 0)
 		return WATCHL_NO_PENDING;
 	assert(ret == 1);
 	return (int)(long)event.udata;
 #elif __linux__
     struct epoll_event event;
-	int ret = epoll_wait(wfd, &event, 1, -1);
-	if (ret == -EWOULDBLOCK)
+	int ret = epoll_wait(wfd, &event, 1, 1);
+	if (ret == 0)
 		return WATCHL_NO_PENDING;
 	assert(ret == 1);
 	return event.data.fd;
