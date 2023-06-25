@@ -1,6 +1,8 @@
 #include "webserv.hpp"
 #include <iostream>
 #include <fstream>
+#include <fcntl.h>
+#include <unistd.h>
 
 extern Config config;
 
@@ -25,7 +27,7 @@ void parse_error_pages(std::vector<std::string> &lines, std::vector<ErrorPage> &
 
 void parse_location(std::vector<std::string> &lines, Location &location, uint32_t &i) {
 	std::string value;
-	static const char *all_methods[] = { "GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS", "CONNECT", "TRACE" };
+	static const char *all_methods[] = { "GET", "POST", "DELETE" };
 			
 	value = lines[i].substr(8), value = split(value, ":")[0], value = trim(value), location.target = value;
 
@@ -55,6 +57,9 @@ void parse_location(std::vector<std::string> &lines, Location &location, uint32_
 		} else if (lines[i].substr(0, 4) == "dir:") {
 			value = lines[i].substr(4), value = trim(value);
 			location.dir = value;
+			int fd = open(value.c_str(), O_RDONLY);
+			if (fd < 0)
+				die("config: dir is not accessible\n");
 		} else if (lines[i].substr(0, 6) == "index:") {
 			value = lines[i].substr(6), value = trim(value);
 			location.index = value;
@@ -81,7 +86,6 @@ void parse_location(std::vector<std::string> &lines, Location &location, uint32_
 
 			location.creturn.code = code;
 			location.creturn.to = parts[1];
-
 		} else {
 			if (location.methods.size() == 0)
 				location.methods = std::vector<std::string>(all_methods, std::end(all_methods));
@@ -115,6 +119,30 @@ void parse_server(std::vector<std::string> &lines, Server &server, uint32_t &i) 
 			value = lines[i].substr(5), value = trim(value);
 			server.root = value;
 			i++;
+		} else if (lines[i].substr(0, 21) == "client_max_body_size:") {
+			std::string value = lines[i].substr(21), value = trim(value);
+			int factor = 1;
+			switch (value.back())
+			{
+			case 'k':
+				factor = 1024;
+				break;
+			case 'm':
+				factor = 1024 * 1024;
+				break;
+			case 'g':
+				factor = 1024 * 1024 * 1024;
+				break;
+			default:
+				break;
+			}
+			if (factor != 1)
+				value = std::string(value.begin(), value.end() - 1);
+			try {
+				server.client_max_body_size = std::stoi(value) * factor;
+			} catch (std::invalid_argument) {
+				die("invalid argument for client_max_body_size\n");
+			}
 		} else {
 			return;
 		}

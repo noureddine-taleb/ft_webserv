@@ -13,6 +13,7 @@
 #include <cassert>
 #include <sys/stat.h>
 #include "config.hpp"
+#include "sched.hpp"
 #include <dirent.h>
 #include <fstream>
 #include <sstream>
@@ -25,6 +26,13 @@
 #define HTTP_DEL "\r\n"
 #define HTTP_DEL_LEN (sizeof(HTTP_DEL) - 1)
 #define BUFF_SIZE 8419815
+
+#define WATCHL_NO_PENDING 0
+#define REQ_CONN_BROKEN -1
+#define REQ_TO_BE_CONT -2
+
+#define debug(msg) std::cerr << msg << __FILE__ << ":" << __LINE__;
+
 // #define assert(cond) if (!(cond)) \
 // die("assertion failed: " #cond);
 
@@ -40,7 +48,7 @@
 	and closedir.
 */
 
-class HttpRequest {
+class HttpRequest: public SchedulableEntity {
 	public:
 		HttpRequest() : method(""), url(""), version(""), __http_top_header_parsed(false), __http_headers_end(false) {}
 		std::string method;
@@ -50,11 +58,15 @@ class HttpRequest {
 		std::vector<char> content;
 
 		// pcb stuff
+		std::vector<char>	http_rem;
 		bool __http_top_header_parsed;
 		bool __http_headers_end;
+		enum SchedulableEntityTypes get_type() {
+			return REQUEST;
+		}
 };
 
-class HttpResponse {
+class HttpResponse: public SchedulableEntity {
 	public:
 		HttpResponse () : get_length(false), finish_reading(false){}
 		std::string version;
@@ -72,6 +84,9 @@ class HttpResponse {
 		HttpRequest request;
 		int byte_reading;
 		int	fd;
+		enum SchedulableEntityTypes get_type() {
+			return RESPONSE;
+		}
 };
 
 extern Config config;

@@ -42,16 +42,17 @@ class ErrorPage {
 		int error_code;
 		std::string page;
 };
-
+#define M (1024 * 1024)
 class Server {
 	public:
-		Server(): ip("0.0.0.0"), port(0), root(""), __fd(-1) {}
+		Server(): ip("0.0.0.0"), port(0), root(""), __fd(-1), client_max_body_size(1 * M) {}
 		std::string ip;
 		int port;
 		std::string root;
 		std::vector<std::string> server_names;
 		std::vector<Location> routes;
 		std::vector<ErrorPage> error_pages;
+		long client_max_body_size;
 		int __fd;
 };
 

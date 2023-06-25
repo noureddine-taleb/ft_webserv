@@ -5,8 +5,7 @@
 #endif
 #include "webserv.hpp"
 #include <cstring>
-
-#define debug(msg) std::cerr << msg << __FILE__ << ":" << __LINE__;
+#include "sched.hpp"
 
 void die(std::string msg) {
 	perror(msg.c_str());
@@ -16,12 +15,13 @@ void die(std::string msg) {
 // todo: check if globals are allowed
 Config config;
 int max_server_fd;
+// todo: move these functions into a separate files
+// todo: connection: keep-alive
 /**
  * spawn servers and add their sockets to watchlist
  * wait for events (connections, requests) and handle them serially
- * 
+ * todo: multiple servers could use the same port
 */
-
 void spawn_servers(int wfd) {
 	for (size_t i = 0; i < config.servers.size(); i++) {
 		int sock;
@@ -69,53 +69,41 @@ void accept_connection(int wfd, int server) {
  * @return:
  * 0: success
  * -1: connection is broken and should be closed
- * -x: http status code
+ * -2: request not finished yet: to be continued
+ * x: http failure status code (4xx, 5xx)
 */
 int get_request(int fd, HttpRequest &request) {
 	int ret;
 	char buffer[255];
-	std::vector<char>	http_rem;
 	bool done;
+	int iter = 0;
+	int max_iter = 5;
 
 	while (1) {
 		done = false;
 		if ((ret = recv(fd, buffer, sizeof(buffer) - 1, 0)) < 0)
-			return -1;
+			return REQ_CONN_BROKEN;
 		if (ret == 0) {
 			debug("recv == 0\n");
-			return -1;
+			return REQ_CONN_BROKEN;
 		}
-		int last_size = http_rem.size();
-		http_rem.resize(last_size + ret);
-		memcpy(&http_rem[last_size], buffer, ret);
-		int parsed = parse_partial_http_request(http_rem, request, &done);
-		if (parsed < 0)
-			return parsed;
-		// http_rem.erase(http_rem.begin(), http_rem.begin() + parsed);
+		int last_size = request.http_rem.size();
+		request.http_rem.resize(last_size + ret);
+		memcpy(&request.http_rem[last_size], buffer, ret);
+		int ret = parse_partial_http_request(request.http_rem, request, &done);
+		if (ret < 0)
+			return -ret;
 		if (done)
 			break;
+		iter++;
+		if (iter >= max_iter)
+			return REQ_TO_BE_CONT;
 	}
-	if (http_rem.size())
+	if (request.http_rem.size())
 		debug("http_rem still contains data\n");
 	return 0;
 }
 
-int check_request_handler(HttpRequest &request) {
-	std::vector<Server>::iterator server_it;
-	std::vector<Location>::iterator location_it;
-
-	server_it = server(config, request);
-	location_it = location(config, request, server_it);
-
-	if (location_it == server_it->routes.end())
-		return -404;
-
-	if (std::find(location_it->methods.begin(), location_it->methods.end(), request.method) == location_it->methods.end())
-		return -405;
-
-	return 0;
-}
-////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char **argv) {
 	if (argc != 2)
 		die("usage: webserv <config_file>\n");
@@ -126,44 +114,63 @@ int main(int argc, char **argv) {
     int wfd = init_watchlist();
 	spawn_servers(wfd);
 
-	int ret;
+	int									finished;
+	std::map<int, SchedulableEntity *>	tasks;
 
-	std::map<int, SchedulableEntity>	clients;
 	while (1) {
+		int							status_code = 0;
+		HttpRequest					request;
+		HttpResponse				response;
+
 		int fd = watchlist_wait_fd(wfd);
 
-		assert(fd >= 0);
-		if (fd <= max_server_fd) {
+		if (fd > 2 && fd <= max_server_fd) {
 			accept_connection(wfd, fd);
 			continue;
 		}
+		// no new request, serve pending ones
+		if (fd == WATCHL_NO_PENDING) {
+			fd = sched_get_starved(tasks);
+			if (fd == Q_EMPTY)
+				continue;
 
-		int							status_code;
-		HttpRequest					request;
-		HttpResponse				response;
-		std::string					response_buffer;
-		std::string					content_length;
-		std::map<int, HttpResponse>::iterator clients_it = clients.find(fd);
-		
-		status_code = get_request(fd, request);
-
-		if (status_code < 0) {
-			if (status_code == -1)
-				goto close_socket;
-			goto error_response;
+			if (tasks[fd]->get_type() == REQUEST) {
+				request = *dynamic_cast<HttpRequest *>(tasks[fd]); 
+				goto request;
+			} else if (tasks[fd]->get_type() == RESPONSE) {
+				response = *dynamic_cast<HttpResponse *>(tasks[fd]);
+				goto response;
+			}
 		}
 
-		std::cout << "--------- handleable request received"<< std::endl;
+request:
+		status_code = get_request(fd, request);
+		switch (status_code)
+		{
+		case REQ_CONN_BROKEN:
+			goto close_socket;
+			break;
+		case REQ_TO_BE_CONT:
+			sched_queue_task(tasks, fd, new HttpRequest(request));
+			continue;
+		default:
+			sched_unqueue_task(tasks, fd);
+			break;
+		}
+response:
+		finished = send_response(fd, request, response, status_code);
+		if (finished) {
+			sched_unqueue_task(tasks, fd);
+			goto close_socket;
+		} else {
+			sched_queue_task(tasks, fd, new HttpResponse(response));
+		}
 
-		// request parsed
-		// todo: check client_max_body
-process:
-		int new_request(HttpRequest &request, &response, status_code);
-		int continue_previous_response(HttpResponse &response);
+		continue;
 close_socket:
-			std::cout << "--------- invalid request: close socket"<< std::endl;
-			clients.erase(fd);
-			watchlist_del_fd(wfd, fd);
-			close(fd);
+		std::cout << "--------- invalid request: close socket"<< std::endl;
+		sched_unqueue_task(tasks, fd);
+		watchlist_del_fd(wfd, fd);
+		close(fd);
 	}
 }

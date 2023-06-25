@@ -176,17 +176,57 @@ int parse_partial_http_request(std::vector<char> &partial_req, HttpRequest &requ
 				return -BadRequest;
 			if (headerv[0] == "Transfer-Encoding" && headerv[1] != "chunked")
 				return -NotImplemented;
+			if (headerv[0] == "Content-Length") {
+				try {
+					int size = std::stoi(headerv[1]);
+					if (size < 0)
+						return -BadRequest;
+				} catch(std::invalid_argument) {
+					return -BadRequest;
+				}
+			}
 			request.headers[headerv[0]] = headerv[1];
 			parsed += http_line.length() + HTTP_DEL_LEN;
 		} else {
-			// todo: support chunked
-			if (request.method != "POST")
-				return -BadRequest;
-			request.content.insert(request.content.end(), partial_req.begin(), partial_req.end());
-			parsed += partial_req.size();
+			if (request.method != "POST") {
+				*done = true;
+				return 0;
+			}
+			if (request.headers["Transfer-Encoding"] == "chunked") {
+				if (find(HTTP_DEL, partial_req) == partial_req.end())
+					return 0;
+				int size;
+				std::vector chunk_size(partial_req.begin(), find(HTTP_DEL, partial_req));
+				try {
+					size = std::stoi(std::string(chunk_size.begin(), chunk_size.end()));
+				} catch (std::invalid_argument) {
+					return -BadRequest;
+				}
+				std::vector chunk(find(HTTP_DEL, partial_req) + HTTP_DEL_LEN, partial_req.end());
+				if (chunk.size() < (size + HTTP_DEL_LEN))
+					return 0;
+				if (size == 0) {
+					*done = true;
+					return 0;
+				}
+				chunk = std::vector(chunk.begin(), chunk.begin() + size);
+				request.content.insert(request.content.end(), chunk.begin(), chunk.end());
+				parsed += chunk_size.size() + HTTP_DEL_LEN + chunk.size() + HTTP_DEL_LEN;
+			} else {
+				int size = std::stoi(request.headers["Content-Length"]);
+				int rem = size - request.content.size();
+				if (partial_req.size() > rem) {
+					debug("content size bigger than Content-Length\n");
+					return -BadRequest;
+				}
+				request.content.insert(request.content.end(), partial_req.begin(), partial_req.end());
+				parsed += partial_req.size();
+				if (request.content.size() >= size) {
+					*done = true;
+					return 0;
+				}
+			}
 		}
 	}
-	*done = (request.__http_headers_end && (request.method == "GET" || request.method == "DELETE"))
-			|| (request.__http_headers_end && request.method == "POST" && std::stoi(request.headers["Content-Length"]) <= request.content.size() );
 	return 0;
 }
