@@ -45,14 +45,13 @@ class ErrorPage {
 #define M (1024 * 1024)
 class Server {
 	public:
-		Server(): ip("0.0.0.0"), port(0), root(""), __fd(-1) {}
+		Server(): ip("0.0.0.0"), port(0), root("") {}
 		std::string ip;
 		int port;
 		std::string root;
 		std::vector<std::string> server_names;
 		std::vector<Location> routes;
 		std::vector<ErrorPage> error_pages;
-		int __fd;
 };
 
 class Config {
