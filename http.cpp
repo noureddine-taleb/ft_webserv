@@ -159,6 +159,10 @@ int parse_partial_http_request(HttpRequest &request, bool *done) {
 					return -BadRequest;
 				request.__http_headers_end = true;
 				parsed += HTTP_DEL_LEN;
+				if (request.method == "GET" || request.method == "DELETE") {
+					*done = true;
+					return 0;
+				}
 				continue;
 			}
 			std::vector<std::string> headerv = split(http_line, ":", 1);
@@ -184,10 +188,6 @@ int parse_partial_http_request(HttpRequest &request, bool *done) {
 			request.headers[headerv[0]] = headerv[1];
 			parsed += http_line.length() + HTTP_DEL_LEN;
 		} else {
-			if (request.method != "POST") {
-				*done = true;
-				return 0;
-			}
 			if (request.headers["Transfer-Encoding"] == "chunked") {
 				if (find(HTTP_DEL, request.http_buffer) == request.http_buffer.end())
 					return 0;
