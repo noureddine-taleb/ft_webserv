@@ -33,6 +33,10 @@
 
 #define debug(msg) std::cerr << msg << __FILE__ << ":" << __LINE__;
 
+#define die(msg)			\
+	perror(std::string(msg).c_str());	\
+	exit(1);
+
 // #define assert(cond) if (!(cond)) \
 // die("assertion failed: " #cond);
 
@@ -91,7 +95,12 @@ class HttpResponse: public SchedulableEntity {
 
 extern Config config;
 
-void die(std::string msg);
+// void die(std::string msg);
+
+// socket
+void spawn_servers(int wfd);
+void accept_connection(int wfd, int server);
+int get_request(int fd, HttpRequest &request);
 
 // http
 std::vector<std::string> split(std::string s, std::string delimiter, unsigned int max_splits = -1);

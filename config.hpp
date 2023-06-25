@@ -56,9 +56,10 @@ class Server {
 
 class Config {
 	public:
-		Config(): client_max_body_size(1 * M) {}
+		Config(): client_max_body_size(1 * M), max_server_fd(0) {}
 		std::vector<Server> servers;
 		std::vector<ErrorPage> default_error_pages;
 		long client_max_body_size;
+		int max_server_fd;
 };
 #endif

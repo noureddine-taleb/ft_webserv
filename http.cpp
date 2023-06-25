@@ -199,20 +199,20 @@ int parse_partial_http_request(std::vector<char> &partial_req, HttpRequest &requ
 				if (find(HTTP_DEL, partial_req) == partial_req.end())
 					return 0;
 				int size;
-				std::vector chunk_size(partial_req.begin(), find(HTTP_DEL, partial_req));
+				std::vector<char> chunk_size(partial_req.begin(), find(HTTP_DEL, partial_req));
 				try {
 					size = std::stoi(std::string(chunk_size.begin(), chunk_size.end()));
 				} catch (std::invalid_argument) {
 					return -BadRequest;
 				}
-				std::vector chunk(find(HTTP_DEL, partial_req) + HTTP_DEL_LEN, partial_req.end());
+				std::vector<char> chunk(find(HTTP_DEL, partial_req) + HTTP_DEL_LEN, partial_req.end());
 				if (chunk.size() < (size + HTTP_DEL_LEN))
 					return 0;
 				if (size == 0) {
 					*done = true;
 					return 0;
 				}
-				chunk = std::vector(chunk.begin(), chunk.begin() + size);
+				chunk = std::vector<char>(chunk.begin(), chunk.begin() + size);
 				request.content.insert(request.content.end(), chunk.begin(), chunk.end());
 				if (request.content.size() > config.client_max_body_size)
 					return -RequestEntityTooLarge;
