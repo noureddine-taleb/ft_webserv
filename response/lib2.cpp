@@ -47,7 +47,7 @@ std::vector<Server>::iterator server(Config& config, HttpRequest& request)
 	return (config.servers.begin());
 }
 
-std::vector<Location>::iterator location(Config& config, HttpRequest& req, std::vector<Server>::iterator server)
+std::vector<Location>::iterator location(HttpRequest& req, std::vector<Server>::iterator server)
 {
 	unsigned long	length_location(0);
 	std::vector<Location>::iterator location = server->routes.end();
@@ -87,6 +87,6 @@ void	ft_send_error(int status_code, Config config, HttpResponse& response)
 
 	response_Http_Request_error(status_code, config, response);
 	response_buffer = generate_http_response(response);
-	response_buffer += response.content;
+	response_buffer += response.content_error;
 	send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
 }

@@ -1,5 +1,5 @@
-#include "webserv.hpp"
-#include "config.hpp"
+#include "../webserv.hpp"
+#include "../config.hpp"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -28,7 +28,7 @@ int response_Http_Request(int status_code , Config& config, HttpResponse& respon
 	if (response.request.url == response.old_url)
 		fill_response(status_code, response);
 	else
-		fill_response(302, response);
+		fill_response(200, response);///todo
 	switch (status_code)
 	{
 		case 301:
@@ -96,7 +96,7 @@ int	response_redirect(HttpResponse& response, Config& config)
 		if (response.location_it->creturn.code)
 			fill_response(response.location_it->creturn.code, response);
 		else
-			fill_response(302, response);
+			fill_response(200, response);///todo
 		response.headers["location"] = response.location_it->creturn.to;
 		response_buffer = generate_http_response(response);
 		send(response.fd, response_buffer.c_str(), response_buffer.size(), 0);

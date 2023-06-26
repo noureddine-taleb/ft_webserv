@@ -25,7 +25,7 @@
 #define BACKLOG_SIZE 32
 #define HTTP_DEL "\r\n"
 #define HTTP_DEL_LEN (sizeof(HTTP_DEL) - 1)
-#define BUFF_SIZE 8419815
+#define BUFF_SIZE 1000000 // 1
 
 #define WATCHL_NO_PENDING 0
 #define REQ_CONN_BROKEN -1
@@ -88,6 +88,7 @@ class HttpResponse: public SchedulableEntity {
 		std::string reason_phrase;
 		std::map<std::string, std::string> headers;
 		std::vector<char> content;
+		std::string content_error;
 		std::vector<Server>::iterator server_it;
 		std::vector<Location>::iterator location_it;
 		std::string    path_file;
@@ -133,8 +134,8 @@ std::vector<std::string> split(std::string s, std::string delimiter, unsigned in
 //----------------------------------------------------------------------------
 
 std::vector<Server>::iterator server(Config& config, HttpRequest& request);
-std::vector<Location>::iterator	location(Config& config, HttpRequest& req, std::vector<Server>::iterator server);
-int				check_req_line_headers(Config& config, HttpRequest &request);
+std::vector<Location>::iterator	location(HttpRequest& req, std::vector<Server>::iterator server);
+int				check_req_line_headers(HttpRequest &request);
 void			response_Http_Request(int status_code, HttpRequest& request, Config& config, HttpResponse& response, std::string path);
 void			response_Http_Request_error(int status_code, Config& config, HttpResponse& response);
 std::string		res_content(int status_code, Config& config, HttpResponse& response);
@@ -146,7 +147,8 @@ std::string		type_repo(std::string path);
 std::string		content_dir(std::string dir,HttpResponse& response, std::vector<std::string>& content);
 int				res_content_dir(int status_code, Config& config, HttpResponse& response);
 std::string		res_content_file(int status_code, HttpRequest& request, Config& config, HttpResponse& response, std::string path);
-std::string		read_File(HttpResponse& response);
+// std::string		read_File(HttpResponse& response);
+void			read_File(HttpResponse& response);
 void			ft_send_error(int status_code, Config config, HttpResponse& response);
 void			init_response(Config& config, HttpResponse& response, HttpRequest& request, int fd);
 void			fill_response(int status_code, HttpResponse& response);
@@ -161,8 +163,11 @@ void	add_extention(std::string& filename,HttpResponse& response);
 void	upload_exist(Config& config, HttpResponse& response, std::string& upload_path);
 void	upload_not_exist(Config& config, HttpResponse& response);
 int response_delete(Config& config, HttpResponse& response);
-int continue_previous_response(HttpResponse &response);
-int new_request(HttpRequest &request);
+// int continue_previous_response(HttpResponse &response);
+// int new_request(HttpRequest &request);
+int	send_response(int fd, HttpRequest& request, HttpResponse& response, int status_code, bool *close_connexion);
+int new_request(HttpRequest &request, HttpResponse &response, int status_code);
+int continue_previous_response(HttpResponse &response) ;
 void dump_request(HttpRequest &request);
 
 

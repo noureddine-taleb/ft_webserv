@@ -28,3 +28,5 @@ form data: upload files
 cgi
 multiplixing
 finished = send_response(fd, request, response, status_code, &close);
+ in / => if not found / in the end added
+ open not work 500

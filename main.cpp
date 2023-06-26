@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
 
 	int									finished = 0;
 	std::map<int, SchedulableEntity *>	tasks;
-	bool 								close_connexion;
+	bool 								close_connexion = false;
 
 	while (1) {
 		int							status_code = 0;
@@ -70,14 +70,26 @@ request:
 response:
 		// dump_request(request);
 		// goto close_socket;
-		finished = send_response(fd, request, response, status_code, &close_connexion);
+		// std::cout << "\033[32m"  << "method: " << request.method<< "\033[0m" << std::endl;
+		// std::cout << "\033[32m"  << "url: " << request.url<< "\033[0m" << std::endl;
+		// std::cout << "\033[32m"  << "version: " << request.version << "\033[0m" << std::endl;
+		// for (auto it = request.headers.begin(); it != request.headers.end(); it++) {
+		// 	std::cout << "\033[32m" << it->first << ' ' << it->second << "\033[0m" << std::endl;
+		// }
+		// finished = send_response(fd, request, response, status_code, &close_connexion);
+		
+		// std::cout << "*********************>finished = "<< finished << std::endl;
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+		// finished = send_response(fd, request, response, status_code);
+		// finished = send_response(fd, request, response, status_code, &close);
+		// std::cout << close_connexion << "= " << std::endl;
 		if (finished || close_connexion) {
 			sched_unqueue_task(tasks, fd);
 			goto close_socket;
 		} else {
 			sched_queue_task(tasks, fd, new HttpResponse(response));
 		}
-
 		if (close_connexion)
 			goto close_socket;
 

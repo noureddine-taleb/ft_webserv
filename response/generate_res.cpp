@@ -1,6 +1,5 @@
-#include "webserv.hpp"
-#include "config.hpp"
-#include <iostream>
+#include "../webserv.hpp"
+#include "../config.hpp"
 
 std::string generate_http_response(HttpResponse &res)
 {
@@ -21,7 +20,7 @@ void init_response(Config& config, HttpResponse& response, HttpRequest& request,
 	response.get_length = false;
 	response.finish_reading = false;
 	response.server_it = server(config, response.request);
-	response.location_it = location(config, response.request, response.server_it);
+	response.location_it = location(response.request, response.server_it);
 }
 
 std::string get_content_type(std::string path)
@@ -43,6 +42,8 @@ std::string get_content_type(std::string path)
 	content_type["gif"] = "image/gif";
 	content_type["txt"] = "text/plain";
 	content_type["mp4"] = "video/mp4";
+	content_type["c"] = "text/x-csrc";
+	content_type["cpp"] = "text/x-c++src";
 
 	if (content_type.find(type) != content_type.end())
 		return (content_type[type]);
