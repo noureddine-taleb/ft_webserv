@@ -1,7 +1,7 @@
 CXX := c++
 CXXFLAGS := -Wall -Wextra -g -Iincludes #-std=c++98
 TARGET := webserv
-SRCS := http.cpp socket.cpp lib.cpp main.cpp watchlist.cpp config.cpp http.cpp sched.cpp				\
+SRCS := http.cpp socket.cpp lib.cpp main.cpp watchlist.cpp config.cpp http.cpp sched.cpp form-data.cpp	\
 		response.cpp response/lib2.cpp Response_error.cpp read_file.cpp generate_res.cpp read_dir.cpp	\
 		post.cpp delete.cpp
 

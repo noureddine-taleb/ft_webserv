@@ -31,7 +31,7 @@
 #define REQ_CONN_BROKEN -1
 #define REQ_TO_BE_CONT -2
 
-#define debug(msg) std::cerr << __FILE__ << ":" << __LINE__ << " " << msg;
+#define debug(msg) std::cerr << "*********************" << __FILE__ << ":" << __LINE__ << " " << msg << std::endl
 
 #define die(msg)	do {					\
 		perror(std::string(msg).c_str());	\
@@ -53,6 +53,12 @@
 	and closedir.
 */
 
+class File {
+public:
+	std::string name;
+	std::vector<char> content;
+};
+
 class HttpRequest: public SchedulableEntity {
 	public:
 		HttpRequest() : method(""), url(""), version(""), __http_top_header_parsed(false), __http_headers_end(false) {}
@@ -61,6 +67,9 @@ class HttpRequest: public SchedulableEntity {
 		std::string version;
 		std::map<std::string, std::string> headers;
 		std::vector<char> content;
+
+		// derived from content
+		std::vector<File> files;
 
 		// pcb stuff
 		std::vector<char>	http_buffer;
@@ -104,18 +113,23 @@ void accept_connection(int wfd, int server);
 int get_request(int fd, HttpRequest &request);
 
 // http
-std::vector<std::string> split(std::string s, std::string delimiter, unsigned int max_splits = -1);
 int parse_partial_http_request(HttpRequest &req, bool *done);
 std::string generate_http_response(HttpResponse &res);
+int parse_form_data_files(HttpRequest &request);
 
 // epoll
 int init_watchlist();
 void watchlist_add_fd(int efd, int fd, uint32_t events);
 void watchlist_del_fd(int efd, int fd);
 int watchlist_wait_fd(int efd);
-std::string trim(std::string s);
 void parse_config(std::string config_file);
 void dump_config(Config config);
+
+// lib
+std::vector<char>::iterator find(std::string str, std::vector<char> &vec);
+std::string trim(std::string s);
+std::vector<std::string> split(std::string s, std::string delimiter, unsigned int max_splits = -1);
+
 //----------------------------------------------------------------------------
 
 std::vector<Server>::iterator server(Config& config, HttpRequest& request);

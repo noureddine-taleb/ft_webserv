@@ -3,6 +3,7 @@
 #include <map>
 #include <sstream>
 #include <vector>
+#include <cstring>
 #include "webserv.hpp"
 
 std::vector<std::string> split(std::string s, std::string delimiter, unsigned int max_splits) {
@@ -33,4 +34,12 @@ std::string trim(std::string s)
     } while (std::distance(start, end) > 0 && std::isspace(*end));
  
     return std::string(start, end + 1);
+}
+
+std::vector<char>::iterator find(std::string str, std::vector<char> &vec) {
+	void *pos = memmem(&vec[0], vec.size(), str.data(), str.length());
+
+	if (pos != NULL)
+		return vec.begin() + ((char *)pos - &vec[0]);
+	return vec.end();
 }

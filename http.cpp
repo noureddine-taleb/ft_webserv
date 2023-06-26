@@ -119,14 +119,7 @@ enum {
 	RequestEntityTooLarge = 413
 };
 
-std::vector<char>::iterator find(std::string str, std::vector<char> &vec) {
-	void *pos = memmem(&vec[0], vec.size(), str.data(), str.length());
-
-	if (pos != NULL)
-		return vec.begin() + ((char *)pos - &vec[0]);
-	return vec.end();
-}
-
+// todo split this gigantic func
 int parse_partial_http_request(HttpRequest &request, bool *done) {
 	// parse http header
 	int parsed = 0;
@@ -210,7 +203,7 @@ int parse_partial_http_request(HttpRequest &request, bool *done) {
 					return 0;
 				if (size == 0) {
 					*done = true;
-					return 0;
+					return parse_form_data_files(request) == 0 ? 0 : -BadRequest;
 				}
 				chunk = std::vector<char>(chunk.begin(), chunk.begin() + size);
 				request.content.insert(request.content.end(), chunk.begin(), chunk.end());
@@ -219,6 +212,8 @@ int parse_partial_http_request(HttpRequest &request, bool *done) {
 				parsed += chunk_size.size() + HTTP_DEL_LEN + chunk.size() + HTTP_DEL_LEN;
 			} else {
 				unsigned int size = std::stoi(request.headers["Content-Length"]);
+				if (size > (unsigned int)config.client_max_body_size)
+					return -RequestEntityTooLarge;
 				unsigned int len = request.http_buffer.size();
 				unsigned int rem = size - request.content.size();
 				if (len > rem) {
@@ -229,7 +224,7 @@ int parse_partial_http_request(HttpRequest &request, bool *done) {
 				parsed += len;
 				if (request.content.size() >= size) {
 					*done = true;
-					return 0;
+					return parse_form_data_files(request) == 0 ? 0 : -BadRequest;
 				}
 			}
 		}
@@ -290,4 +285,14 @@ void dump_request(HttpRequest &request) {
 		std::cout << *it;
 	}
 	std::cout << "+++++++++++++++++++++++++++++++++" << std::endl;
+
+	std::cout << "fffffffffffffffffffffffffffffffff" << std::endl;
+	for (std::vector<File>::iterator it = request.files.begin(); it != request.files.end(); it++) {
+		std::cout << it->name << std::endl;
+		for (std::vector<char>::iterator it2 = it->content.begin(); it2 != it->content.end(); it2++) {
+			std::cout << *it2;
+		}
+		std::cout << std::endl;
+	}
+	std::cout << "fffffffffffffffffffffffffffffffff" << std::endl;
 }
