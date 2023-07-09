@@ -73,10 +73,10 @@ response:
 		// std::cout << "\033[32m"  << "method: " << request.method<< "\033[0m" << std::endl;
 		// std::cout << "\033[32m"  << "url: " << request.url<< "\033[0m" << std::endl;
 		// std::cout << "\033[32m"  << "version: " << request.version << "\033[0m" << std::endl;
-		// for (auto it = request.headers.begin(); it != request.headers.end(); it++) {
+		// for (std::map<std::string , std::string>::iterator it = request.headers.begin(); it != request.headers.end(); it++) {
 		// 	std::cout << "\033[32m" << it->first << ' ' << it->second << "\033[0m" << std::endl;
 		// }
-		// finished = send_response(fd, request, response, status_code, &close_connexion);
+		finished = send_response(fd, request, response, status_code, &close_connexion);
 		
 		// std::cout << "*********************>finished = "<< finished << std::endl;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////

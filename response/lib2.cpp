@@ -36,7 +36,7 @@ std::string	ft_tostring(int nbr)
 	return (str);
 }
 
-std::vector<Server>::iterator server(Config& config, HttpRequest& request)
+std::vector<Server>::iterator server(HttpRequest& request)
 {
 	int	position = request.headers["Host"].find(":");
 	std::string ip = request.headers["Host"].substr(0, position);
@@ -68,25 +68,29 @@ std::vector<Location>::iterator location(HttpRequest& req, std::vector<Server>::
 	{
 		for (redirection_it = location->redirections.begin(); redirection_it != location->redirections.end(); redirection_it++)
 		{
-			size_t find_from = req.url.find(redirection_it->from);
-			size_t find_to = req.url.find(redirection_it->to);
-
-			if (find_from != std::string::npos && find_to == std::string::npos)
+			if (get_content_type(req.url) == "application/octet-stream")
 			{
-				req.url = req.url.substr(0,find_from) + redirection_it->to + req.url.substr((find_from + redirection_it->from.length()),req.url.length());
-				break;
+				size_t find_from = req.url.find(redirection_it->from);
+				size_t find_to = req.url.find(redirection_it->to);
+
+				if (find_from != std::string::npos && find_to == std::string::npos)
+				{
+					req.url = req.url.substr(0,find_from) + redirection_it->to + req.url.substr((find_from + redirection_it->from.length()),req.url.length());
+					break;
+				}
 			}
 		}
 	}
 	return (location);
 }
 
-void	ft_send_error(int status_code, Config config, HttpResponse& response)
+void	ft_send_error(int status_code, HttpResponse& response)
 {
 	std::string		response_buffer;
-
-	response_Http_Request_error(status_code, config, response);
+	
+	response_Http_Request_error(status_code, response);
 	response_buffer = generate_http_response(response);
 	response_buffer += response.content_error;
+	// std::cout << "response_buffer == " << response_buffer << std::endl;
 	send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
 }

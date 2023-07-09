@@ -1,0 +1,50 @@
++ nginx HTTP 1.1
++ status code
++ default error pages
+fork only allowed for cgi
+static website
+upload file support
++ methods: GET POST DELETE
+ddos immune
++ multiple port support
++ config:
++ port host
+server_names (domain)
+the first server is the default if none other matches
+setup default error pages
+	route conf:
+		supported method
+		redirection
+		root dir
+		directory listing enable flag
+		Set a default file to answer if the request is a directory
+		cgi for some file extension (.php)
+
+todo:
+	simple static server
+
+////////////////////////////////////////////////////////////////////
+
+form data: upload files
+=> check if status_code in config = 301 or 302 else error
+=> if i do autoindex and i click in video video play then return to autoindex program exit 
+=> shoud exist one return
+=> when return have a big file program exit
+=> send me the extention of file to be posted
+=> check if the extention cgi is php or py
+
+////////////////////////////////////////////////////////////////////
+handel if i don't have / in the end of "dir: /Users/kadjane/Desktop/server_3"
+open not work 500
+#autoindex ..
+infinit redirection in => /Users/kadjane/Desktop/web_serv2/srcs/book.pdf
+add fonction delete file created
+
+
+cgi:
+  => check extention => done
+  => execute script => done
+  => parse file => done
+  => send response => done
+  => parce query string replace %20 %2B + by " "
+  => protection for the functions

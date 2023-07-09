@@ -12,14 +12,15 @@ std::string generate_http_response(HttpResponse &res)
 	return res_str.str();
 }
 
-void init_response(Config& config, HttpResponse& response, HttpRequest& request, int fd)
+void init_response(HttpResponse& response, HttpRequest& request, int fd)
 {
 	response.fd = fd;
 	response.byte_reading = 0;
 	response.request = request;
 	response.get_length = false;
 	response.finish_reading = false;
-	response.server_it = server(config, response.request);
+	response.url_changed = false;
+	response.server_it = server(response.request);
 	response.location_it = location(response.request, response.server_it);
 }
 
@@ -50,15 +51,6 @@ std::string get_content_type(std::string path)
 	return("application/octet-stream");
 }
 
-void fill_response(int status_code, HttpResponse& response)
-{
-	response.version = response.request.version;
-	response.code = status_code;
-	response.reason_phrase = get_reason_phase(status_code);
-	response.headers["Connection"] = "keep-alive";
-	response.headers["Content-Type"] = get_content_type(response.path_file);
-}
-
 std::string	get_reason_phase(int status_code)
 {
 	std::map<int, std::string> reason_phase;
@@ -79,4 +71,13 @@ std::string	get_reason_phase(int status_code)
 	reason_phase[501] = "not implemented";
 
 	return(reason_phase[status_code]);
+}
+
+void fill_response(int status_code, HttpResponse& response)
+{
+	response.version = response.request.version;
+	response.code = status_code;
+	response.reason_phrase = get_reason_phase(status_code);
+	response.headers["Connection"] = "keep-alive";
+	response.headers["Content-Type"] = get_content_type(response.path_file);
 }
