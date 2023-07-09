@@ -86,10 +86,6 @@ int parse_form_data_header_vars(std::string value, std::map<std::string, std::st
 int parse_form_data_files(HttpRequest &request) {
 	debug("files: parse_form_data_files called");
 
-	if (!request.headers.count("Content-Type")) {
-		debug("files: missing Content-Type");
-		return 0;
-	}
 	std::vector<std::string> parts = split(request.headers["Content-Type"], ";");
 	if (trim(parts[0]) != "multipart/form-data") {
 		debug("files: Content-Type != multipart/form-data");
@@ -120,7 +116,7 @@ int parse_form_data_files(HttpRequest &request) {
 			debug("files: bad headers");
 			return -1;
 		}
-		if (!headers.count("Content-Disposition") || !headers.count("Content-Type") || headers["Content-Type"] != "application/octet-stream") {
+		if (!headers.count("Content-Disposition")) {
 			debug("files: unavailable header skip");
 			skip = 1;
 		}
