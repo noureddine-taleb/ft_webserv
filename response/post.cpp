@@ -17,7 +17,7 @@ void	upload_exist(HttpResponse& response, std::string& upload_path)
 		ft_send_error(501, response);
 	std::string file_name = generate_filename();
 	add_extention(file_name, response);
-	std::ofstream file(file_name);
+	std::ofstream file(file_name.c_str());
 	std::cout << "\033[31m" << file_name << "\033[00m" << std::endl;
 	if (file)
 	{

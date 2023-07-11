@@ -101,12 +101,12 @@ int parse_partial_http_request(HttpRequest &request, bool *done) {
 				return -NotImplemented;
 			if (headerv[0] == "Content-Length") {
 				try {
-					int size = std::stoi(headerv[1]);
+					int size = stoi(headerv[1]);
 					if (size < 0)
 						return -BadRequest;
 					if (size > config.client_max_body_size)
 						return -RequestEntityTooLarge;
-				} catch(std::invalid_argument) {
+				} catch(std::invalid_argument&) {
 					return -BadRequest;
 				}
 			}
@@ -119,8 +119,10 @@ int parse_partial_http_request(HttpRequest &request, bool *done) {
 				int size;
 				std::vector<char> chunk_size(request.http_buffer.begin(), find(HTTP_DEL, request.http_buffer));
 				try {
-					size = std::stoi(std::string(chunk_size.begin(), chunk_size.end()), 0, 16);
-				} catch (std::invalid_argument) {
+					std::string chunk_size_s(chunk_size.begin(), chunk_size.end());
+					// TODO: avoid forbidden functions
+					size = (int)strtol(chunk_size_s.c_str(), NULL, 16);
+				} catch (std::invalid_argument&) {
 					return -BadRequest;
 				}
 				std::vector<char> chunk(find(HTTP_DEL, request.http_buffer) + HTTP_DEL_LEN, request.http_buffer.end());
@@ -136,7 +138,7 @@ int parse_partial_http_request(HttpRequest &request, bool *done) {
 					return -RequestEntityTooLarge;
 				parsed += chunk_size.size() + HTTP_DEL_LEN + chunk.size() + HTTP_DEL_LEN;
 			} else {
-				unsigned int size = std::stoi(request.headers["Content-Length"]);
+				unsigned int size = stoi(request.headers["Content-Length"]);
 				if (size > (unsigned int)config.client_max_body_size)
 					return -RequestEntityTooLarge;
 				unsigned int len = request.http_buffer.size();

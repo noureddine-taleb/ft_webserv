@@ -5,6 +5,7 @@
 #elif __linux__
 #include <sys/epoll.h>
 #endif
+#include <sstream>
 
 // todo: move these functions into a separate files
 // todo: connection: keep-alive
@@ -16,7 +17,10 @@
 void spawn_servers(int wfd) {
 	std::set<std::string> servers;
 	for (size_t i = 0; i < config.servers.size(); i++) {
-		servers.insert(config.servers[i].ip + ":" + std::to_string(config.servers[i].port));
+		std::stringstream gstream;
+		gstream << config.servers[i].port;
+		std::string port = gstream.str();
+		servers.insert(config.servers[i].ip + ":" + port);
 	}
 	for (std::set<std::string>::iterator it = servers.begin(); it != servers.end(); it++) {
 		int sock;
@@ -27,7 +31,7 @@ void spawn_servers(int wfd) {
 
 		std::vector<std::string> v = split(*it, ":");
 		std::string ip = v[0];
-		int port = std::stoi(v[1]);
+		int port = stoi(v[1]);
 		struct sockaddr_in address;
 		address.sin_family = AF_INET;
 		address.sin_addr.s_addr = inet_addr(ip.c_str());

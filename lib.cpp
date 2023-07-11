@@ -4,6 +4,7 @@
 #include <sstream>
 #include <vector>
 #include <cstring>
+#include <limits.h>
 #include "webserv.hpp"
 
 std::vector<std::string> split(std::string s, std::string delimiter, unsigned int max_splits) {
@@ -42,4 +43,22 @@ std::vector<char>::iterator find(std::string str, std::vector<char> &vec) {
 	if (pos != NULL)
 		return vec.begin() + ((char *)pos - &vec[0]);
 	return vec.end();
+}
+
+int stoi(std::string str) {
+    if (str.length() == 0)
+        throw std::invalid_argument("number empty");
+    for (unsigned int i = 0; i < str.length(); i++) {
+        if (!isdigit(str[i]))
+            throw std::invalid_argument("not number");
+    }
+
+    long res = std::atol(str.c_str());
+    std::stringstream ss;
+    ss << res;
+    if (ss.str() != str)
+        throw std::invalid_argument("overflow");
+    if (res > INT_MAX || res < INT_MIN)
+        throw std::invalid_argument("overflow");
+    return (int)res;
 }

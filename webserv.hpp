@@ -20,6 +20,8 @@
 #include <algorithm>
 #include <cassert>
 #include <fstream>
+#include <cstdio>
+#include <cstring>
 #include <sstream>
 
 #define BACKLOG_SIZE 32
@@ -39,9 +41,6 @@
 		throw std::runtime_error("recv FAILED"); \
 		exit(1);							\
 	} while (0);
-
-// #define assert(cond) if (!(cond)) \
-// die("assertion failed: " #cond);
 
 /*
 	execve, dup, dup2, pipe, strerror, gai_strerror,
@@ -134,6 +133,7 @@ void dump_config(Config config);
 std::vector<char>::iterator find(std::string str, std::vector<char> &vec);
 std::string trim(std::string s);
 std::vector<std::string> split(std::string s, std::string delimiter, unsigned int max_splits = -1);
+int stoi(std::string str);
 
 //----------------------------------------------------------------------------
 

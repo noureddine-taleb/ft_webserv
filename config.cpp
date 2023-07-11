@@ -12,8 +12,8 @@ void parse_error_pages(std::vector<std::string> &lines, std::vector<ErrorPage> &
 		std::vector<std::string> error_page = split(lines[i], ":", 1);
 		int error_code;
 		try {
-			error_code = std::stoi(error_page[0]);
-		} catch (std::invalid_argument) {
+			error_code = stoi(error_page[0]);
+		} catch (std::invalid_argument&) {
 			if (error_pages.size() == 0)
 				die("empty error pages, or invalid key be sure to use numerical numbers for keys e.g: 404: /404.html");
 			return;
@@ -27,15 +27,18 @@ void parse_error_pages(std::vector<std::string> &lines, std::vector<ErrorPage> &
 
 void parse_location(std::vector<std::string> &lines, Location &location, uint32_t &i) {
 	std::string value;
-	static const char *all_methods[] = { "GET", "POST", "DELETE" };
-			
+	std::vector<std::string> all_methods;
+	all_methods.push_back("GET");
+	all_methods.push_back("POST");
+	all_methods.push_back("DELETE");
+
 	value = lines[i].substr(8), value = split(value, ":")[0], value = trim(value), location.target = value;
 
 	for (i++; i < lines.size(); i++) {
 		if (lines[i].substr(0, 8) == "methods:") {
 			value = lines[i].substr(8), value = trim(value);
 			if (value == "*") {
-				location.methods = std::vector<std::string>(all_methods, std::end(all_methods));
+				location.methods = all_methods;
 			} else
 				location.methods = split(value, " ");
 		} else if (lines[i].substr(0, 8) == "rewrite:") {
@@ -87,8 +90,8 @@ void parse_location(std::vector<std::string> &lines, Location &location, uint32_
 			
 			int code;
 			try {
-				code = std::stoi(parts[0]);
-			} catch (std::invalid_argument) {
+				code = stoi(parts[0]);
+			} catch (std::invalid_argument&) {
 				die("invalid value for location.return code\n");
 			}
 
@@ -96,7 +99,7 @@ void parse_location(std::vector<std::string> &lines, Location &location, uint32_
 			location.creturn.to = parts[1];
 		} else {
 			if (location.methods.size() == 0)
-				location.methods = std::vector<std::string>(all_methods, std::end(all_methods));
+				location.methods = all_methods;
 			return;
 		}
 	}
@@ -113,7 +116,7 @@ void parse_server(std::vector<std::string> &lines, Server &server, uint32_t &i) 
 			std::vector<std::string> listen = split(trim(listen_raw), ":");
 			assert(listen.size() == 2);
 			server.ip = listen[0];
-			server.port = std::stoi(listen[1]);
+			server.port = stoi(listen[1]);
 			assert(server.port > 0);
 			i++;
 		} else if (lines[i].substr(0, 8) == "location") {
@@ -140,7 +143,7 @@ void parse_server(std::vector<std::string> &lines, Server &server, uint32_t &i) 
  * check required blocks
 */
 void parse_config(std::string config_file) {
-	std::ifstream cfg(config_file);
+	std::ifstream cfg(config_file.c_str());
 	std::vector<std::string> lines;
 	std::string line;
 	std::string value;
@@ -164,7 +167,7 @@ void parse_config(std::string config_file) {
 		} else if (lines[i].substr(0, 21) == "client_max_body_size:") {
 			value = lines[i].substr(21), value = trim(value);
 			int factor = 1;
-			switch (value.back())
+			switch (*(value.end() - 1))
 			{
 			case 'k':
 				factor = 1024;
@@ -178,11 +181,13 @@ void parse_config(std::string config_file) {
 			default:
 				break;
 			}
+			if (factor != 1)
+				value.erase(value.end() - 1);
 			try {
-				config.client_max_body_size = std::stoi(value) * factor;
+				config.client_max_body_size = stoi(value) * factor;
 				if (config.client_max_body_size < 0)
 					throw std::invalid_argument("negative number");
-			} catch (std::invalid_argument) {
+			} catch (std::invalid_argument&) {
 				die("invalid argument for client_max_body_size\n");
 			}
 			i++;
@@ -192,7 +197,7 @@ void parse_config(std::string config_file) {
 }
 
 void dump_config(Config config) {
-	std::cout << "client_max_body_size: " << config.client_max_body_size << std::endl;
+	std::cout << "client_max_body_size: " << config.client_max_body_size << " byte (" << config.client_max_body_size / 1024 / 1024 << "m)" << std::endl;
 	for (uint32_t i=0; i < config.servers.size(); i++) {
 		std::cout << "server:" << std::endl;
 		std::cout << "\tlisten: " << config.servers[i].ip << ":" << config.servers[i].port << std::endl;

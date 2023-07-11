@@ -70,7 +70,7 @@ std::string type_repo(std::string path)
 
 std::string read_File_error(std::string Path)
 {
-	std::ifstream file(Path);
+	std::ifstream file(Path.c_str());
 	std::stringstream buffer;
 
 	if (!file)
@@ -83,7 +83,7 @@ void read_File(HttpResponse& response)
 {
 
 	std::ifstream file;
-	file.open(response.path_file, std::ifstream::binary);
+	file.open(response.path_file.c_str(), std::ifstream::binary);
 	std::vector<char> buffer;
 
 	if (file.is_open())
