@@ -27,6 +27,7 @@ todo:
 
 form data: upload files
 => strict input checking
+=> send side check for EAGAIN & ECONNRESET
 => check if status_code in config = 301 or 302 else error
 => if i do autoindex and i click in video video play then return to autoindex program exit 
 => shoud exist one return
