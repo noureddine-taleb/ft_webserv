@@ -177,8 +177,12 @@ int get_request(int fd, HttpRequest &request) {
 	while (1) {
 		done = false;
 		// todo: check if the socket would block
-		if ((ret = recv(fd, buffer, sizeof(buffer) - 1, 0)) < 0)
+		ret = recv(fd, buffer, sizeof(buffer) - 1, 0);
+		if (ret < 0) {
+			if (errno == EAGAIN)
+				return REQ_TO_BE_CONT;
 			return REQ_CONN_BROKEN;
+		}
 		if (ret == 0) {
 			debug("recv == 0\n");
 			return REQ_CONN_BROKEN;

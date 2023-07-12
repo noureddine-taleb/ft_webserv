@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
 			continue;
 		}
 		// no new request, serve pending ones
-		if (fd == WATCHL_NO_PENDING || tasks.find(fd) != tasks.end()) {
+		if (fd == WATCHL_NO_PENDING) {
 			fd = sched_get_starved(tasks);
 			if (fd == Q_EMPTY)
 				continue;
@@ -51,10 +51,11 @@ int main(int argc, char **argv) {
 				response = *dynamic_cast<HttpResponse *>(tasks[fd]);
 				goto response;
 			}
-		}
+		} else
+			debug("received new request");
+
 request:
 		status_code = get_request(fd, request);
-		debug("new request:");
 		switch (status_code)
 		{
 		case REQ_CONN_BROKEN:
@@ -90,11 +91,11 @@ response:
 		// std::cout << close_connexion << "= " << std::endl;
 		if (finished || close_connexion) {
 			sched_unqueue_task(tasks, fd);
+			if (close_connexion)
+				goto close_socket;
 		} else {
 			sched_queue_task(tasks, fd, new HttpResponse(response));
 		}
-		if (close_connexion)
-			goto close_socket;
 
 		continue;
 close_socket:
