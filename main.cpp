@@ -41,29 +41,33 @@ int main(int argc, char **argv) {
 			fd = sched_get_starved(tasks);
 			if (fd == Q_EMPTY)
 				continue;
-			std::cout << "schedule pending requests" << std::endl;
 			if (tasks[fd]->get_type() == REQUEST) {
+				debug("schedule pending requests");
 				copy_request = dynamic_cast<HttpRequest *>(tasks[fd]);
 				request = *copy_request; 
 				goto request;
 			} else if (tasks[fd]->get_type() == RESPONSE) {
+				debug("schedule pending response");
 				response = *dynamic_cast<HttpResponse *>(tasks[fd]);
 				goto response;
 			}
 		}
 request:
 		status_code = get_request(fd, request);
-		std::cout << "status_code = " << status_code << std::endl;
+		debug("new request:");
 		switch (status_code)
 		{
 		case REQ_CONN_BROKEN:
+			std::cout << "status = connexion broken" << std::endl;
 			goto close_socket;
 			break;
 		case REQ_TO_BE_CONT:
+			debug("status = to be continued");
 			copy_request = new HttpRequest(request);
 			sched_queue_task(tasks, fd, copy_request);
 			continue;
 		default:
+			debug("status = finished with:" << status_code);
 			sched_unqueue_task(tasks, fd);
 			break;
 		}
@@ -86,7 +90,6 @@ response:
 		// std::cout << close_connexion << "= " << std::endl;
 		if (finished || close_connexion) {
 			sched_unqueue_task(tasks, fd);
-			goto close_socket;
 		} else {
 			sched_queue_task(tasks, fd, new HttpResponse(response));
 		}
@@ -95,7 +98,7 @@ response:
 
 		continue;
 close_socket:
-		std::cout << "--------- closing socket"<< std::endl;
+		debug("closing socket");
 		sched_unqueue_task(tasks, fd);
 		watchlist_del_fd(wfd, fd);
 		close(fd);

@@ -40,7 +40,7 @@ void spawn_servers(int wfd) {
 		assert(bind(sock, (struct sockaddr *)&address, sizeof(address)) == 0);
 
 		assert(listen(sock, BACKLOG_SIZE) == 0);
-		std::cout << "--------- " << "listening on: " << ip << ":" << port << std::endl;
+		debug("listening on: " << ip << ":" << port);
 
 #ifdef __APPLE__
 		watchlist_add_fd(wfd, sock, EVFILT_READ);
@@ -63,5 +63,5 @@ void accept_connection(int wfd, int server) {
 		watchlist_add_fd(wfd, client, EPOLLIN);
 #endif
 
-	std::cout << "--------- " << "connection received " << inet_ntoa(caddress.sin_addr) << ":" << ntohs(caddress.sin_port) << std::endl;
+	debug("connection received " << inet_ntoa(caddress.sin_addr) << ":" << ntohs(caddress.sin_port));
 }

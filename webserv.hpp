@@ -23,6 +23,7 @@
 #include <cstdio>
 #include <cstring>
 #include <sstream>
+#include <iomanip>
 
 #define BACKLOG_SIZE 32
 #define HTTP_DEL "\r\n"
@@ -33,7 +34,7 @@
 #define REQ_CONN_BROKEN -1
 #define REQ_TO_BE_CONT -2
 
-#define debug(msg) std::cerr << "*********************" << __FILE__ << ":" << __LINE__ << " " << msg << std::endl
+#define debug(msg) std::cerr << "********************* " << __FILE__ << ":"  << __LINE__ << " " << msg << std::endl
 
 #define die(msg)	do {					\
 		perror(std::string(msg).c_str());	\
