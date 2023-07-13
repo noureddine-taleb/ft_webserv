@@ -15,7 +15,7 @@ int init_watchlist() {
   assert(kfd != -1, "kqueue() failed");
   return kfd;
 #elif __linux__
-  int efd = epoll_create1(0);
+  int efd = epoll_create(1);
   assert(efd != -1, "epoll_create1() failed");
   return efd;
 #endif

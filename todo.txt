@@ -49,4 +49,21 @@ cgi:
   => parse file => done
   => send response => done
   => parce query string replace %20 %2B + by " "
-  => protection for the functions
+  => protection for the functionsatol
+exit@GLIBC_2.2.5
+inet_addr@GLIBC_2.2.5
+inet_ntoa@GLIBC_2.2.5
+memcmp
+memcpy
+memmem
+memmove
+memset
+perror@GLIBC_2.2.5
+remove@GLIBC_2.2.5
+rename@GLIBC_2.2.5
+stat
+strcmp
+strcpy
+strlen
+strtol
+unlink@GLIBC_2.2.5

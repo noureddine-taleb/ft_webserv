@@ -36,6 +36,7 @@ void spawn_servers(int wfd) {
     std::vector<std::string> v = split(*it, ":");
     std::string ip = v[0];
     int port = stoi(v[1]);
+    // todo: use getaddrinfo
     struct sockaddr_in address;
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = inet_addr(ip.c_str());

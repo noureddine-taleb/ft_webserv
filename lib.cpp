@@ -25,6 +25,7 @@ std::vector<std::string> split(std::string s, std::string delimiter, unsigned in
 std::string trim(std::string s)
 {
     std::string::iterator start = s.begin();
+    // todo remove isspace
     while (start != s.end() && std::isspace(*start)) {
         start++;
     }
