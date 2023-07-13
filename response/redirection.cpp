@@ -13,10 +13,7 @@ int	response_redirect(HttpResponse& response)
 	if (type_rep == "is_file")
 	{
 		if (response.location_it->creturn.code)
-		{
-			std::cout << "response.location_it->creturn.to == " << response.location_it->creturn.to << std::endl;
 			response_Http_Request(response.location_it->creturn.code, response);
-		}
 		else
 			response_Http_Request(302, response);
 		return (1);
@@ -31,8 +28,9 @@ int	response_redirect(HttpResponse& response)
 				fill_response(301, response);
 			response.headers["Location"] = response.request.url + "/";
 			std::string response_buffer = generate_http_response(response);
-			// response_buffer += response.content;
-			send(response.fd, response_buffer.c_str(), response_buffer.size(), 0);
+			int ret = send(response.fd, response_buffer.c_str(), response_buffer.size(), 0);
+			if (ret < 0)
+				perror("send feiled");
 			return (0);
 		}
 		else if (response_Http_Request(301, response))
@@ -46,17 +44,19 @@ int	response_redirect(HttpResponse& response)
 			fill_response(302, response);
 		response.headers["location"] = response.location_it->creturn.to;
 		response_buffer = generate_http_response(response);
-		send(response.fd, response_buffer.c_str(), response_buffer.size(), 0);
+		int ret = send(response.fd, response_buffer.c_str(), response_buffer.size(), 0);
+		if (ret < 0)
+			perror("send feiled");
 	};
 	return (0);
 }
 
 int	response_rewrite(HttpResponse&  response)
 {
-	// std::cout << "\033[33m" << "////////////////////////> "<< response.request.url << "\033[0m" << std::endl;
 	response.headers["Location"] = response.request.url;
 	std::string response_buffer = generate_http_response(response);
-	// response_buffer += response.content;
-	send(response.fd, response_buffer.c_str(), response_buffer.size(), 0);
+	int ret = send(response.fd, response_buffer.c_str(), response_buffer.size(), 0);
+	if (ret < 0)
+		perror("send feiled");
 	return (0);
 }

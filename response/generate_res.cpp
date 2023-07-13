@@ -8,7 +8,6 @@ std::string generate_http_response(HttpResponse &res)
 	for (std::map<std::string, std::string>::iterator it = res.headers.begin(); it != res.headers.end(); it++)
 		res_str << it->first << ": " << it->second << HTTP_DEL;
 	res_str << HTTP_DEL;
-	// res_str << res.content;
 	return res_str.str();
 }
 
@@ -20,7 +19,10 @@ void init_response(HttpResponse& response, HttpRequest& request, int fd)
 	response.get_length = false;
 	response.finish_reading = false;
 	response.url_changed = false;
+	response.pid = -1;
+	response.nbr_env = 0;
 	response.server_it = server(response.request);
+	// response.name_output = "output";
 	response.location_it = location(response.request, response.server_it);
 }
 
@@ -69,6 +71,7 @@ std::string	get_reason_phase(int status_code)
 	reason_phase[414] = "Request-URI Too Long";
 	reason_phase[500] = "Internal Server Error";
 	reason_phase[501] = "not implemented";
+	reason_phase[504] = "Gateway Timeout";
 
 	return(reason_phase[status_code]);
 }

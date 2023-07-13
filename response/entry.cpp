@@ -6,9 +6,7 @@ int	send_response(int fd, HttpRequest& request, HttpResponse& response, int stat
 	if (!request.method.empty())
 	{
 		response.old_url = request.url;
-
-		// response.out = new std::ofstream("filename.png", std::ios::binary);/////////
-		// std::cout << "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n";
+		// std::cout <<YELLOW << "*******> =" << status_code << END << std::endl; 
 		init_response(response, request, fd);
 		if (new_request(request, response, status_code))
 			return (1);
@@ -16,16 +14,75 @@ int	send_response(int fd, HttpRequest& request, HttpResponse& response, int stat
 	else
 	{
 		read_File(response);
-		// continue_previous_response(response);
-		// std::cout << "*********************> " << response.finish_reading << std::endl;
-		// response.finish_reading = 1;
 		if(response.finish_reading)
 		{
 			if (request.headers["connection"] == "keep-alive")
 				*close_connexion = false;
+			delete_generated_file(response);//////////////////////////////////
 			return (1);
 		}
 	}
+	return (0);
+}
+
+int get_req(HttpResponse &response)
+{
+	std::string response_buffer;
+	std::string content_length;
+
+	if (response_get(response))
+	{
+		read_File(response);
+		content_length = ft_tostring(response.size_file);
+		if (response.size_file == 0)//////////////////////////////
+		{
+			ft_send_error(404, response);
+			return (1);
+		} 
+		else
+		{
+			response.headers["content-length"] = content_length;
+			response_buffer = generate_http_response(response);
+			int ret = send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
+			if (ret < 0)
+			{
+				perror("send feailed");
+				return (1);
+			}
+		}
+	}
+	else
+		return (1);
+	return (0);
+}
+
+int post_req(HttpResponse &response)
+{
+	std::string response_buffer;
+	std::string content_length;
+	if(response_post(response))
+	{
+		read_File(response);
+		content_length = ft_tostring(response.size_file);
+		if (response.size_file == 0)
+		{
+			ft_send_error(404, response);
+			return (1);
+		} 
+		else
+		{
+			response.headers["content-length"] = content_length;
+			response_buffer = generate_http_response(response);
+			int ret = send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
+			if (ret < 0)
+			{
+				perror("send feailed");
+				return (1);
+			}
+		}
+	}
+	else
+		return (1);
 	return (0);
 }
 
@@ -34,37 +91,64 @@ int new_request(HttpRequest &request, HttpResponse &response, int status_code) {
 	std::string response_buffer;
 	std::string content_length;
 
+	// std::cout <<YELLOW << "*******> =" << status_code << END << std::endl; 
 	if (!status_code)
 	{
-		status_code = check_req_line_headers(request);
-		// std::cout << "****************************** "<< status_code << std::endl;
-		
+		status_code = check_req_line_headers(request);		
 		if (status_code == 1)
-		{
-			if (response_get(response))
-			{
-				read_File(response);
-				content_length = ft_tostring(response.size_file);
-				if (response.size_file == 0)
-				{
-					ft_send_error(404, response);
-					return (1);
-				} 
-				else
-				{
-					response.headers["content-length"] = content_length;
-					response_buffer = generate_http_response(response);
-					// std::cout << "\033[33m" << "{" << response_buffer << "}" << "\033[0m"  << std::endl;
-					send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
-				}
-			}
-			else
-				return (1);
-		}
+			return (get_req(response));
+		// {
+		// 	// if (response_get(response))
+		// 	// {
+		// 	// 	read_File(response);
+		// 	// 	content_length = ft_tostring(response.size_file);
+		// 	// 	if (response.size_file == 0)
+		// 	// 	{
+		// 	// 		ft_send_error(404, response);
+		// 	// 		return (1);
+		// 	// 	} 
+		// 	// 	else
+		// 	// 	{
+		// 	// 		response.headers["content-length"] = content_length;
+		// 	// 		response_buffer = generate_http_response(response);
+					
+		// 	// 		int ret = send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
+		// 	// 		if (ret < 0)
+		// 	// 		{
+		// 	// 			perror("send feailed");
+		// 	// 			return (1);
+		// 	// 		}
+		// 	// 	}
+		// 	// }
+		// 	else
+		// 		return (1);
+		// }
 		else if (status_code == 2)
 		{
-			if(!response_post(response))
-				return (1);
+			return (post_req(response));
+			// if(response_post(response))
+			// {
+			// 	read_File(response);
+			// 	content_length = ft_tostring(response.size_file);
+			// 	if (response.size_file == 0)
+			// 	{
+			// 		ft_send_error(404, response);
+			// 		return (1);
+			// 	} 
+			// 	else
+			// 	{
+			// 		response.headers["content-length"] = content_length;
+			// 		response_buffer = generate_http_response(response);
+			// 		int ret = send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
+			// 		if (ret < 0)
+			// 		{
+			// 			perror("send feailed");
+			// 			return ;
+			// 		}
+			// 	}
+			// }
+			// else
+			// 	return (1);
 		}
 		else if (status_code == 3)
 		{
@@ -75,7 +159,7 @@ int new_request(HttpRequest &request, HttpResponse &response, int status_code) {
 	else
 	{
 		ft_send_error(status_code, response);
-			return (1);
+		return (1);
 	}
 	return (0);
 }

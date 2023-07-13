@@ -1,51 +1,39 @@
 #include "../webserv.hpp"
 #include "../config.hpp"
-#include <iostream>
+
+void parse_path(HttpResponse &response, std::string &root)
+{
+	std::string target = response.location_it->target;
+	std::string url = response.request.url;
+	size_t	find = url.find(target);
+
+	if (url.substr(0, find) != "" && *root.begin() != '/')
+	{
+		response.path_file = url.substr(0, find)+ "/" + root + url.substr(find + target.length(), url.find("?") - 1);
+		if (url.find("?") != std::string::npos)
+			response.query_str = url.substr(url.find("?") + 1, url.length());
+	}
+	else
+	{
+		response.path_file = url.substr(0, find) + root + url.substr(find + target.length(), url.find("?") - 1);
+		if (url.find("?") != std::string::npos)
+			response.query_str = url.substr(url.find("?") + 1, url.length());
+	}
+}
 
 int get_path(HttpResponse& response)
 {
-	std::string target = response.location_it->target;
 	std::string dir = response.location_it->dir;
-	std::string url = response.request.url;
 	std::string root = response.server_it->root;
 	
-	size_t	find = url.find(target);
 	if (!dir.empty())
 	{
-		if (url.substr(0, find) != "" && *dir.begin() != '/')
-		{
-			response.path_file = url.substr(0, find)+ "/" + dir + url.substr(find + target.length(), url.find("?") - 1);
-			if (url.find("?") != std::string::npos)
-			{
-				response.query_str = url.substr(url.find("?") + 1, url.length());
-				// std::cout << "\033[34m" << "query == {" << response.query_str << "}" << "\033[00m" << std::endl;
-			}
-			// response.query_str = url.substr(url.find("?") + 1, url.length());
-			// std::cout << "\033[32m" << "query == {" << url.substr(url.find("?") + 1, url.length()) << "}" << "\033[00m" << std::endl;
-		}
-		else
-		{
-			response.path_file = url.substr(0, find) + dir + url.substr(find + target.length(), url.find("?") - 1);
-			if (url.find("?") != std::string::npos)
-			{
-				response.query_str = url.substr(url.find("?") + 1, url.length());
-				// std::cout << "\033[34m" << "query == {" << response.query_str << "}" << "\033[00m" << std::endl;
-			}
-		}
+		parse_path(response, dir);
 		return (1);
 	}
 	if (!response.server_it->root.empty())
 	{
-		if (url.substr(0, find) != "" && *dir.begin() != '/')
-		{
-			response.path_file = url.substr(0, find)+ "/" + root + url.substr(find + target.length(), url.find("?") - 1);
-			response.query_str = url.substr(url.find("?") + 1, url.length());
-		}
-		else
-		{
-			response.path_file = url.substr(0, find) + root + url.substr(find + target.length(), url.find("?") - 1);
-			response.query_str = url.substr(url.find("?") + 1, url.length());
-		}
+		parse_path(response, root);
 		return (1);
 	}
 	ft_send_error(404, response);
@@ -105,26 +93,32 @@ void read_File(HttpResponse& response)
 			response.content.clear();
 			buffer.resize(chunkSize);
 			file.seekg(response.byte_reading);
+			// std::cout <<PURPLE<< "-------> start reding "<< END << std::endl;
 			file.read(buffer.data(), chunkSize);
+			// std::cout <<PURPLE<< "--------> end reding "<< END << std::endl;
 			ssize_t readi = file.gcount();
 			response.content.assign(buffer.begin(), buffer.end());
+			// std::cout <<YELLOW<< "-------> start sending "<< END << std::endl;
 			ssize_t i = send(response.fd,response.content.data(), readi, 0);
-			// while (i < 0)
-			// {
-			// 	perror("client send file error");
-			// 	usleep(100);
-			// 	i = send(response.fd,response.content.data(), readi, 0);
-			// }
-			if (i > 0)
+			// std::cout <<YELLOW<< "--------> end sending "<< END << std::endl;
+			if (i < 0)
+			{
+				response.finish_reading = true;
+				perror("send feiled");
+				file.close();
+				return ;	
+			}
+			if (i >= 0)
+			{
+				std::cout << YELLOW << "send work" << END << std::endl;
 				response.byte_reading += i;
-			// std::string str(response.content.begin(), response.content.end());
-			// std::cout << "\033[33m" << "{" << str << "}" << "\033[0m"  << std::endl;
+			}
 		}
 		if (response.byte_reading == length)
 		{
-
 			response.byte_reading = 0;
 			response.finish_reading = true;
+			file.close();
 			return ;
 		}
 		file.close();
