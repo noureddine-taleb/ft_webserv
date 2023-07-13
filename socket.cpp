@@ -5,8 +5,8 @@
 #elif __linux__
 #include <sys/epoll.h>
 #endif
-#include <sstream>
 #include <fcntl.h>
+#include <sstream>
 
 // todo: move these functions into a separate files
 // todo: connection: keep-alive
@@ -14,55 +14,60 @@
  * spawn servers and add their sockets to watchlist
  * wait for events (connections, requests) and handle them serially
  * todo: multiple servers could use the same port
-*/
+ */
 void spawn_servers(int wfd) {
-	std::set<std::string> servers;
-	for (size_t i = 0; i < config.servers.size(); i++) {
-		std::stringstream gstream;
-		gstream << config.servers[i].port;
-		std::string port = gstream.str();
-		servers.insert(config.servers[i].ip + ":" + port);
-	}
-	for (std::set<std::string>::iterator it = servers.begin(); it != servers.end(); it++) {
-		int sock;
-		assert((sock = socket(PF_INET, SOCK_STREAM, 0)) != -1);
+  std::set<std::string> servers;
+  for (size_t i = 0; i < config.servers.size(); i++) {
+    std::stringstream gstream;
+    gstream << config.servers[i].port;
+    std::string port = gstream.str();
+    servers.insert(config.servers[i].ip + ":" + port);
+  }
+  for (std::set<std::string>::iterator it = servers.begin();
+       it != servers.end(); it++) {
+    int sock = socket(PF_INET, SOCK_STREAM, 0);
+    assert(sock != -1, "socket() failed");
 
-		int enable = 1;
-		assert(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) == 0);
+    int enable = 1;
+    assert(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &enable,
+                      sizeof(enable)) == 0,
+           "setsockopt() failed");
 
-		std::vector<std::string> v = split(*it, ":");
-		std::string ip = v[0];
-		int port = stoi(v[1]);
-		struct sockaddr_in address;
-		address.sin_family = AF_INET;
-		address.sin_addr.s_addr = inet_addr(ip.c_str());
-		address.sin_port = htons(port);
+    std::vector<std::string> v = split(*it, ":");
+    std::string ip = v[0];
+    int port = stoi(v[1]);
+    struct sockaddr_in address;
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = inet_addr(ip.c_str());
+    address.sin_port = htons(port);
 
-		assert(bind(sock, (struct sockaddr *)&address, sizeof(address)) == 0);
+    assert(bind(sock, (struct sockaddr *)&address, sizeof(address)) == 0,
+           "bind() failed");
 
-		assert(listen(sock, BACKLOG_SIZE) == 0);
-		debug("listening on: " << ip << ":" << port);
+    assert(listen(sock, BACKLOG_SIZE) == 0, "listen() failed");
+    debug("listening on: " << ip << ":" << port);
 
 #ifdef __APPLE__
-		watchlist_add_fd(wfd, sock, EVFILT_READ);
+    watchlist_add_fd(wfd, sock, EVFILT_READ);
 #elif __linux__
-		watchlist_add_fd(wfd, sock, EPOLLIN);
+    watchlist_add_fd(wfd, sock, EPOLLIN);
 #endif
-		config.max_server_fd = sock;
-	}
+    config.max_server_fd = sock;
+  }
 }
 
 void accept_connection(int wfd, int server) {
-	struct sockaddr_in caddress;
-	socklen_t len = sizeof caddress;
-	int client = accept(server, (struct sockaddr *)&caddress, &len);
-	assert(client != -1);
-	fcntl(client, F_SETFL, O_NONBLOCK);
+  struct sockaddr_in caddress;
+  socklen_t len = sizeof caddress;
+  int client = accept(server, (struct sockaddr *)&caddress, &len);
+  assert(client != -1, "accept() failed");
+  fcntl(client, F_SETFL, O_NONBLOCK);
 #ifdef __APPLE__
-		watchlist_add_fd(wfd, client, EVFILT_READ);
+  watchlist_add_fd(wfd, client, EVFILT_READ);
 #elif __linux__
-		watchlist_add_fd(wfd, client, EPOLLIN);
+  watchlist_add_fd(wfd, client, EPOLLIN);
 #endif
 
-	debug("connection received " << inet_ntoa(caddress.sin_addr) << ":" << ntohs(caddress.sin_port));
+  debug("connection received " << inet_ntoa(caddress.sin_addr) << ":"
+                               << ntohs(caddress.sin_port));
 }
