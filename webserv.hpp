@@ -30,7 +30,7 @@
 #define HTTP_DEL_LEN (sizeof(HTTP_DEL) - 1)
 #define BUFF_SIZE 1000000 // 1
 
-#define WATCHL_NO_PENDING 0
+#define WATCHL_NO_PENDING -1
 #define REQ_CONN_BROKEN -1
 #define REQ_TO_BE_CONT -2
 

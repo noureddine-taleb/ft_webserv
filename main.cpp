@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
 			continue;
 		}
 		// no new request, serve pending ones
-		if (fd == WATCHL_NO_PENDING) {
+		if (fd == WATCHL_NO_PENDING || tasks.find(fd) != tasks.end()) {
 			fd = sched_get_starved(tasks);
 			if (fd == Q_EMPTY)
 				continue;
