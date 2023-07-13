@@ -61,7 +61,7 @@ void accept_connection(int wfd, int server) {
   socklen_t len = sizeof caddress;
   int client = accept(server, (struct sockaddr *)&caddress, &len);
   assert(client != -1, "accept() failed");
-  fcntl(client, F_SETFL, O_NONBLOCK);
+  assert (fcntl(client, F_SETFL, O_NONBLOCK) >= 0, "fcntl() failed");
 #ifdef __APPLE__
   watchlist_add_fd(wfd, client, EVFILT_READ);
 #elif __linux__
