@@ -2,3 +2,4 @@ webserv
 .vscode
 *.o
 webserv.dSYM
+**/.DS_Store
