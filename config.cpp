@@ -156,15 +156,17 @@ void parse_server(std::vector<std::string> &lines, Server &server,
 			std::vector<std::string> listen = split(trim(listen_raw), ":");
 			assert_msg(listen.size() == 2, "invalid listen directive");
 			server.ip = listen[0];
+			server.port = listen[1];
+			int port;
 			try
 			{
-				server.port = ft_stoi(listen[1]);
+				port = ft_stoi(listen[1]);
 			}
 			catch (std::invalid_argument &e)
 			{
 				die("invalid port number");
 			}
-			assert_msg(server.port > 0 && server.port < 65535, "invalid port number");
+			assert_msg(port >= 0 && port <= 65535, "invalid port number");
 			i++;
 		}
 		else if (lines[i].substr(0, 8) == "location")
@@ -191,12 +193,6 @@ void parse_server(std::vector<std::string> &lines, Server &server,
 	}
 }
 
-/**
- * TODO:
- * ignore empty lines
- * check if a block is empty
- * check required blocks
- */
 void parse_config(std::string config_file)
 {
 	std::ifstream cfg(config_file.c_str());

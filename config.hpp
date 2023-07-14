@@ -52,9 +52,9 @@ public:
 class Server
 {
 public:
-	Server() : ip("0.0.0.0"), port(0), root("") {}
+	Server() : ip("0.0.0.0"), port("0"), root("") {}
 	std::string ip;
-	int port;
+	std::string port;
 	std::string root;
 	std::vector<std::string> server_names;
 	std::vector<Location> routes;

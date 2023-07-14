@@ -154,8 +154,9 @@ void dump_config(Config config);
 std::vector<char>::iterator find(std::string str, std::vector<char> &vec);
 std::string trim(std::string s);
 std::vector<std::string> split(std::string s, std::string delimiter,
-                               unsigned int max_splits = -1);
+									unsigned int max_splits = -1);
 int ft_stoi(std::string str);
+unsigned int ft_stoi_base_16(std::string str);
 
 //----------------------------------------------------------------------------
 //iterators

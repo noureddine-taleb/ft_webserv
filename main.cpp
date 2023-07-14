@@ -98,7 +98,6 @@ int main(int argc, char **argv)
 		// request.headers.end(); it++) { 	std::cout << "\033[32m" << it->first <<
 		// ' ' << it->second << "\033[0m" << std::endl;
 		// }
-		close_connexion = false;
 		finished =
 			send_response(fd, request, response, status_code, &close_connexion);
 

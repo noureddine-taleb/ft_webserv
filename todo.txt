@@ -66,7 +66,8 @@ if / not exist path == server route
   => check all and clean the code
   => protection for the functions
   => handel / in the post
-/Users/kadjane/Desktop/server_push/
+	=> check if the socket would block in send side
+
 
 exit@GLIBC_2.2.5
 inet_addr@GLIBC_2.2.5

@@ -40,7 +40,7 @@ std::vector<Server>::iterator server(HttpRequest& request)
 {
 	int	position = request.headers["Host"].find(":");
 	std::string ip = request.headers["Host"].substr(0, position);
-	int port = ft_atoi(request.headers["Host"].substr(position + 1, request.headers["Host"].length()));
+	std::string port = request.headers["Host"].substr(position + 1);
 	for (std::vector<Server>::iterator it = config.servers.begin(); it != config.servers.end(); it++)
 		if (it->ip == ip && it->port == port)
 			return (it);
