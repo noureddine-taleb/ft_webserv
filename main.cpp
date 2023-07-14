@@ -6,14 +6,20 @@
 #include "sched.hpp"
 #include "webserv.hpp"
 #include <cstring>
+#include <signal.h>
 
 // todo: check if globals are allowed
 Config config;
+
+void ignore(int sig) {
+  (void)sig;
+}
 
 int main(int argc, char **argv) {
   if (argc != 2)
     die("usage: webserv <config_file>\n");
 
+  signal(SIGPIPE, ignore);
   parse_config(argv[1]);
   // dump_config(config);
 
