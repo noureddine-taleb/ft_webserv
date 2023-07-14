@@ -25,7 +25,7 @@
 #define BACKLOG_SIZE 32
 #define HTTP_DEL "\r\n"
 #define HTTP_DEL_LEN (sizeof(HTTP_DEL) - 1)
-#define BUFF_SIZE 6000 // 1
+#define BUFF_SIZE 4096 // 1
 
 #define WATCHL_NO_PENDING -1
 #define REQ_CONN_BROKEN -1

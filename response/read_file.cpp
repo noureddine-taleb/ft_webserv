@@ -99,7 +99,9 @@ int read_File(HttpResponse& response)
 			ssize_t i = send(response.fd,response.content.data(), readi, 0);
 			if (i < 0)
 			{
-				perror("send feiled");
+				std::cerr << strerror(errno) << std::endl;
+				if (std::string(strerror(errno)) == "Resource temporarily unavailable")
+					return 0;
 				file.close();
 				return -1;	
 			}
