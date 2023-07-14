@@ -101,7 +101,7 @@ int parse_partial_http_request(HttpRequest &request, bool *done) {
 				return -NotImplemented;
 			if (headerv[0] == "Content-Length") {
 				try {
-					int size = stoi(headerv[1]);
+					int size = ft_stoi(headerv[1]);
 					if (size < 0)
 						return -BadRequest;
 					if (size > config.client_max_body_size)
@@ -138,7 +138,7 @@ int parse_partial_http_request(HttpRequest &request, bool *done) {
 					return -RequestEntityTooLarge;
 				parsed += chunk_size.size() + HTTP_DEL_LEN + chunk.size() + HTTP_DEL_LEN;
 			} else {
-				unsigned int size = stoi(request.headers["Content-Length"]);
+				unsigned int size = ft_stoi(request.headers["Content-Length"]);
 				if (size > (unsigned int)config.client_max_body_size)
 					return -RequestEntityTooLarge;
 				unsigned int len = request.http_buffer.size();

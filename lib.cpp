@@ -46,7 +46,7 @@ std::vector<char>::iterator find(std::string str, std::vector<char> &vec) {
 	return vec.end();
 }
 
-int stoi(std::string str) {
+int ft_stoi(std::string str) {
     if (str.length() == 0)
         throw std::invalid_argument("number empty");
     for (unsigned int i = 0; i < str.length(); i++) {

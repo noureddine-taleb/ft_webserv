@@ -26,26 +26,26 @@ void spawn_servers(int wfd) {
   for (std::set<std::string>::iterator it = servers.begin();
        it != servers.end(); it++) {
     int sock = socket(PF_INET, SOCK_STREAM, 0);
-    assert(sock != -1, "socket() failed");
+    assert_msg(sock != -1, "socket() failed");
 
     int enable = 1;
-    assert(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &enable,
+    assert_msg(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &enable,
                       sizeof(enable)) == 0,
            "setsockopt() failed");
 
     std::vector<std::string> v = split(*it, ":");
     std::string ip = v[0];
-    int port = stoi(v[1]);
+    int port = ft_stoi(v[1]);
     // todo: use getaddrinfo
     struct sockaddr_in address;
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = inet_addr(ip.c_str());
     address.sin_port = htons(port);
 
-    assert(bind(sock, (struct sockaddr *)&address, sizeof(address)) == 0,
+    assert_msg(bind(sock, (struct sockaddr *)&address, sizeof(address)) == 0,
            "bind() failed");
 
-    assert(listen(sock, BACKLOG_SIZE) == 0, "listen() failed");
+    assert_msg(listen(sock, BACKLOG_SIZE) == 0, "listen() failed");
     debug("listening on: " << ip << ":" << port);
 
 #ifdef __APPLE__
@@ -61,8 +61,8 @@ void accept_connection(int wfd, int server) {
   struct sockaddr_in caddress;
   socklen_t len = sizeof caddress;
   int client = accept(server, (struct sockaddr *)&caddress, &len);
-  assert(client != -1, "accept() failed");
-  assert (fcntl(client, F_SETFL, O_NONBLOCK) >= 0, "fcntl() failed");
+  assert_msg(client != -1, "accept() failed");
+  assert_msg (fcntl(client, F_SETFL, O_NONBLOCK) >= 0, "fcntl() failed");
 #ifdef __APPLE__
   watchlist_add_fd(wfd, client, EVFILT_READ);
 #elif __linux__

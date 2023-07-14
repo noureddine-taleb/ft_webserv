@@ -11,12 +11,12 @@ void parse_error_pages(std::vector<std::string> &lines,
 	std::string value;
   for (; i < lines.size(); i++) {
 	std::vector<std::string> error_page = split(lines[i], ":", 1);
-	assert(error_page.size() == 2, "invalid line in error_pages");
+	assert_msg(error_page.size() == 2, "invalid line in error_pages");
 	error_page[0] = trim(error_page[0]);
 	error_page[1] = trim(error_page[1]);
 	int error_code;
 	try {
-	  error_code = stoi(error_page[0]);
+	  error_code = ft_stoi(error_page[0]);
 	} catch (std::invalid_argument&) {
 	  return;
 	}
@@ -49,14 +49,14 @@ void parse_location(std::vector<std::string> &lines, Location &location,
 	  Redirection r;
 	  value = lines[i].substr(8), value = trim(value);
 	  std::vector<std::string> rewrite = split(value, " ");
-	  assert(rewrite.size() == 2, "invalid rewrite line");
+	  assert_msg(rewrite.size() == 2, "invalid rewrite line");
 	  r.from = rewrite[0];
 	  r.to = rewrite[1];
 	  location.redirections.push_back(r);
 	} else if (lines[i].substr(0, 4) == "cgi:") {
 	  value = lines[i].substr(4), value = trim(value);
 	  std::vector<std::string> cgi = split(value, " ");
-	  assert(cgi.size() == 2, "invalid cgi line");
+	  assert_msg(cgi.size() == 2, "invalid cgi line");
 	  CGI cgi_inst;
 	  cgi_inst.file_extension = cgi[0];
 	  cgi_inst.cgi_pass = cgi[1];
@@ -94,7 +94,7 @@ void parse_location(std::vector<std::string> &lines, Location &location,
 
 	  int code;
 	  try {
-		code = stoi(parts[0]);
+		code = ft_stoi(parts[0]);
 	  } catch (std::invalid_argument &) {
 		die("invalid value for location.return code\n");
 	  }
@@ -119,14 +119,14 @@ void parse_server(std::vector<std::string> &lines, Server &server,
 	} else if (lines[i].substr(0, 7) == "listen:") {
 	  std::string listen_raw = lines[i].substr(7);
 	  std::vector<std::string> listen = split(trim(listen_raw), ":");
-	  assert(listen.size() == 2, "invalid listen directive");
+	  assert_msg(listen.size() == 2, "invalid listen directive");
 	  server.ip = listen[0];
 	  try {
-		server.port = stoi(listen[1]);
+		server.port = ft_stoi(listen[1]);
 	  } catch (std::invalid_argument &e) {
 		die("invalid port number");
 	  }
-	  assert(server.port > 0 && server.port < 65535, "invalid port number");
+	  assert_msg(server.port > 0 && server.port < 65535, "invalid port number");
 	  i++;
 	} else if (lines[i].substr(0, 8) == "location") {
 	  Location location;
@@ -192,7 +192,7 @@ void parse_config(std::string config_file) {
 	  if (factor != 1)
 		value.erase(value.end() - 1);
 	  try {
-		config.client_max_body_size = stoi(value) * factor;
+		config.client_max_body_size = ft_stoi(value) * factor;
 		if (config.client_max_body_size < 0)
 		  throw std::invalid_argument("negative number");
 	  } catch (std::invalid_argument &) {
