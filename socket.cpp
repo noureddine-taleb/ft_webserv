@@ -14,34 +14,32 @@
  * wait for events (connections, requests) and handle them serially
  */
 void spawn_servers(int wfd) {
-  std::set<std::string> servers;
-  for (size_t i = 0; i < config.servers.size(); i++) {
-	std::stringstream gstream;
-	gstream << config.servers[i].port;
-	std::string port = gstream.str();
-	servers.insert(config.servers[i].ip + ":" + port);
-  }
-  for (std::set<std::string>::iterator it = servers.begin();
-	   it != servers.end(); it++) {
-	std::vector<std::string> v = split(*it, ":");
-	std::string ip = v[0];
-	std::string port = v[1];
+	std::vector<struct addrinfo *> servers;
+	static const int enable = 1;
+	int sock;
 
+  for (std::vector<Server>::iterator it = config.servers.begin(); it < config.servers.end(); it++) {
 	struct addrinfo hints, *res;
 	int error;
 
 	std::memset(&hints, 0, sizeof(hints));
 	hints.ai_family = PF_INET;
 	hints.ai_socktype = SOCK_STREAM;
-	error = getaddrinfo(ip.c_str(), port.c_str(), &hints, &res);
+	error = getaddrinfo(it->ip.c_str(), it->port.c_str(), &hints, &res);
 	if (error)
 		die(gai_strerror(error));
 
-	int sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+	for (std::vector<struct addrinfo *>::iterator it = servers.begin(); it < servers.end(); it++) {
+		struct sockaddr_in *cur = (struct sockaddr_in *)res->ai_addr;
+		struct sockaddr_in *target = (struct sockaddr_in *)(*it)->ai_addr;
+		if (target->sin_addr.s_addr == cur->sin_addr.s_addr && target->sin_port == cur->sin_port) {
+			debug("skip = server=" << cur->sin_addr.s_addr << ":" << ntohs(cur->sin_port) << " same as server=" << target->sin_addr.s_addr << ":" << ntohs(target->sin_port));
+			freeaddrinfo(res);
+			goto skip;
+		}
+	}
+	sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 	assert_msg(sock != -1, "socket: " << strerror(errno));
-	freeaddrinfo(res);
-
-	int enable = 1;
 	assert_msg(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) == 0,
 		   "setsockopt: " << strerror(errno));
 
@@ -49,14 +47,21 @@ void spawn_servers(int wfd) {
 		   "bind() failed");
 
 	assert_msg(listen(sock, BACKLOG_SIZE) == 0, "listen: " << strerror(errno));
-	debug("listening on: " << ip << ":" << port);
+	debug("listening on: " << it->ip << ":" << it->port);
 #ifdef __APPLE__
 	watchlist_add_fd(wfd, sock, EVFILT_READ);
 #elif __linux__
 	watchlist_add_fd(wfd, sock, EPOLLIN);
 #endif
 	config.max_server_fd = sock;
+	servers.push_back(res);
+skip:
+	continue;
   }
+	// cleanup
+	for (std::vector<struct addrinfo *>::iterator it = servers.begin(); it < servers.end(); it++) {
+		freeaddrinfo(*it);
+	}
 }
 
 void accept_connection(int wfd, int server) {
