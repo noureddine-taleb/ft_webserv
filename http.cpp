@@ -36,7 +36,8 @@
 // Connection: keep-alive
 // ETag: "64230162-267"
 
-enum {
+enum
+{
 	BadRequest = 400,
 	RequestURITooLong = 414,
 	MethodNotAllowed = 405,
@@ -45,15 +46,18 @@ enum {
 };
 
 // todo split this gigantic func
-int parse_partial_http_request(HttpRequest &request, bool *done) {
+int parse_partial_http_request(HttpRequest &request, bool *done)
+{
 	// parse http header
 	int parsed = 0;
-	for (; request.http_buffer.size(); request.http_buffer.erase(request.http_buffer.begin(), request.http_buffer.begin() + parsed)) {
+	for (; request.http_buffer.size(); request.http_buffer.erase(request.http_buffer.begin(), request.http_buffer.begin() + parsed))
+	{
 		parsed = 0;
 		if (!request.__http_headers_end && find(HTTP_DEL, request.http_buffer) == request.http_buffer.end())
 			return 0;
-		if (!request.__http_top_header_parsed) {
-			std::string http_line (request.http_buffer.begin(), find(HTTP_DEL, request.http_buffer));
+		if (!request.__http_top_header_parsed)
+		{
+			std::string http_line(request.http_buffer.begin(), find(HTTP_DEL, request.http_buffer));
 			std::vector<std::string> http_headerv = split(http_line, " ");
 			if (http_headerv.size() != 3)
 				return -BadRequest;
@@ -73,10 +77,13 @@ int parse_partial_http_request(HttpRequest &request, bool *done) {
 				return -BadRequest;
 			request.__http_top_header_parsed = true;
 			parsed += http_line.length() + HTTP_DEL_LEN;
-		} else if (!request.__http_headers_end) {
-			std::string http_line (request.http_buffer.begin(), find(HTTP_DEL, request.http_buffer));
+		}
+		else if (!request.__http_headers_end)
+		{
+			std::string http_line(request.http_buffer.begin(), find(HTTP_DEL, request.http_buffer));
 			// end of headers
-			if (http_line.length() == 0) {
+			if (http_line.length() == 0)
+			{
 				if (!request.headers.count("Host"))
 					return -BadRequest;
 				// for post at least one header should be specified: Transfer-Encoding or Content-Length
@@ -84,7 +91,8 @@ int parse_partial_http_request(HttpRequest &request, bool *done) {
 					return -BadRequest;
 				request.__http_headers_end = true;
 				parsed += HTTP_DEL_LEN;
-				if (request.method == "GET" || request.method == "DELETE") {
+				if (request.method == "GET" || request.method == "DELETE")
+				{
 					*done = true;
 					return 0;
 				}
@@ -99,36 +107,47 @@ int parse_partial_http_request(HttpRequest &request, bool *done) {
 				return -BadRequest;
 			if (headerv[0] == "Transfer-Encoding" && headerv[1] != "chunked")
 				return -NotImplemented;
-			if (headerv[0] == "Content-Length") {
-				try {
+			if (headerv[0] == "Content-Length")
+			{
+				try
+				{
 					int size = ft_stoi(headerv[1]);
 					if (size < 0)
 						return -BadRequest;
 					if (size > config.client_max_body_size)
 						return -RequestEntityTooLarge;
-				} catch(std::invalid_argument&) {
+				}
+				catch (std::invalid_argument &)
+				{
 					return -BadRequest;
 				}
 			}
 			request.headers[headerv[0]] = headerv[1];
 			parsed += http_line.length() + HTTP_DEL_LEN;
-		} else {
-			if (request.headers["Transfer-Encoding"] == "chunked") {
+		}
+		else
+		{
+			if (request.headers["Transfer-Encoding"] == "chunked")
+			{
 				if (find(HTTP_DEL, request.http_buffer) == request.http_buffer.end())
 					return 0;
 				int size;
 				std::vector<char> chunk_size(request.http_buffer.begin(), find(HTTP_DEL, request.http_buffer));
-				try {
+				try
+				{
 					std::string chunk_size_s(chunk_size.begin(), chunk_size.end());
 					// TODO: avoid forbidden functions
 					size = (int)strtol(chunk_size_s.c_str(), NULL, 16);
-				} catch (std::invalid_argument&) {
+				}
+				catch (std::invalid_argument &)
+				{
 					return -BadRequest;
 				}
 				std::vector<char> chunk(find(HTTP_DEL, request.http_buffer) + HTTP_DEL_LEN, request.http_buffer.end());
 				if (chunk.size() < (size + HTTP_DEL_LEN))
 					return 0;
-				if (size == 0) {
+				if (size == 0)
+				{
 					*done = true;
 					return parse_form_data_files(request) == 0 ? 0 : -BadRequest;
 				}
@@ -137,19 +156,23 @@ int parse_partial_http_request(HttpRequest &request, bool *done) {
 				if (request.content.size() > (unsigned int)config.client_max_body_size)
 					return -RequestEntityTooLarge;
 				parsed += chunk_size.size() + HTTP_DEL_LEN + chunk.size() + HTTP_DEL_LEN;
-			} else {
+			}
+			else
+			{
 				unsigned int size = ft_stoi(request.headers["Content-Length"]);
 				if (size > (unsigned int)config.client_max_body_size)
 					return -RequestEntityTooLarge;
 				unsigned int len = request.http_buffer.size();
 				unsigned int rem = size - request.content.size();
-				if (len > rem) {
+				if (len > rem)
+				{
 					len = rem;
 					debug("content size bigger than Content-Length\n");
 				}
 				request.content.insert(request.content.end(), request.http_buffer.begin(), request.http_buffer.begin() + len);
 				parsed += len;
-				if (request.content.size() >= size) {
+				if (request.content.size() >= size)
+				{
 					*done = true;
 					return parse_form_data_files(request) == 0 ? 0 : -BadRequest;
 				}
@@ -166,24 +189,28 @@ int parse_partial_http_request(HttpRequest &request, bool *done) {
  * -1: connection is broken and should be closed
  * -2: request not finished yet: to be continued
  * x: http failure status code (4xx, 5xx)
-*/
-int get_request(int fd, HttpRequest &request) {
+ */
+int get_request(int fd, HttpRequest &request)
+{
 	int ret;
 	char buffer[255];
 	bool done;
 	int iter = 0;
 	int max_iter = 5;
 
-	while (1) {
+	while (1)
+	{
 		done = false;
 		// todo: check if the socket would block
 		ret = recv(fd, buffer, sizeof(buffer) - 1, 0);
-		if (ret < 0) {
+		if (ret < 0)
+		{
 			if (errno == EAGAIN)
 				return REQ_TO_BE_CONT;
 			return REQ_CONN_BROKEN;
 		}
-		if (ret == 0) {
+		if (ret == 0)
+		{
 			debug("recv == 0\n");
 			return REQ_CONN_BROKEN;
 		}
@@ -202,25 +229,30 @@ int get_request(int fd, HttpRequest &request) {
 	return 0;
 }
 
-void dump_request(HttpRequest &request) {
+void dump_request(HttpRequest &request)
+{
 	std::cout << "method: " << request.method << std::endl;
 	std::cout << "url: " << request.url << std::endl;
 	std::cout << "version: " << request.version << std::endl;
-	for (std::map<std::string, std::string>::iterator it = request.headers.begin(); it != request.headers.end(); it++) {
+	for (std::map<std::string, std::string>::iterator it = request.headers.begin(); it != request.headers.end(); it++)
+	{
 		std::cout << it->first << " : " << it->second << std::endl;
 	}
 
 	std::cout << std::endl;
 	std::cout << "+++++++++++++++++++++++++++++++++" << std::endl;
-	for (std::vector<char>::iterator it = request.content.begin(); it != request.content.end(); it++) {
+	for (std::vector<char>::iterator it = request.content.begin(); it != request.content.end(); it++)
+	{
 		std::cout << *it;
 	}
 	std::cout << "+++++++++++++++++++++++++++++++++" << std::endl;
 
 	std::cout << "fffffffffffffffffffffffffffffffff" << std::endl;
-	for (std::vector<File>::iterator it = request.files.begin(); it != request.files.end(); it++) {
+	for (std::vector<File>::iterator it = request.files.begin(); it != request.files.end(); it++)
+	{
 		std::cout << it->name << std::endl;
-		for (std::vector<char>::iterator it2 = it->content.begin(); it2 != it->content.end(); it2++) {
+		for (std::vector<char>::iterator it2 = it->content.begin(); it2 != it->content.end(); it2++)
+		{
 			std::cout << *it2;
 		}
 		std::cout << std::endl;

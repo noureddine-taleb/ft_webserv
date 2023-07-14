@@ -6,17 +6,19 @@
 
 #define Q_EMPTY -1
 
-enum SchedulableEntityTypes {
+enum SchedulableEntityTypes
+{
 	REQUEST,
 	RESPONSE
 };
 
-class SchedulableEntity {
-	public:
-		int index;
-		virtual enum SchedulableEntityTypes get_type() = 0;
-		// todo: maybe definitions should be in source file
-		virtual ~SchedulableEntity() {};
+class SchedulableEntity
+{
+public:
+	int index;
+	virtual enum SchedulableEntityTypes get_type() = 0;
+	// todo: maybe definitions should be in source file
+	virtual ~SchedulableEntity(){};
 };
 
 int sched_get_starved(std::map<int, SchedulableEntity *> &tasks);
