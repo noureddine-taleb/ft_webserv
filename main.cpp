@@ -84,6 +84,8 @@ int main(int argc, char **argv)
 			continue;
 		default:
 			debug("status = finished with:" << status_code);
+			if (status_code == 0)
+				debug(request.method << " " << request.url << " " << request.version);
 			sched_unqueue_task(tasks, fd);
 			break;
 		}

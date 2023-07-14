@@ -42,12 +42,12 @@
 #define END "\033[00m"
 
 #define debug(msg)                                                             \
-  std::cerr << "+++++++++++++++++++++ " << __FILE__ << ":" << __LINE__ << " "  \
+  std::cerr << "[debug] " << __FILE__ << ":" << __LINE__ << " "  \
             << msg << std::endl
 
 #define die(msg)                                                               \
   do {                                                                         \
-    std::cerr << "********************** " << msg << std::endl;                \
+    std::cerr << "[crit] " << msg << std::endl;                \
     exit(1);                                                                   \
   } while (0);
 

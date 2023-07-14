@@ -79,7 +79,7 @@ std::vector<char>::iterator find(std::string str, std::vector<char> &vec)
 }
 
 int ft_stoi(std::string str)
-	{
+{
 	if (str.length() == 0)
 		throw std::invalid_argument("number empty");
 	for (unsigned int i = 0; i < str.length(); i++)
@@ -105,7 +105,7 @@ unsigned int ft_stoi_base_16(std::string str) {
 		throw std::invalid_argument("number overflow");
 	for (unsigned int i = 0; i < str.length(); i++)
 	{
-		if (!std::isdigit(str[i]) || str[i] < 'a' || str[i] > 'f')
+		if (!std::isdigit(str[i]) && !(str[i] >= 'a' || str[i] <= 'f'))
 			throw std::invalid_argument("not number");
 	}
 	unsigned int x;

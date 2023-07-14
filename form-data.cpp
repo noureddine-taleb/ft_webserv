@@ -84,11 +84,11 @@ int parse_form_data_header_vars(std::string value, std::map<std::string, std::st
 }
 
 int parse_form_data_files(HttpRequest &request) {
-	debug("files: parse_form_data_files called");
+	debug("form-data: parse_form_data_files called");
 
 	std::vector<std::string> parts = split(request.headers["Content-Type"], ";");
 	if (trim(parts[0]) != "multipart/form-data") {
-		debug("files: Content-Type != multipart/form-data");
+		debug("form-data: Content-Type != multipart/form-data");
 		return 0;
 	}
 	std::string boundary = trim(parts[1]);
@@ -102,7 +102,7 @@ int parse_form_data_files(HttpRequest &request) {
 	std::vector<File> files;
 	std::map<std::string, std::string> headers;
 
-	debug("files: start looking for files");
+	debug("form-data: start looking for files");
 
 	while (body.size()) {
 		File f;
@@ -113,32 +113,32 @@ int parse_form_data_files(HttpRequest &request) {
 		if (done)
 			break;
 		if (ret < 0) {
-			debug("files: bad headers");
+			debug("form-data: bad headers");
 			return -1;
 		}
 		if (!headers.count("Content-Disposition")) {
-			debug("files: unavailable header skip");
+			debug("form-data: unavailable header skip");
 			skip = 1;
 		}
 		if (parse_form_data_header_vars(headers["Content-Disposition"], vars) < 0) {
-			debug("files: parse_form_data_header_vars");
+			debug("form-data: parse_form_data_header_vars");
 			return -1;
 		}
 		if (!vars.count("filename")) {
-			debug("files: missing filename var skip");
+			debug("form-data: missing filename var skip");
 			skip = 1;
 		}
 		if (parse_form_data_content(body, f.content, delimiter) < 0) {
-			debug("files: error parse_form_data_content");
+			debug("form-data: error parse_form_data_content");
 			return -1;
 		}
 		if (!skip) {
-			debug("files: a file parsed successfully");
+			debug("form-data: a file parsed successfully");
 			f.name = vars["filename"];
 			files.push_back(f);
 		}
 	}
-	std::cout << "files: found " << files.size() << std::endl;
+	debug("form-data: " << files.size() << " files found");
 	request.files = files;
 	return 0;
 }

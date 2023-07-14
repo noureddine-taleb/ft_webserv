@@ -81,10 +81,8 @@ int parse_http_headers(HttpRequest &request, int &parsed, bool *done) {
 		request.__http_headers_end = true;
 		parsed += HTTP_DEL_LEN;
 		if (request.method == "GET" || request.method == "DELETE")
-		{
 			*done = true;
-			return 0;
-		}
+		return 0;
 	}
 	std::vector<std::string> headerv = split(http_line, ":", 1);
 	if (headerv.size() != 2)
@@ -122,9 +120,9 @@ int parse_http_body(HttpRequest &request, int &parsed, bool *done) {
 			return 0;
 		unsigned int size;
 		std::vector<char> chunk_size(request.http_buffer.begin(), find(HTTP_DEL, request.http_buffer));
+		std::string chunk_size_s(chunk_size.begin(), chunk_size.end());
 		try
 		{
-			std::string chunk_size_s(chunk_size.begin(), chunk_size.end());
 			size = ft_stoi_base_16(chunk_size_s);
 		}
 		catch (std::invalid_argument &)
@@ -165,7 +163,7 @@ int parse_http_body(HttpRequest &request, int &parsed, bool *done) {
 			return parse_form_data_files(request) == 0 ? 0 : -BadRequest;
 		}
 	}
-	return 0;
+	return parsed;
 }
 
 int parse_partial_http_request(HttpRequest &request, bool *done)
@@ -192,7 +190,7 @@ int parse_partial_http_request(HttpRequest &request, bool *done)
 		else
 		{
 			int ret = parse_http_body(request, parsed, done);
-			if (ret < 0 || *done)
+			if (ret <= 0 || *done)
 				return ret;
 		}
 	}
