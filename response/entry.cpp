@@ -3,6 +3,7 @@
 
 int	send_response(int fd, HttpRequest& request, HttpResponse& response, int status_code, bool *close_connexion)
 {
+	*close_connexion = false;
 	if (!request.method.empty())
 	{
 		response.old_url = request.url;
