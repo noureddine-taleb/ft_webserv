@@ -20,7 +20,9 @@ int	send_response(int fd, HttpRequest& request, HttpResponse& response, int stat
 		if(response.finish_reading)
 		{
 			if (request.headers["connection"] == "keep-alive")
-				*close_connexion = false;
+				*response.close_connexion = false;
+			else if (request.headers["connection"] == "close")
+				*response.close_connexion = true;
 			delete_generated_file(response);//////////////////////////////////
 			return (1);
 		}

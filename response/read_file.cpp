@@ -99,9 +99,9 @@ void read_File(HttpResponse& response)
 			ssize_t i = send(response.fd,response.content.data(), readi, 0);
 			if (i < 0)
 			{
-				response.finish_reading = true;
+				// response.finish_reading = true;
 				perror("send feiled");
-				// 	*response.close_connexion = true;
+				// *response.close_connexion = true;
 				file.close();
 				return ;	
 			}
