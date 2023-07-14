@@ -67,7 +67,7 @@ std::string read_File_error(std::string Path)
 	return buffer.str();
 }
 
-void read_File(HttpResponse& response)
+int read_File(HttpResponse& response)
 {
 
 	std::ifstream file;
@@ -85,7 +85,7 @@ void read_File(HttpResponse& response)
 			response.get_length = true;
 			file.close();
 			response.size_file = length;
-			return ;
+			return 0;
 		}
 		if (response.byte_reading < length)
 		{
@@ -99,11 +99,9 @@ void read_File(HttpResponse& response)
 			ssize_t i = send(response.fd,response.content.data(), readi, 0);
 			if (i < 0)
 			{
-				// response.finish_reading = true;
 				perror("send feiled");
-				// *response.close_connexion = true;
 				file.close();
-				return ;	
+				return -1;	
 			}
 			if (i >= 0)
 				response.byte_reading += i;
@@ -113,8 +111,9 @@ void read_File(HttpResponse& response)
 			response.byte_reading = 0;
 			response.finish_reading = true;
 			file.close();
-			return ;
+			return 0;
 		}
 		file.close();
 	}
+	return 0;
 }

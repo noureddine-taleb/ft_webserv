@@ -16,7 +16,11 @@ int	send_response(int fd, HttpRequest& request, HttpResponse& response, int stat
 	}
 	else
 	{
-		read_File(response);
+		int ret = read_File(response);
+		if (ret < 0) {
+			*close_connexion = true;
+			return 1;
+		}
 		if(response.finish_reading)
 		{
 			if (request.headers["connection"] == "keep-alive")

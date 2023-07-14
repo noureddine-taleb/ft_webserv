@@ -173,7 +173,7 @@ std::string		generate_filename(std::string &file, int *num);
 void 			delete_generated_file(HttpResponse &response);
 
 //read file
-void			read_File(HttpResponse& response);
+int			read_File(HttpResponse& response);
 std::string		read_File_error(std::string Path);
 std::string		res_content_file(int status_code, HttpRequest& request, HttpResponse& response, std::string path);
 std::string		ft_tostring(int nbr);
