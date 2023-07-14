@@ -26,7 +26,7 @@ std::string	ft_tostring(int nbr)
 {
 	std::string	str;
 
-	while (nbr > 10)
+	while (nbr >= 10)
 	{
 		str.insert(0,1, static_cast<char>((nbr % 10) + '0'));
 		nbr /= 10;
@@ -93,7 +93,10 @@ void	ft_send_error(int status_code, HttpResponse& response)
 	response_buffer += response.content_error;
 	int ret = send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
 	if (ret < 0)
+	{
 		perror("send feiled");
+		// *response.close_connexion = true;
+	}
 }
 
 void check_extention(HttpResponse &response)

@@ -10,7 +10,6 @@ std::string content_dir(std::string dir,HttpResponse& response, std::vector<std:
 
 	DIR* directory = opendir(dir.c_str());
 
-	std::cout <<YELLOW << "++++++++++++++++++++++> " << response.location_it->index  << END << std::endl;
 	if (directory)
 	{
 		struct dirent* content_dir;
@@ -50,16 +49,12 @@ std::string content_dir(std::string dir,HttpResponse& response, std::vector<std:
 int content_index_file(HttpResponse &response)
 {
 	if (response.request.method == "POST")
-	{
-		// std::cout << PURPLE << "*******************path response = " << response.path_file << END << std::endl;
-		// exit(1);
 		return (upload_not_exist_file(response));
-	}
 	if (response.location_it->cgi.empty())
 	{
 		response.code = 200;
 		response.reason_phrase = "ok";
-		response.headers["Content-Type"] = get_content_type(response.path_file);
+		response.headers["Content-type"] = get_content_type(response.path_file);
 		return (1);
 	}
 	else 
@@ -86,7 +81,6 @@ int	res_content_dir(int status_code, HttpResponse& response)
 	std::string							response_buffer;
 	
 	(void) status_code;
-	std::cout << PURPLE << response.path_file << END << std::endl;
 	if (content_dir(response.path_file, response, content) == "found")
 	{
 		if (*response.path_file.rbegin() != '/')
@@ -97,12 +91,14 @@ int	res_content_dir(int status_code, HttpResponse& response)
 			std::string response_buffer = generate_http_response(response);
 			int ret = send(response.fd, response_buffer.c_str(), response_buffer.size(), 0);
 			if (ret < 0)
+			{
 				perror("send feiled");
+				// *response.close_connexion = true;
+			}
 			return (0);
 		}
 		if (!response.location_it->index.empty())
 		{
-			std::cout << "*******************path response = \n";
 			content_it = std::find(content.begin(), content.end(), response.location_it->index);
 			if (content_it != content.end())
 			{

@@ -38,6 +38,7 @@ void send_201_response (HttpResponse &response)
 	if (ret < 0)
 	{
 		perror("send feailed");
+		// *response.close_connexion = true;
 		return ;
 	}
 }
@@ -89,9 +90,6 @@ int upload_not_exist_file(HttpResponse &response)
 		check_extention(response);
 		if (response.cgi_it == response.location_it->cgi.end())
 		{
-		// std::cout << PURPLE << "*******************path response = " << response.path_file << END << std::endl;
-			std::cout << YELLOW << "********************>" << response.path_file << END << std::endl;
-			// exit(1);
 			ft_send_error(403, response);
 			return(0);
 		}
@@ -120,64 +118,13 @@ int	upload_not_exist(HttpResponse& response)
 
 	if (get_path(response))
 	{
-		std::cout << GREEN <<"*******************> "<< response.path_file << END << std::endl;
 		type_rep = type_repo(response.path_file);
 		if (type_rep == "is_file")
 			return (upload_not_exist_file(response));
-		// {
-			// if (response.location_it->cgi.empty())
-			// {
-			// 	ft_send_error(403, response);
-			// 	return(0);
-			// }
-			// else
-			// {
-			// 	check_extention(response);
-			// 	if (response.cgi_it == response.location_it->cgi.end())
-			// 	{
-			// 		ft_send_error(403, response);
-			// 		return(0);
-			// 	}
-			// }
-			// fill_response(200, response);
-			// if (!response.request.content.empty())
-    		// {
-			// 	std::ofstream content("cgi.txt");
-			// 	if (!content.is_open())
-			// 		ft_send_error(500, response);
-			// 	else
-			// 	{
-			// 		response.file_name_genarated.push_back("cgi.txt");
-			// 		std::string str(response.request.content.begin(), response.request.content.end());
-			// 		content << str;
-			// 		content.close();
-			// 	}
-    		// }
-			// execute_cgi(response);
-			// return(0);
-		// }
 		else if (type_rep == "is_directory")
 		{
 			if (response_Http_Request(301, response))
-			{
-				
-				
 				return (1);
-			}
-			// {
-			// 	// std::cout << "\033[31m" << response.path_file << "\033[00m" << std::endl;
-			// 	if (response.location_it->cgi.empty())
-			// 	{
-			// 		// std::cout << "response file = " << response.path_file << std::endl;
-			// 		ft_send_error(403, response);
-			// 	}
-			// // else
-			// // {
-			// // 	// std::cout << "!!!!!!!!!!!!!!!!!!!\n";
-			// // 	fill_response(200, response);
-			// // 	execute_cgi(response);
-			// // }
-			// }
 		}
 		else
 			ft_send_error(500, response);
@@ -242,7 +189,6 @@ int response_post(HttpResponse& response)
 	}
 	else
 	{
-		// exit(0);
 		if (upload_not_exist(response))
 			return (1);
 

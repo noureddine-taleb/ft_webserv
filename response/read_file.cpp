@@ -93,26 +93,20 @@ void read_File(HttpResponse& response)
 			response.content.clear();
 			buffer.resize(chunkSize);
 			file.seekg(response.byte_reading);
-			// std::cout <<PURPLE<< "-------> start reding "<< END << std::endl;
 			file.read(buffer.data(), chunkSize);
-			// std::cout <<PURPLE<< "--------> end reding "<< END << std::endl;
 			ssize_t readi = file.gcount();
 			response.content.assign(buffer.begin(), buffer.end());
-			// std::cout <<YELLOW<< "-------> start sending "<< END << std::endl;
 			ssize_t i = send(response.fd,response.content.data(), readi, 0);
-			// std::cout <<YELLOW<< "--------> end sending "<< END << std::endl;
 			if (i < 0)
 			{
 				response.finish_reading = true;
 				perror("send feiled");
+				// 	*response.close_connexion = true;
 				file.close();
 				return ;	
 			}
 			if (i >= 0)
-			{
-				std::cout << YELLOW << "send work" << END << std::endl;
 				response.byte_reading += i;
-			}
 		}
 		if (response.byte_reading == length)
 		{

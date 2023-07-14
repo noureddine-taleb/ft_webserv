@@ -20,6 +20,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <vector>
+#include <fcntl.h>
 
 #define BACKLOG_SIZE 32
 #define HTTP_DEL "\r\n"
@@ -120,6 +121,7 @@ class HttpResponse: public SchedulableEntity {
 		std::vector<std::string> file_name_genarated;
 		std::string cookies;
 		int nbr_env;
+		bool *close_connexion;
 		// std::string name_output;
 		enum SchedulableEntityTypes get_type() {
 			return RESPONSE;

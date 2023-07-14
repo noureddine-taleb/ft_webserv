@@ -30,7 +30,10 @@ int	response_redirect(HttpResponse& response)
 			std::string response_buffer = generate_http_response(response);
 			int ret = send(response.fd, response_buffer.c_str(), response_buffer.size(), 0);
 			if (ret < 0)
+			{
 				perror("send feiled");
+				// *response.close_connexion = true;
+			}
 			return (0);
 		}
 		else if (response_Http_Request(301, response))
@@ -46,7 +49,10 @@ int	response_redirect(HttpResponse& response)
 		response_buffer = generate_http_response(response);
 		int ret = send(response.fd, response_buffer.c_str(), response_buffer.size(), 0);
 		if (ret < 0)
+		{
 			perror("send feiled");
+			// *response.close_connexion = true;
+		}
 	};
 	return (0);
 }
@@ -57,6 +63,9 @@ int	response_rewrite(HttpResponse&  response)
 	std::string response_buffer = generate_http_response(response);
 	int ret = send(response.fd, response_buffer.c_str(), response_buffer.size(), 0);
 	if (ret < 0)
+	{
 		perror("send feiled");
+		// *response.close_connexion = true;
+	}
 	return (0);
 }

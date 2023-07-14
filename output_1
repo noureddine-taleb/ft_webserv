@@ -1,9 +1,10 @@
-<?php
-    session_start();
-    if(isset($_SESSION['username']) && !empty($_SESSION['username'])) {
-        header('Location: index.php');
-    }
-?>
+X-Powered-By: PHP/8.2.1
+Set-Cookie: PHPSESSID=8354f9ec108ffed19a123839912ea898; path=/
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Cache-Control: no-store, no-cache, must-revalidate
+Pragma: no-cache
+Content-type: text/html; charset=UTF-8
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -19,10 +20,5 @@
 
         <input type="submit" value="Login">
     </form>
-    <?php
-        if (isset($_COOKIE['error'])) {
-            echo '<p class="error" style="color:red">' . $_COOKIE['error'] . '</p>';
-        }
-    ?>
-</body>
+    </body>
 </html>

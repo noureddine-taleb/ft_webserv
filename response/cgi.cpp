@@ -9,7 +9,7 @@ char** get_env(HttpResponse& response)
 {
     std::vector<std::string> vect;
     std::string content_length = ft_tostring(response.request.content.size());
-
+    std::string str(response.request.content.begin(), response.request.content.end());
     vect.push_back("REQUEST_METHOD=" + response.request.method);
     vect.push_back("SCRIPT_FILENAME=" + response.path_file);
     vect.push_back("PATH_INFO=" + response.path_file);
@@ -24,7 +24,6 @@ char** get_env(HttpResponse& response)
     size_t i;
     for (i = 0; i < vect.size(); ++i)
     {
-        // std::cout <<PURPLE<<  vect[i] << END<< std::endl;
         env[i] = new char[vect[i].length() + 1];
         strcpy(env[i], vect[i].c_str());
     }
@@ -47,17 +46,29 @@ void cgi_response_content(HttpResponse & response, std::string &name_output)
             std::string line;
             while(std::getline(out_file, line) && line != "\r")
             {
-                if (line.find("Content-type") != std::string::npos)
-                {
-                    int length = line.find(";") - (line.find(" ") + 1);
-                    response.headers["Content-Type"] = line.substr(line.find(" ") + 1, length);
-                }
+                int length = line.find(";") - (line.find(" ") + 1);
+                std::string key = line.substr(0,line.find(" ")-1);
+                std::string value = line.substr(line.find(" ")+1, length);
                 // if (line.find("Set-Cookie") != std::string::npos)
                 // {
-                //     int length = line.find(";") - (line.find(" ") + 1);
-                //     response.cookies = line.substr(line.find(" ") + 1, length);
+                //     key = "Set-cookie";
                 // }
+                response.headers[key] = value;
+
+                //                 if (line.find("Set-Cookie") != std::string::npos)
+                // response.headers["Set-cookie"] = line.substr(line.find(" ") + 1, length);
+                // else
+                //     response.headers["Content-Type"] = "text/html";
             }
+            //     if (line.find("Cookie") != std::string::npos && response.request.headers["Cookie"].empty())
+            //     {
+            //         int length = line.find(";") - (line.find(" ") + 1);
+            //         response.headers["Set-Cookie"] = line.substr(line.find(" ") + 1, length);
+            //     }
+            // response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate";
+            // response.headers["Pragma"] = "no-cache";
+            // response.headers["X-Powered-By"] = "PHP/8.2.1";
+            // response.headers["Expires"] = "Thu, 19 Nov 1981 08:52:00 GMT";
             while (std::getline(out_file, line))
             {
                 line += "\n";
@@ -72,7 +83,7 @@ void cgi_response_content(HttpResponse & response, std::string &name_output)
         }
         else
         {
-            response.headers["Content-Type"] = "text/html";
+            response.headers["Content-type"] = "text/html";
             response.path_file = name_output;
         }
     }
@@ -91,9 +102,10 @@ int    execute_cgi(HttpResponse &response)
         name_output = generate_filename(name_output, &i);
         output_fd = open(name_output.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
         response.file_name_genarated.push_back(name_output);///////////////////
+            char **env;
+            env = get_env(response);
         if (response.pid == 0)
         {
-            char **env;
             std::string path = response.path_file;
             std::string path_executable = response.cgi_it->cgi_pass;
             int input_fd  = 0;
@@ -116,7 +128,6 @@ int    execute_cgi(HttpResponse &response)
                 return (1);
             }
             close(input_fd);
-            env = get_env(response);
             if (execve(argv[0], argv, env) < 0)
             {
                     // std::cerr << RED << "Error executing CGI script."<< END << std::endl;
@@ -136,7 +147,7 @@ int    execute_cgi(HttpResponse &response)
                 // std::cerr << SKY << "waitfeailed" << END << std::endl;
                 ft_send_error(500, response);
                 close(output_fd);
-                return (0);
+                return (1);
             }
             else  if (result && response.pid != -1)
             {

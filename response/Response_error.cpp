@@ -38,7 +38,7 @@ void get_content_error(HttpResponse &response, int status_code,const std::string
 	response.content_error = res_content(status_code, response);
 	if (response.content_error == "not found")
 	{
-		response.headers["Content-Type"] = get_content_type(path);
+		response.headers["Content-type"] = get_content_type(path);
 		response.content_error = read_File_error(path);
 	}
 }
