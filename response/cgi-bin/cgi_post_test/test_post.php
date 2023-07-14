@@ -1,13 +1,10 @@
-X-Powered-By: PHP/8.2.1
-Content-type: text/html; charset=UTF-8
-
 <!DOCTYPE html>
 <html>
 <head>
     <title>Name and Age</title>
 </head>
 <body>
-    <form action="" method="GET">
+    <form action="process_form.php" method="POST" enctype="multipart/form-data">
         <label for="name">Name:</label>
         <input type="text" name="name" id="name" required><br><br>
 
@@ -16,6 +13,5 @@ Content-type: text/html; charset=UTF-8
 
         <input type="submit" value="Submit">
     </form>
-
-    <p style="color: green;">The age of kha wla is: 25</p></body>
+</body>
 </html>

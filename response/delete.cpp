@@ -1,13 +1,5 @@
 #include "../webserv.hpp"
 #include "../config.hpp"
-// #include <iostream>
-// #include <fstream>
-// #include <sstream>
-// #include <dirent.h>
-// #include <cstdio>
-// #include <cstdlib>
-// #include <cstring>
-
 
 void	del_content_dir(HttpResponse& response, std::string& path_dir)
 {
@@ -58,14 +50,10 @@ int response_delete(HttpResponse& response)
 	if (get_path(response))
 	{
 		type_rep = type_repo(response.path_file);
-		// std::cout << "path-dir == " << response.path_file << std::endl;
 		if (type_rep == "is_file")
 		{
-			// if (response.location_it->cgi.empty())
-			// {
 				unlink(response.path_file.c_str());
 				ft_send_error(204, response);
-			// }
 		}
 		if(type_rep == "is_directory")
 		{
@@ -73,7 +61,6 @@ int response_delete(HttpResponse& response)
 				ft_send_error(409, response);
 			else
 				del_content_dir(response, response.path_file);
-			// else if (response.location_it->cgi.empty())
 		}
 		else
 			ft_send_error(500, response);

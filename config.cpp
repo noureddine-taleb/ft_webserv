@@ -65,8 +65,9 @@ void parse_location(std::vector<std::string> &lines, Location &location,
 	  value = lines[i].substr(4), value = trim(value);
 	  location.dir = value;
 	  int fd = open(value.c_str(), O_RDONLY);
-	  if (fd < 0)
-		die("config: dir='" + value + "' is not accessible\n");
+		if (fd < 0)
+			die("config: dir='" + value + "' is not accessible\n");
+		close(fd);
 	} else if (lines[i].substr(0, 6) == "index:") {
 	  value = lines[i].substr(6), value = trim(value);
 	  location.index = value;
