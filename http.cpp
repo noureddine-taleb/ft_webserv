@@ -255,22 +255,30 @@ void dump_request(HttpRequest &request)
 	}
 
 	std::cout << std::endl;
-	std::cout << "+++++++++++++++++++++++++++++++++" << std::endl;
+	std::cout << "++++++++++++++++raw body+++++++++++++++++" << std::endl;
 	for (std::vector<char>::iterator it = request.content.begin(); it != request.content.end(); it++)
 	{
 		std::cout << *it;
 	}
 	std::cout << "+++++++++++++++++++++++++++++++++" << std::endl;
 
-	std::cout << "fffffffffffffffffffffffffffffffff" << std::endl;
+	std::cout << "ffffffffffffffff_parsed_files_fffffffffffffffff" << std::endl;
 	for (std::vector<File>::iterator it = request.files.begin(); it != request.files.end(); it++)
 	{
 		std::cout << it->name << std::endl;
 		for (std::vector<char>::iterator it2 = it->content.begin(); it2 != it->content.end(); it2++)
-		{
 			std::cout << *it2;
-		}
 		std::cout << std::endl;
 	}
 	std::cout << "fffffffffffffffffffffffffffffffff" << std::endl;
+
+	std::cout << "vvvvvvvvvvvvvvvv_parsed_vars_vvvvvvvvvvvvvvvvv" << std::endl;
+	for (std::vector<Var>::iterator it = request.vars.begin(); it != request.vars.end(); it++)
+	{
+		std::cout << it->key << std::endl;
+		for (std::vector<char>::iterator it2 = it->value.begin(); it2 != it->value.end(); it2++)
+			std::cout << *it2;
+		std::cout << std::endl;
+	}
+	std::cout << "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv" << std::endl;
 }

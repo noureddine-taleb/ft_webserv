@@ -73,6 +73,12 @@ public:
   std::vector<char> content;
 };
 
+class Var {
+public:
+  std::string key;
+  std::vector<char> value;
+};
+
 class HttpRequest : public SchedulableEntity {
 public:
   HttpRequest()
@@ -86,6 +92,7 @@ public:
 
   // derived from content
   std::vector<File> files;
+  std::vector<Var> vars;
 
   // pcb stuff
   std::vector<char> http_buffer;
