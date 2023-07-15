@@ -5,7 +5,7 @@ int	send_response(int fd, HttpRequest& request, HttpResponse& response, int stat
 {
 	*close_connexion = false;
 	if (!request.method.empty())
-	{
+	{	
 		response.old_url = request.url;
 		response.close_connexion = close_connexion;
 		init_response(response, request, fd);

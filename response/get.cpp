@@ -11,8 +11,9 @@ int	response_get(HttpResponse& response)
 	
 	if (get_path(response))
 	{
-		std::cout << RED << "/////////////////////> PATH == " << response.path_file << END << std::endl;
 		type_rep = type_repo(response.path_file);
+		std::cout << RED << "/////////////////////> PATH == " << response.path_file << END << std::endl;
+		std::cout << RED << "/////////////////////> type == " << type_rep << END << std::endl;
 		if (type_rep == "is_file")
 		{
 			if (response.location_it->cgi.empty())
@@ -68,7 +69,10 @@ int	response_get(HttpResponse& response)
 				return (1);
 		}
 		else
+		{
+			std::cout << SKY << "root = {3335%%%55225252"<< END << "}" << std::endl;
 			ft_send_error(404, response);
+		}
 	}
 	return (0);
 }

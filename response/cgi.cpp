@@ -24,6 +24,7 @@ char** get_env(HttpResponse& response)
     size_t i;
     for (i = 0; i < vect.size(); ++i)
     {
+        std::cout <<BLUE <<  vect[i] <<END <<std::endl;
         env[i] = new char[vect[i].length() + 1];
         strcpy(env[i], vect[i].c_str());
     }
@@ -78,7 +79,7 @@ void cgi_response_content(HttpResponse & response, std::string &name_output)
 int    execute_cgi(HttpResponse &response)
 {
      int output_fd = 0;
-
+    		std::cout << RED << "/////////////////////> PATH == " << response.path_file << END << std::endl;
     std::string name_output = "output";
     if (response.pid == -1)
     {
