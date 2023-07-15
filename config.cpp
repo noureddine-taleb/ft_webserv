@@ -28,6 +28,8 @@ void parse_error_pages(std::vector<std::string> &lines,
 		ErrorPage epage;
 		epage.error_code = error_code;
 		epage.page = trim(error_page[1]);
+		assert_msg (epage.error_code >= 400 && epage.error_code < 600, "config: error_code='" << epage.error_code << "' is not valid (valid range 400-599)\n");
+		assert_msg (access(epage.page.c_str(), R_OK) == 0, "config: error_page='" << epage.page << "' is not readable\n");
 		error_pages.push_back(epage);
 	}
 }
@@ -74,16 +76,15 @@ void parse_location(std::vector<std::string> &lines, Location &location,
 			CGI cgi_inst;
 			cgi_inst.file_extension = cgi[0];
 			cgi_inst.cgi_pass = cgi[1];
+			assert_msg (cgi_inst.file_extension == "php" || cgi_inst.file_extension == "py", "unsupported cgi: " << cgi_inst.file_extension << " try: py | php");
+			assert_msg (access(cgi_inst.cgi_pass.c_str(), X_OK) == 0, "cgi bin is not executable");
 			location.cgi.push_back(cgi_inst);
 		}
 		else if (lines[i].substr(0, 4) == "dir:")
 		{
 			value = lines[i].substr(4), value = trim(value);
 			location.dir = value;
-			int fd = open(value.c_str(), O_RDONLY);
-			if (fd < 0)
-				die("config: dir='" + value + "' is not accessible\n");
-			close(fd);
+			assert_msg (access(location.dir.c_str(), F_OK) == 0, "config: dir='" << value << "' is not accessible\n");
 		}
 		else if (lines[i].substr(0, 6) == "index:")
 		{
@@ -114,9 +115,7 @@ void parse_location(std::vector<std::string> &lines, Location &location,
 		{
 			value = lines[i].substr(7), value = trim(value);
 			std::vector<std::string> parts = split(value, " ");
-			if (parts.size() != 2)
-				die("invalid value for location.return\n");
-
+			assert_msg(parts.size() == 2, "invalid value for location.return\n");
 			int code;
 			try
 			{
@@ -129,6 +128,7 @@ void parse_location(std::vector<std::string> &lines, Location &location,
 
 			location.creturn.code = code;
 			location.creturn.to = parts[1];
+			assert_msg(location.creturn.code < 600, "invalid value for location.return.code\n");
 		}
 		else
 		{

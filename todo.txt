@@ -67,3 +67,6 @@ strcpy
 strlen
 strtol
 unlink@GLIBC_2.2.5
+
+
+on send check for 0 sent
