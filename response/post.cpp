@@ -57,7 +57,7 @@ void	upload_exist(HttpResponse& response, std::string& upload_path)
 	if ((response.request.files.empty() && response.request.content.empty()) 
 		|| type_rep == "is_file" || type_rep == "not found")
 	{
-		ft_send_error(500, response);
+		ft_send_error(404, response);
 		return ;
 	}
 	if (!response.request.files.empty())
@@ -66,6 +66,18 @@ void	upload_exist(HttpResponse& response, std::string& upload_path)
 		{
 			file_name = file_it->name;
 			if(!fill_uplaod_file(response, upload_path, file_name, file_it->content))
+				return ;
+		}
+		send_201_response (response);
+	}
+	else if (!response.request.vars.empty())
+	{
+		for(std::vector<Var>::iterator vars_it = response.request.vars.begin(); vars_it != response.request.vars.end(); vars_it++)
+		{
+			file_name = vars_it->key;
+			if (vars_it->key.substr(vars_it->key.find_last_of(".") + 1, vars_it->key.length()) != "txt")
+				file_name += ".txt";
+			if(!fill_uplaod_file(response, upload_path, file_name, vars_it->value))
 				return ;
 		}
 		send_201_response (response);
@@ -84,6 +96,8 @@ void	upload_exist(HttpResponse& response, std::string& upload_path)
 
 int upload_not_exist_file(HttpResponse &response)
 {
+	std::string path = response.path_file;
+
 	if (response.location_it->cgi.empty())
 	{
 		ft_send_error(403, response);
@@ -92,6 +106,13 @@ int upload_not_exist_file(HttpResponse &response)
 	else
 	{
 		check_extention(response);
+		if (response.cgi_it == response.location_it->cgi.end()
+			&& (path.substr(path.find_last_of(".") + 1, path.length()) == "php"
+			|| path.substr(path.find_last_of(".") + 1, path.length()) == "py"))
+			{
+				ft_send_error(404,response);
+				return (0);
+			}
 		if (response.cgi_it == response.location_it->cgi.end())
 		{
 			ft_send_error(403, response);
@@ -113,7 +134,6 @@ int upload_not_exist_file(HttpResponse &response)
 		}
 	}
 	return (execute_cgi(response));
-	// return(0);
 }
 
 int	upload_not_exist(HttpResponse& response)
@@ -131,7 +151,7 @@ int	upload_not_exist(HttpResponse& response)
 				return (1);
 		}
 		else
-			ft_send_error(500, response);
+			ft_send_error(404, response);
 	}
 	return (0);
 }

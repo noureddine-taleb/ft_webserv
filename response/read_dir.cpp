@@ -48,6 +48,9 @@ std::string content_dir(std::string dir,HttpResponse& response, std::vector<std:
 
 int content_index_file(HttpResponse &response)
 {
+	std::string path = response.path_file;
+
+	std::cout << SKY << "######################### " << path << END << std::endl;
 	if (response.request.method == "POST")
 		return (upload_not_exist_file(response));
 	if (response.location_it->cgi.empty())
@@ -60,6 +63,10 @@ int content_index_file(HttpResponse &response)
 	else 
 	{
 		check_extention(response);
+		if (response.cgi_it == response.location_it->cgi.end()
+			&& (path.substr(path.find_last_of(".") + 1, path.length()) == "php"
+			|| path.substr(path.find_last_of(".") + 1, path.length()) == "py"))
+			ft_send_error(404,response);
 		if ((!response.location_it->cgi.empty() && response.cgi_it == response.location_it->cgi.end()))
 		{
 			if(response_Http_Request(200, response))
@@ -88,7 +95,8 @@ int	res_content_dir(int status_code, HttpResponse& response)
 			fill_response(301, response);
 			response.headers["Location"] = response.request.url + "/";
 			response.url_changed = true;
-			std::string response_buffer = generate_http_response(response);
+			response_buffer = generate_http_response(response);
+			// std::cout << SKY << response_buffer << END << std::endl;
 			if (check_connexion(response.fd) < 0)
 			{
 				*response.close_connexion = true;
@@ -100,6 +108,7 @@ int	res_content_dir(int status_code, HttpResponse& response)
 			*response.close_connexion = true;
 			return (0);
 		}
+		std::cout << SKY<< "$$$$$$$$$$$$$$$$$$$$$ " << response.request.method << END  << std::endl;
 		if (!response.location_it->index.empty())
 		{
 			content_it = std::find(content.begin(), content.end(), response.location_it->index);
@@ -127,7 +136,7 @@ int	res_content_dir(int status_code, HttpResponse& response)
 			return(0);
 		}
 	}
-	ft_send_error(500, response);
+	ft_send_error(404, response);
 	return(0);
 }
 

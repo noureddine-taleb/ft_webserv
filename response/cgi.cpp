@@ -41,43 +41,28 @@ void cgi_response_content(HttpResponse & response, std::string &name_output)
             std::ifstream out_file(name_output, std::ifstream::binary);
             std::string out = "out";
             out = generate_filename(out, &i);
-            std::ofstream file(out);
             response.file_name_genarated.push_back(out);
             std::string line;
             while(std::getline(out_file, line) && line != "\r")
             {
                 int length = line.find(";") - (line.find(" ") + 1);
                 std::string key = line.substr(0,line.find(" ")-1);
-                std::string value = line.substr(line.find(" ")+1, length);
-                // if (line.find("Set-Cookie") != std::string::npos)
-                // {
-                //     key = "Set-cookie";
-                // }
+                std::string value = line.substr(line.find(" ")+ 1, length);
+                if (key == "Content-type")
+                {
+                    if (*value.rbegin() == '\r')
+                        value = value.substr(0, value.length() -1); 
+                    add_extention_2(out ,value);
+                }
                 response.headers[key] = value;
-
-                //                 if (line.find("Set-Cookie") != std::string::npos)
-                // response.headers["Set-cookie"] = line.substr(line.find(" ") + 1, length);
-                // else
-                //     response.headers["Content-Type"] = "text/html";
             }
-            //     if (line.find("Cookie") != std::string::npos && response.request.headers["Cookie"].empty())
-            //     {
-            //         int length = line.find(";") - (line.find(" ") + 1);
-            //         response.headers["Set-Cookie"] = line.substr(line.find(" ") + 1, length);
-            //     }
-            // response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate";
-            // response.headers["Pragma"] = "no-cache";
-            // response.headers["X-Powered-By"] = "PHP/8.2.1";
-            // response.headers["Expires"] = "Thu, 19 Nov 1981 08:52:00 GMT";
+            std::ofstream file(out);
             while (std::getline(out_file, line))
             {
                 line += "\n";
                 file << line;
             }
             response.path_file = out;
-            // response.request.headers["cookies"] = response.cookies;
-            // std::cout << YELLOW<<"{"<< response.cookies<<"}" << END<< std::endl;
-            // std::cout <<SKY <<  response.path_file << END << std::endl;
             file.close();
             out_file.close();
         }

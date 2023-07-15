@@ -257,10 +257,10 @@ void dump_request(HttpRequest &request)
 
 	std::cout << std::endl;
 	std::cout << "++++++++++++++++raw body+++++++++++++++++" << std::endl;
-	for (std::vector<char>::iterator it = request.content.begin(); it != request.content.end(); it++)
-	{
-		std::cout << *it;
-	}
+	// for (std::vector<char>::iterator it = request.content.begin(); it != request.content.end(); it++)
+	// {
+	// 	std::cout << *it;
+	// }
 	std::cout << "+++++++++++++++++++++++++++++++++" << std::endl;
 
 	std::cout << "ffffffffffffffff_parsed_files_fffffffffffffffff" << std::endl;

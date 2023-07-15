@@ -4,34 +4,49 @@
 int	response_get(HttpResponse& response)
 {
 	std::string type_rep;
+	std::string path = response.path_file;
 
 	if (!response.location_it->creturn.to.empty())
 		return (response_redirect(response));
 	
 	if (get_path(response))
 	{
-		std::cout <<YELLOW << "*******> path =" << response.path_file << END << std::endl;
+		std::cout << BLUE << "*********> " << response.path_file << END << std::endl;
 		type_rep = type_repo(response.path_file);
 		if (type_rep == "is_file")
 		{
-			check_extention(response);
-			if ((!response.location_it->cgi.empty() && response.cgi_it == response.location_it->cgi.end())
-				|| response.location_it->cgi.empty())
+			if (response.location_it->cgi.empty())
 			{
 				if(response_Http_Request(200, response))
 					return (1);
 			}
-			else
+			if(!response.location_it->cgi.empty())
 			{
-				fill_response(200, response);
-				return (execute_cgi(response));
+				check_extention(response);
+				if (response.cgi_it == response.location_it->cgi.end()
+					&& (path.substr(path.find_last_of(".") + 1, path.length()) == "php"
+						|| path.substr(path.find_last_of(".") + 1, path.length()) == "py"))
+				{
+					ft_send_error(404,response);
+					return (0);
+				}
+				if (!response.location_it->cgi.empty() && response.cgi_it == response.location_it->cgi.end())
+				{
+					if(response_Http_Request(200, response))
+						return (1);
+				}
+				else
+				{
+					fill_response(200, response);
+					return (execute_cgi(response));
+				}
 			}
 		}
 		else if (type_rep == "is_directory")
 		{
 			if (*response.path_file.rbegin() != '/')
 			{
-				fill_response(302, response);
+				fill_response(301, response);
 				if (response.request.url != "/")
 					response.headers["Location"] = response.request.url + "/";
 				else

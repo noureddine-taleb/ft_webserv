@@ -44,7 +44,12 @@ int read_File(HttpResponse& response)
 			if (check_connexion(response.fd) < 0)
 				return (-1);
 			ssize_t i = send(response.fd,response.content.data(), readi, 0);
-			if (i <= 0)
+			if (i == 0)
+			{          
+				file.close();
+				return -1;	
+			}
+			if (i < 0)
 			{          
 				file.close();
 				return 0;	

@@ -175,6 +175,7 @@ std::string 	get_content_type(std::string path);
 std::string		type_repo(std::string path);
 int				get_path(HttpResponse& response);
 void			add_extention(std::string& filename,HttpResponse& response);
+void	add_extention_2(std::string &file_name, std::string &content_type);
 void 			dump_request(HttpRequest &request);
 std::string		generate_filename(std::string &file, int *num);
 void 			delete_generated_file(HttpResponse &response);
@@ -230,6 +231,7 @@ void 			cgi_response_content(HttpResponse & response, std::string &name_output);
 int				send_response(int fd, HttpRequest& request, HttpResponse& response, int status_code, bool *close_connexion);
 void			ft_send_error(int status_code, HttpResponse& response);
 int       check_connexion(int fd);
+
 
 
 

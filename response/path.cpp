@@ -4,20 +4,14 @@
 void parse_path(HttpResponse &response, std::string &root)
 {
 	std::string target = response.location_it->target;
-	std::cout << YELLOW<< "***********> response.location_it->target = " << response.location_it->target << END << std::endl;
 	std::string url = response.request.url;
 	size_t	find = url.find(target);
 
-	// if (response.location_it->target == "/" && response.request.url == "/" && )
-	if (*response.location_it->dir.rbegin() != '/')
-		response.location_it->dir += "/" ;
-	// else
-	// 	response.path_file = dir;
-	std::cout << PURPLE << "@@@@@@@@@@@@@@@> root ={" << root << "}" << END << std::endl;
+	if (*root.rbegin() != '/')
+		root += "/" ;
 	if (url.substr(0, find) != "" && *root.begin() != '/' )
 	{
 		response.path_file = url.substr(0, find)+ "/" + root + url.substr(find + target.length(), url.find("?") - 1);
-		std::cout << PURPLE << "@@@@@@@@@@@@@@@> {" << response.path_file << "}" << END << std::endl;
 		if (url.find("?") != std::string::npos)
 			response.query_str = url.substr(url.find("?") + 1, url.length());
 	}
@@ -42,8 +36,6 @@ int get_path(HttpResponse& response)
 				response.path_file = dir + "/";
 			else
 				response.path_file = dir;
-			std::cout << YELLOW<< "***********> path file = " << response.path_file << END << std::endl;
-			// exit(0);
 		}
 		else
 			parse_path(response, dir);
@@ -77,3 +69,19 @@ std::string type_repo(std::string path)
 	return ("not found");
 }
 
+void check_extention(HttpResponse &response)
+{
+	std::string path = response.path_file;
+	std::vector<CGI>::iterator cgi_it;
+
+	response.cgi_it = response.location_it->cgi.end();
+	for (cgi_it = response.location_it->cgi.begin(); cgi_it != response.location_it->cgi.end(); cgi_it++)
+	{
+		if (path.substr(path.find_last_of(".") + 1, path.length()) == cgi_it->file_extension
+			&& (cgi_it->file_extension == "php" || cgi_it->file_extension == "py"))
+		{
+			response.cgi_it = cgi_it;
+			break ;
+		}
+	}
+}

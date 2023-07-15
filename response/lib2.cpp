@@ -84,23 +84,6 @@ std::vector<Location>::iterator location(HttpRequest& req, std::vector<Server>::
 	return (location);
 }
 
-void check_extention(HttpResponse &response)
-{
-	std::string path = response.path_file;
-	std::vector<CGI>::iterator cgi_it;
-
-	response.cgi_it = response.location_it->cgi.end();
-	for (cgi_it = response.location_it->cgi.begin(); cgi_it != response.location_it->cgi.end(); cgi_it++)
-	{
-		if (path.substr(path.find_last_of(".") + 1, path.length()) == cgi_it->file_extension
-			&& (cgi_it->file_extension == "php" || cgi_it->file_extension == "py"))
-		{
-			response.cgi_it = cgi_it;
-			break ;
-		}
-	}
-}
-
 void delete_generated_file(HttpResponse &response)
 {
 	std::vector<std::string>::iterator files_it;

@@ -27,28 +27,17 @@ todo:
 
 form data: upload files
 => strict input checking
-=> send side check for EAGAIN & ECONNRESET
-=> if i do autoindex and i click in video video play then return to autoindex program exit 
-=> uplod : in case of text shod parsed the content :
-    "----------------------------178924003759668761592596
-    Content-Disposition: form-data; name="text"
-    nbvc nv
-    ----------------------------178924003759668761592596--"
 
-////////////////////////////////////////////////////////////////////
-open not work 500
-#autoindex ..
-infinit redirection in => /Users/kadjane/Desktop/web_serv2/srcs/book.pdf
+  => protection for the functions
+  => handel infinit loop 
 
-  => protection for the functionsatol
-  => handel infinit loop => done
-  => handel cgi in diractory => done
 
   => check all and clean the code
   => protection for the functions
   => handel / in the post
 	=> check if the socket would block in send side
 => / not exist => done 
+when a file is uploaded it is deleted
 
 exit@GLIBC_2.2.5
 inet_addr@GLIBC_2.2.5
@@ -70,7 +59,6 @@ unlink@GLIBC_2.2.5
 
 
 on send check for 0 sent
-when a file is uploaded it is deleted
 http/1.1 not defaulting to closing connection
 is it possible to serve short requests in one iteration
 

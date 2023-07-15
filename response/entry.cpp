@@ -30,6 +30,10 @@ int	send_response(int fd, HttpRequest& request, HttpResponse& response, int stat
 				*response.close_connexion = false;
 			else if (response.request.headers["Connection"] == "close")
 				*response.close_connexion = true;
+			else if (response.request.version == "HTTP/1.1")
+				*response.close_connexion = true; 
+			else if (response.request.version == "HTTP/2")
+				*response.close_connexion = false; 
 			delete_generated_file(response);
 			return (1);
 		}
