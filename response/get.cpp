@@ -11,7 +11,6 @@ int	response_get(HttpResponse& response)
 	
 	if (get_path(response))
 	{
-		std::cout << BLUE << "*********> " << response.path_file << END << std::endl;
 		type_rep = type_repo(response.path_file);
 		if (type_rep == "is_file")
 		{
