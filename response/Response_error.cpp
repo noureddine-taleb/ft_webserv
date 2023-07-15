@@ -1,9 +1,5 @@
 #include "../webserv.hpp"
 #include "../config.hpp"
-// #include <iostream>
-// #include <fstream>
-// #include <sstream>
-
 
 int	check_req_line_headers(HttpRequest &request)
 {
@@ -80,3 +76,19 @@ void response_Http_Request_error(int status_code, HttpResponse& response)
 	response.headers["Content-Length"] = ft_tostring(response.content_error.length());
 }
 
+void	ft_send_error(int status_code, HttpResponse& response)
+{
+	std::string		response_buffer;
+	
+	response_Http_Request_error(status_code, response);
+	response_buffer = generate_http_response(response);
+	response_buffer += response.content_error;
+	int ret = send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
+	if (ret < 0)
+	{
+		std::cerr << strerror(errno) << std::endl;
+		if (std::string(strerror(errno)) == "Resource temporarily unavailable")
+			return ;
+	}
+	*response.close_connexion = true;
+}

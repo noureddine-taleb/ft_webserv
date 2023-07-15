@@ -1,61 +1,6 @@
 #include "../webserv.hpp"
 #include "../config.hpp"
 
-void parse_path(HttpResponse &response, std::string &root)
-{
-	std::string target = response.location_it->target;
-	std::string url = response.request.url;
-	size_t	find = url.find(target);
-
-	if (url.substr(0, find) != "" && *root.begin() != '/')
-	{
-		response.path_file = url.substr(0, find)+ "/" + root + url.substr(find + target.length(), url.find("?") - 1);
-		if (url.find("?") != std::string::npos)
-			response.query_str = url.substr(url.find("?") + 1, url.length());
-	}
-	else
-	{
-		response.path_file = url.substr(0, find) + root + url.substr(find + target.length(), url.find("?") - 1);
-		if (url.find("?") != std::string::npos)
-			response.query_str = url.substr(url.find("?") + 1, url.length());
-	}
-}
-
-int get_path(HttpResponse& response)
-{
-	std::string dir = response.location_it->dir;
-	std::string root = response.server_it->root;
-	
-	if (!dir.empty())
-	{
-		parse_path(response, dir);
-		return (1);
-	}
-	if (!response.server_it->root.empty())
-	{
-		parse_path(response, root);
-		return (1);
-	}
-	ft_send_error(404, response);
-	return (0);
-}
-
-std::string type_repo(std::string path)
-{
-	struct stat info;
-
-	if (*(path.end() - 1) == '/')
-		return ("is_directory");
-	if (!stat(path.c_str(), &info))
-	{
-		if (S_ISREG(info.st_mode))
-			return ("is_file");
-		if (S_ISDIR(info.st_mode))
-			return ("is_directory");
-	}
-	return ("not found");
-}
-
 std::string read_File_error(std::string Path)
 {
 	std::ifstream file(Path.c_str());
@@ -96,22 +41,21 @@ int read_File(HttpResponse& response)
 			file.read(buffer.data(), chunkSize);
 			ssize_t readi = file.gcount();
 			response.content.assign(buffer.begin(), buffer.end());
+			if (check_connexion(response) < 0)
+				return (-1);
 			ssize_t i = send(response.fd,response.content.data(), readi, 0);
-			if (i < 0)
-			{
-				std::cerr << strerror(errno) << std::endl;
-				if (std::string(strerror(errno)) == "Resource temporarily unavailable")
-					return 0;
+			if (i <= 0)
+			{          
 				file.close();
-				return -1;	
+				return 0;	
 			}
-			if (i >= 0)
+			if (i > 0)
 				response.byte_reading += i;
 		}
 		if (response.byte_reading == length)
 		{
 			response.byte_reading = 0;
-			response.finish_reading = true;
+			response.finish_reading = true;	
 			file.close();
 			return 0;
 		}

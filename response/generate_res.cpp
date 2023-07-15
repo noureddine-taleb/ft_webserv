@@ -20,11 +20,10 @@ void init_response(HttpResponse& response, HttpRequest& request, int fd)
 	response.finish_reading = false;
 	response.url_changed = false;
 	response.pid = -1;
-	// response.nbr_env = 0;
 	response.server_it = server(response.request);
-	// *response.close_connexion = false;
-	// response.name_output = "output";
+	std::cout << YELLOW<< "***********>reser  " << response.server_it->ip<< " || "<< response.server_it->port << END << std::endl; 
 	response.location_it = location(response.request, response.server_it);
+	std::cout << YELLOW<< "***********> location = " << response.location_it->target  << END << std::endl; 
 }
 
 std::string get_content_type(std::string path)
@@ -82,6 +81,20 @@ void fill_response(int status_code, HttpResponse& response)
 	response.version = response.request.version;
 	response.code = status_code;
 	response.reason_phrase = get_reason_phase(status_code);
-	response.headers["Connection"] = "keep-alive";
+	response.headers["Connection"] = "Close";
 	response.headers["Content-type"] = get_content_type(response.path_file);
+}
+
+int check_connexion(HttpResponse &response)
+{
+	char    line[2];
+    int byte_read = 0;
+
+    byte_read = recv(response.fd, line, 0, MSG_PEEK);
+	if (byte_read < 0)
+	{
+		std::cerr << "Resource temporarily unavailable" << std::endl;
+		return (-1);
+	}
+	return (0);
 }

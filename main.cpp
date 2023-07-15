@@ -21,7 +21,7 @@ int main(int argc, char **argv)
 	if (argc != 2)
 		die("usage: webserv <config_file>\n");
 
-	signal(SIGPIPE, ignore);
+	signal(SIGPIPE, SIG_IGN);
 	parse_config(argv[1]);
 	// dump_config(config);
 
@@ -61,7 +61,7 @@ int main(int argc, char **argv)
 			}
 			else if (tasks[fd]->get_type() == RESPONSE)
 			{
-				debug("schedule pending response");
+				// debug("schedule pending response");
 				response = *dynamic_cast<HttpResponse *>(tasks[fd]);
 				goto response;
 			}
@@ -90,7 +90,7 @@ int main(int argc, char **argv)
 			break;
 		}
 	response:
-		// dump_request(request);
+		dump_request(request);
 		// goto close_socket;
 		// std::cout << "\033[32m"  << "method: " << request.method<< "\033[0m" <<
 		// std::endl; std::cout << "\033[32m"  << "url: " << request.url<< "\033[0m"
@@ -102,8 +102,7 @@ int main(int argc, char **argv)
 		// }
 		finished =
 			send_response(fd, request, response, status_code, &close_connexion);
-
-		// std::cout << "*********************>finished = "<< finished << std::endl;
+		// std::cout<< YELLOW << "*********************>finished = "<< END << finished << std::endl;
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////
 		// finished = send_response(fd, request, response, status_code);

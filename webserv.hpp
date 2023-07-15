@@ -174,7 +174,7 @@ std::string		generate_filename(std::string &file, int *num);
 void 			delete_generated_file(HttpResponse &response);
 
 //read file
-int			read_File(HttpResponse& response);
+int     			read_File(HttpResponse& response);
 std::string		read_File_error(std::string Path);
 std::string		res_content_file(int status_code, HttpRequest& request, HttpResponse& response, std::string path);
 std::string		ft_tostring(int nbr);
@@ -188,21 +188,25 @@ int 			new_request(HttpRequest &request, HttpResponse &response, int status_code
 void			init_response(HttpResponse& response, HttpRequest& request, int fd);
 int				check_req_line_headers(HttpRequest &request);
 std::string		res_content(int status_code, HttpResponse& response);
-void			ft_send_error(int status_code, HttpResponse& response);
 void			fill_response(int status_code, HttpResponse& response);
 std::string		get_reason_phase(int status_code);
 int 			response_Http_Request(int status_code , HttpResponse& response);
 void			response_Http_Request(int status_code, HttpRequest& request, HttpResponse& response, std::string path);
 
-//response
-int				send_response(int fd, HttpRequest& request, HttpResponse& response, int status_code, bool *close_connexion);
+//get response
 void			response_Http_Request_error(int status_code, HttpResponse& response);
 int				response_get(HttpResponse& response);
-int 			response_post(HttpResponse& response);
-int 			response_delete(HttpResponse& response);
+int       get_req(HttpResponse &response);
+
+//post response
 void			upload_exist(HttpResponse& response, std::string& upload_path);
 int				upload_not_exist(HttpResponse& response);
 int 			upload_not_exist_file(HttpResponse &response);
+int       post_req(HttpResponse &response);
+int 			response_post(HttpResponse& response);
+
+// delete response
+int 			response_delete(HttpResponse& response);
 
 //redirection
 int				response_redirect(HttpResponse& response);
@@ -215,6 +219,11 @@ void 			parse_query_string(HttpResponse &response);
 char** 			get_env(HttpResponse& response);
 void 			check_extention(HttpResponse &response);
 void 			cgi_response_content(HttpResponse & response, std::string &name_output);
+
+//send
+int				send_response(int fd, HttpRequest& request, HttpResponse& response, int status_code, bool *close_connexion);
+void			ft_send_error(int status_code, HttpResponse& response);
+int       check_connexion(HttpResponse &response);
 
 
 

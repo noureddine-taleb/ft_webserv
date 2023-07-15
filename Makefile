@@ -1,7 +1,7 @@
 SRCS := http.cpp socket.cpp lib.cpp main.cpp watchlist.cpp config.cpp sched.cpp form-data.cpp	\
 		response/response.cpp response/lib2.cpp response/Response_error.cpp response/read_file.cpp 	\
 		response/post.cpp response/delete.cpp response/entry.cpp response/generate_res.cpp response/read_dir.cpp\
-		response/redirection.cpp response/cgi.cpp
+		response/redirection.cpp response/cgi.cpp response/get.cpp response/create_file.cpp response/path.cpp\
 
 NAME = webserv
 

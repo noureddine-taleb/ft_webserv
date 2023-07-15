@@ -28,12 +28,7 @@ todo:
 form data: upload files
 => strict input checking
 => send side check for EAGAIN & ECONNRESET
-=> check if status_code in config = 301 or 302 else error
 => if i do autoindex and i click in video video play then return to autoindex program exit 
-=> shoud exist one return
-=> when return have a big file program exit
-=> send me the extention of file to be posted
-=> check if the extention cgi is php or py
 => uplod : in case of text shod parsed the content :
     "----------------------------178924003759668761592596
     Content-Disposition: form-data; name="text"
@@ -41,33 +36,19 @@ form data: upload files
     ----------------------------178924003759668761592596--"
 
 ////////////////////////////////////////////////////////////////////
-handel if i don't have / in the end of "dir: /Users/kadjane/Desktop/server_3"
 open not work 500
 #autoindex ..
 infinit redirection in => /Users/kadjane/Desktop/web_serv2/srcs/book.pdf
-add fonction delete file created
-if / not exist path == server route
 
-
-  => check extention => done
-  => execute script => done
-  => parse file => done
-  => send response => done
-  => parce query string replace %20 %2B + by " "
   => protection for the functionsatol
-  => parce query string replace %20 %2B + by " " => done
-  => handel py script => done 
   => handel infinit loop => done
   => handel cgi in diractory => done
 
-  => handel cookies
-  => handel / in the end (dir: /Users/kadjane/Desktop/server_4/)
-  => generate the content_dir.html just when i have autoindex
   => check all and clean the code
   => protection for the functions
   => handel / in the post
 	=> check if the socket would block in send side
-
+=> / not exist => done 
 
 exit@GLIBC_2.2.5
 inet_addr@GLIBC_2.2.5

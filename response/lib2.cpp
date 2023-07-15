@@ -1,6 +1,5 @@
 #include "../webserv.hpp"
 #include "../config.hpp"
-#include <iostream>
 
 int ft_atoi(std::string s) {
 	int					sign = 1;
@@ -32,7 +31,7 @@ std::string	ft_tostring(int nbr)
 		nbr /= 10;
 	}
 	if (nbr >= 0)
-		str.insert(0,1, static_cast<char>(nbr+ '0'));
+		str.insert(0,1, static_cast<char>(nbr + '0'));
 	return (str);
 }
 
@@ -64,6 +63,7 @@ std::vector<Location>::iterator location(HttpRequest& req, std::vector<Server>::
 			}
 		}
 	}
+	
 	if (location != server->routes.end() && !location->redirections.empty())
 	{
 		for (redirection_it = location->redirections.begin(); redirection_it != location->redirections.end(); redirection_it++)
@@ -82,21 +82,6 @@ std::vector<Location>::iterator location(HttpRequest& req, std::vector<Server>::
 		}
 	}
 	return (location);
-}
-
-void	ft_send_error(int status_code, HttpResponse& response)
-{
-	std::string		response_buffer;
-	
-	response_Http_Request_error(status_code, response);
-	response_buffer = generate_http_response(response);
-	response_buffer += response.content_error;
-	int ret = send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
-	if (ret < 0)
-	{
-		perror("send feiled");
-		// *response.close_connexion = true;
-	}
 }
 
 void check_extention(HttpResponse &response)

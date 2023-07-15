@@ -4,7 +4,7 @@
     <title>Name and Age</title>
 </head>
 <body>
-    <form action="process_form.php" method="POST" enctype="multipart/form-data">
+    <form action="process_form.php" method="POST" >
         <label for="name">Name:</label>
         <input type="text" name="name" id="name" required><br><br>
 

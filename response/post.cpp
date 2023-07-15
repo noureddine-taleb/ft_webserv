@@ -18,7 +18,7 @@ int fill_uplaod_file(HttpResponse &response, std::string &upload_path, std::stri
 	}
 	else
 	{
-		ft_send_error(500, response);
+		ft_send_error(404, response);
 		return(0);
 	}
 	file.close();
@@ -34,12 +34,16 @@ void send_201_response (HttpResponse &response)
 	response.headers["content-length"] = ft_tostring(response.content_error.length());
 	response_buffer = generate_http_response(response);
 	response_buffer += response.content_error;
-	int ret = send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
-	if (ret < 0)
+	if (check_connexion(response) < 0)
 	{
-		perror("send feailed");
-		// *response.close_connexion = true;
+		*response.close_connexion = true;
 		return ;
+	}	
+	int ret = send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
+	if (ret <= 0)
+	{
+		std::cerr << RED <<  "!!!!!!!!!!send feiled!!!!!!!!!!!!" << END << std::endl;
+		*response.close_connexion = true;
 	}
 }
 
@@ -132,32 +136,28 @@ int	upload_not_exist(HttpResponse& response)
 	return (0);
 }
 
-std::string	generate_filename(std::string &file, int *num)
+int post_req(HttpResponse &response)
 {
-	std::string num_to_str = ft_tostring((*num)++);
-	file += "_" + num_to_str;
-	return (file);
-}
-
-void	add_extention(std::string& filename, HttpResponse& response)
-{
-	std::map<std::string, std::string> extention;
-
-	extention["text/html"] = ".html";
-	extention["text/css"] = ".css";
-	extention["text/javascript"] = ".js";
-	extention["image/png"] = ".png";
-	extention["application/json"] = ".json";
-	extention["application/xml"] = ".xml";
-	extention["application/pdf"] = ".pdf";
-	extention["image/jpeg"] = ".jpeg";
-	extention["image/jpeg"] = ".jpeg";
-	extention["image/gif"] = ".gif";
-	extention["text/plain"] = ".text";
-	extention["video/mp4"] = ".mp4";
-
-	if (extention.find(response.request.headers["Content-Type"]) != extention.end())
-		filename += extention[response.request.headers["Content-Type"]];
+	std::string response_buffer;
+	std::string content_length;
+	if(response_post(response))
+	{
+		read_File(response);
+		content_length = ft_tostring(response.size_file);	
+		response.headers["content-length"] = content_length;
+		response_buffer = generate_http_response(response);
+		if (check_connexion(response) < 0)
+			return (-1);
+		int ret = send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
+		if (ret < 0)
+		{
+			*response.close_connexion = true;
+			return (1);
+		}
+	}
+	else
+		return (1);
+	return (0);
 }
 
 int response_post(HttpResponse& response)

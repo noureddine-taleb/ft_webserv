@@ -28,12 +28,9 @@ int	response_redirect(HttpResponse& response)
 				fill_response(301, response);
 			response.headers["Location"] = response.request.url + "/";
 			std::string response_buffer = generate_http_response(response);
-			int ret = send(response.fd, response_buffer.c_str(), response_buffer.size(), 0);
-			if (ret < 0)
-			{
-				perror("send feiled");
-				// *response.close_connexion = true;
-			}
+			if (check_connexion(response) < 0)
+				return (0);
+			send(response.fd, response_buffer.c_str(), response_buffer.size(), 0);
 			return (0);
 		}
 		else if (response_Http_Request(301, response))
@@ -46,13 +43,12 @@ int	response_redirect(HttpResponse& response)
 		else
 			fill_response(302, response);
 		response.headers["location"] = response.location_it->creturn.to;
+		if (check_connexion(response) < 0)
+			return (0);
 		response_buffer = generate_http_response(response);
 		int ret = send(response.fd, response_buffer.c_str(), response_buffer.size(), 0);
 		if (ret < 0)
-		{
-			perror("send feiled");
-			// *response.close_connexion = true;
-		}
+			return (0);
 	};
 	return (0);
 }
@@ -61,11 +57,8 @@ int	response_rewrite(HttpResponse&  response)
 {
 	response.headers["Location"] = response.request.url;
 	std::string response_buffer = generate_http_response(response);
-	int ret = send(response.fd, response_buffer.c_str(), response_buffer.size(), 0);
-	if (ret < 0)
-	{
-		perror("send feiled");
-		// *response.close_connexion = true;
-	}
+	if (check_connexion(response) < 0)
+		return (0);
+	send(response.fd, response_buffer.c_str(), response_buffer.size(), 0);
 	return (0);
 }
