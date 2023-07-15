@@ -89,7 +89,7 @@ int	res_content_dir(int status_code, HttpResponse& response)
 			response.headers["Location"] = response.request.url + "/";
 			response.url_changed = true;
 			std::string response_buffer = generate_http_response(response);
-			if (check_connexion(response) < 0)
+			if (check_connexion(response.fd) < 0)
 			{
 				*response.close_connexion = true;
 				return (0);

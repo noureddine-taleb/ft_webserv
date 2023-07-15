@@ -216,13 +216,14 @@ int get_request(int fd, HttpRequest &request)
 	while (1)
 	{
 		done = false;
-		ret = recv(fd, buffer, sizeof(buffer) - 1, 0);
-		if (ret < 0)
-		{
-			if (errno == EAGAIN)
-				return REQ_TO_BE_CONT;
+		if (check_connexion(fd) < 0)
 			return REQ_CONN_BROKEN;
-		}
+
+		ret = recv(fd, buffer, sizeof(buffer) - 1, 0);
+		// EAGAIN case
+		if (ret < 0)
+			return REQ_TO_BE_CONT;
+		// connexion broken
 		if (ret == 0)
 		{
 			debug("recv == 0\n");

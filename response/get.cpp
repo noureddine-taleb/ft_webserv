@@ -39,7 +39,7 @@ int	response_get(HttpResponse& response)
 				response.url_changed = true;
 				std::string response_buffer = generate_http_response(response);
 
-				if (check_connexion(response) < 0)
+				if (check_connexion(response.fd) < 0)
 					return (-1);
 				int ret = send(response.fd, response_buffer.c_str(), response_buffer.size(), 0);
 				if (ret <= 0)
@@ -75,7 +75,7 @@ int get_req(HttpResponse &response)
 		// {
 		response.headers["content-length"] = content_length;
 		response_buffer = generate_http_response(response);	
-		if (check_connexion(response) < 0)
+		if (check_connexion(response.fd) < 0)
 			return (-1);
 		int ret = send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
 		if (ret < 0)

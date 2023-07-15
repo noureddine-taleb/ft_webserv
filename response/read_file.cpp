@@ -41,7 +41,7 @@ int read_File(HttpResponse& response)
 			file.read(buffer.data(), chunkSize);
 			ssize_t readi = file.gcount();
 			response.content.assign(buffer.begin(), buffer.end());
-			if (check_connexion(response) < 0)
+			if (check_connexion(response.fd) < 0)
 				return (-1);
 			ssize_t i = send(response.fd,response.content.data(), readi, 0);
 			if (i <= 0)

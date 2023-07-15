@@ -34,7 +34,7 @@ void send_201_response (HttpResponse &response)
 	response.headers["content-length"] = ft_tostring(response.content_error.length());
 	response_buffer = generate_http_response(response);
 	response_buffer += response.content_error;
-	if (check_connexion(response) < 0)
+	if (check_connexion(response.fd) < 0)
 	{
 		*response.close_connexion = true;
 		return ;
@@ -146,7 +146,7 @@ int post_req(HttpResponse &response)
 		content_length = ft_tostring(response.size_file);	
 		response.headers["content-length"] = content_length;
 		response_buffer = generate_http_response(response);
-		if (check_connexion(response) < 0)
+		if (check_connexion(response.fd) < 0)
 			return (-1);
 		int ret = send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
 		if (ret < 0)

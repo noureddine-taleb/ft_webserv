@@ -54,7 +54,7 @@ int main(int argc, char **argv)
 				continue;
 			if (tasks[fd]->get_type() == REQUEST)
 			{
-				debug("schedule pending requests");
+				// debug("schedule pending requests");
 				copy_request = dynamic_cast<HttpRequest *>(tasks[fd]);
 				request = *copy_request;
 				goto request;
@@ -74,23 +74,23 @@ int main(int argc, char **argv)
 		switch (status_code)
 		{
 		case REQ_CONN_BROKEN:
-			std::cout << "status = connexion broken" << std::endl;
+			// std::cout << "status = connexion broken" << std::endl;
 			goto close_socket;
 			break;
 		case REQ_TO_BE_CONT:
-			debug("status = to be continued");
+			// debug("status = to be continued");
 			copy_request = new HttpRequest(request);
 			sched_queue_task(tasks, fd, copy_request);
 			continue;
 		default:
-			debug("status = finished with:" << status_code);
+			// debug("status = finished with:" << status_code);
 			if (status_code == 0)
 				debug(request.method << " " << request.url << " " << request.version);
 			sched_unqueue_task(tasks, fd);
 			break;
 		}
 	response:
-		dump_request(request);
+		// dump_request(request);
 		// goto close_socket;
 		// std::cout << "\033[32m"  << "method: " << request.method<< "\033[0m" <<
 		// std::endl; std::cout << "\033[32m"  << "url: " << request.url<< "\033[0m"

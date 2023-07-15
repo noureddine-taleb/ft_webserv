@@ -85,12 +85,13 @@ void fill_response(int status_code, HttpResponse& response)
 	response.headers["Content-type"] = get_content_type(response.path_file);
 }
 
-int check_connexion(HttpResponse &response)
+int check_connexion(int fd)
 {
 	char    line[2];
     int byte_read = 0;
 
-    byte_read = recv(response.fd, line, 0, MSG_PEEK);
+    byte_read = recv(fd, line, 0, MSG_PEEK);
+
 	if (byte_read < 0)
 	{
 		std::cerr << "Resource temporarily unavailable" << std::endl;

@@ -41,9 +41,8 @@
 
 #define END "\033[00m"
 
-#define debug(msg)                                                             \
-  std::cerr << "[debug] " << __FILE__ << ":" << __LINE__ << " "  \
-            << msg << std::endl
+#define _debug(msg) std::cerr << msg
+#define debug(msg) _debug("[debug] " << __FILE__ << ":" << __LINE__ << " " << msg << std::endl)
 
 #define die(msg)                                                               \
   do {                                                                         \
@@ -223,7 +222,7 @@ void 			cgi_response_content(HttpResponse & response, std::string &name_output);
 //send
 int				send_response(int fd, HttpRequest& request, HttpResponse& response, int status_code, bool *close_connexion);
 void			ft_send_error(int status_code, HttpResponse& response);
-int       check_connexion(HttpResponse &response);
+int       check_connexion(int fd);
 
 
 
