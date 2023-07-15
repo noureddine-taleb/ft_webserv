@@ -17,8 +17,8 @@ int	send_response(int fd, HttpRequest& request, HttpResponse& response, int stat
 	}
 	else
 	{
+		std::cout <<RED << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"  << END << std::endl; 
 		int ret = read_File(response);
-		// std::cout <<RED << "*******> =" << response.path_file << status_code << END << std::endl; 
 		// exit(0);
 		if (ret < 0) {
 			*close_connexion = true;

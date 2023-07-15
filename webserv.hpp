@@ -119,6 +119,7 @@ class HttpResponse: public SchedulableEntity {
 		int size_file;
 		bool finish_reading;
 		HttpRequest request;
+		// int byte_reading;
 		int byte_reading;
 		int	fd;
 		pid_t pid;

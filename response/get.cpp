@@ -76,27 +76,28 @@ int get_req(HttpResponse &response)
 {
 	std::string response_buffer;
 	std::string content_length;
+	std::string content;
+	int i(0);
 
 	if (response_get(response))
 	{
 		read_File(response);
 		content_length = ft_tostring(response.size_file);
-		// if (response.size_file == 0)//////////////////////////////
-		// {
-		// 	ft_send_error(404, response);
-		// 	return (1);
-		// } 
-		// else
-		// {
+		if (response.size_file < (BUFF_SIZE / 10))
+		{
+			content = read_File_error(response.path_file);
+			i = 1;
+		}
 		response.headers["content-length"] = content_length;
-		response_buffer = generate_http_response(response);	
+		response_buffer = generate_http_response(response);
+		response_buffer += content;
 		if (check_connexion(response.fd) < 0)
 			return (-1);
 		int ret = send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
 		if (ret < 0)
 			return (1);
-		// *response.close_connexion = true;
-		// }
+		if (i)
+			return (1);
 	}
 	else
 	{
