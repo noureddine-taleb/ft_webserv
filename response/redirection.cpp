@@ -47,7 +47,7 @@ int	response_redirect(HttpResponse& response)
 			return (0);
 		response_buffer = generate_http_response(response);
 		int ret = send(response.fd, response_buffer.c_str(), response_buffer.size(), 0);
-		if (ret < 0)
+		if (ret <= 0)
 			return (0);
 	};
 	return (0);

@@ -5,22 +5,26 @@ void parse_path(HttpResponse &response, std::string &root)
 {
 	std::string target = response.location_it->target;
 	std::string url = response.request.url;
+	// std::cout << SKY << "url = {" << url << END << "}" << std::endl;
 	size_t	find = url.find(target);
-
+ 
+	// std::cout << SKY << "root = {" << root << END << "}" << std::endl;
 	if (*root.rbegin() != '/')
 		root += "/" ;
+	// std::cout << SKY << "root_up = {" << root << END << "}" << std::endl;
 	if (url.substr(0, find) != "" && *root.begin() != '/' )
 	{
-		response.path_file = url.substr(0, find)+ "/" + root + url.substr(find + target.length(), url.find("?") - 1);
+		response.path_file = url.substr(0, find)+ "/" + root + url.substr(find + target.length() + 1, url.find("?") - (find + target.length() + 1));
 		if (url.find("?") != std::string::npos)
 			response.query_str = url.substr(url.find("?") + 1, url.length());
 	}
 	else
 	{
-		response.path_file = url.substr(0, find) + root + url.substr(find + target.length(), url.find("?") - 1);
+		std::cout << SKY << "root_up = {" << find + target.length() + 1 << END << "}" << std::endl;
+		response.path_file = url.substr(0, find) + root + url.substr(find + target.length() + 1, url.find("?") - (find + target.length() + 1));
 		if (url.find("?") != std::string::npos)
 			response.query_str = url.substr(url.find("?") + 1, url.length());
-	}
+ 	}
 }
 
 int get_path(HttpResponse& response)

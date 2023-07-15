@@ -16,7 +16,6 @@ void init_response(HttpResponse& response, HttpRequest& request, int fd)
 	response.fd = fd;
 	response.byte_reading = 0;
 	response.request = request;
-	std::cout <<RED << "*******> ="  << END << std::endl;
 	response.get_length = false;
 	response.finish_reading = false;
 	response.url_changed = false;

@@ -36,10 +36,7 @@ form data: upload files
   => protection for the functions
   => handel / in the post
 	=> check if the socket would block in send side
-<<<<<<< Updated upstream
-=> / not exist => done 
-=> when a file is uploaded it is deleted
-=> send = 0
+=> if cgi not create a file 
 
 exit@GLIBC_2.2.5
 inet_addr@GLIBC_2.2.5
@@ -92,6 +89,3 @@ test cookie system
 
 multiple cgi's
 
-=======
-=> upload text
->>>>>>> Stashed changes

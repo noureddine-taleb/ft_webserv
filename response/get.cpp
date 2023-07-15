@@ -11,6 +11,7 @@ int	response_get(HttpResponse& response)
 	
 	if (get_path(response))
 	{
+		std::cout << RED << "/////////////////////> PATH == " << response.path_file << END << std::endl;
 		type_rep = type_repo(response.path_file);
 		if (type_rep == "is_file")
 		{
@@ -52,11 +53,12 @@ int	response_get(HttpResponse& response)
 					response.headers["Location"] = response.path_file;
 				response.url_changed = true;
 				std::string response_buffer = generate_http_response(response);
-
 				if (check_connexion(response.fd) < 0)
 					return (-1);
 				int ret = send(response.fd, response_buffer.c_str(), response_buffer.size(), 0);
-				if (ret <= 0)
+				if (ret == 0)
+					return (-1);
+				if (ret < 0)
 					return (0);
 				response.finish_reading = true;
 				*response.close_connexion = true;
@@ -85,6 +87,7 @@ int get_req(HttpResponse &response)
 		if (response.size_file < (BUFF_SIZE / 10))
 		{
 			content = read_File_error(response.path_file);
+			*response.close_connexion = true;
 			i = 1;
 		}
 		response.headers["content-length"] = content_length;
@@ -93,7 +96,7 @@ int get_req(HttpResponse &response)
 		if (check_connexion(response.fd) < 0)
 			return (-1);
 		int ret = send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
-		if (ret < 0)
+		if (ret <= 0)
 			return (1);
 		if (i)
 			return (1);

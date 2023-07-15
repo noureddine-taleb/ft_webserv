@@ -3,13 +3,14 @@
 
 int fill_uplaod_file(HttpResponse &response, std::string &upload_path, std::string &file_name, std::vector<char> &content)
 {
-	std::ofstream file(file_name);
+	std::string path = "upload_dir/" + file_name;
+	std::ofstream file(path);
 	if (file)
 	{
 		std::string str(content.begin(), content.end());
 		file << str;
 		std::string destination = upload_path + file_name;
-		if (std::rename(file_name.c_str(), destination.c_str()))
+		if (std::rename(path.c_str(), destination.c_str()))
 		{
 			ft_send_error(500, response);
 			file.close();
@@ -68,7 +69,6 @@ void	upload_exist(HttpResponse& response, std::string& upload_path)
 			if(!fill_uplaod_file(response, upload_path, file_name, file_it->content))
 				return ;
 		}
-		send_201_response (response);
 	}
 	else if (!response.request.vars.empty())
 	{
@@ -80,7 +80,6 @@ void	upload_exist(HttpResponse& response, std::string& upload_path)
 			if(!fill_uplaod_file(response, upload_path, file_name, vars_it->value))
 				return ;
 		}
-		send_201_response (response);
 	}
 	else if (!response.request.content.empty())
 	{
@@ -90,8 +89,8 @@ void	upload_exist(HttpResponse& response, std::string& upload_path)
 		add_extention(file_name, response);
 		if(!fill_uplaod_file(response, upload_path, file_name, response.request.content))
 			return ;
-		send_201_response(response);
 	}
+	send_201_response(response);
 }
 
 int upload_not_exist_file(HttpResponse &response)
@@ -169,7 +168,7 @@ int post_req(HttpResponse &response)
 		if (check_connexion(response.fd) < 0)
 			return (-1);
 		int ret = send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
-		if (ret < 0)
+		if (ret <= 0)
 		{
 			*response.close_connexion = true;
 			return (1);

@@ -17,7 +17,6 @@ int	send_response(int fd, HttpRequest& request, HttpResponse& response, int stat
 	}
 	else
 	{
-		std::cout <<RED << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"  << END << std::endl; 
 		int ret = read_File(response);
 		// exit(0);
 		if (ret < 0) {
@@ -46,6 +45,7 @@ int new_request(HttpRequest &request, HttpResponse &response, int status_code) {
 	std::string response_buffer;
 	std::string content_length;
 
+	std::cout <<RED << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ = " << status_code  << END << std::endl; 
 	if (!status_code)
 	{
 		status_code = check_req_line_headers(request);
