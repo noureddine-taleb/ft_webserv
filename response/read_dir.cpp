@@ -50,7 +50,6 @@ int content_index_file(HttpResponse &response)
 {
 	std::string path = response.path_file;
 
-	std::cout << SKY << "######################### " << path << END << std::endl;
 	if (response.request.method == "POST")
 		return (upload_not_exist_file(response));
 	if (response.location_it->cgi.empty())
@@ -108,7 +107,6 @@ int	res_content_dir(int status_code, HttpResponse& response)
 			*response.close_connexion = true;
 			return (0);
 		}
-		std::cout << SKY<< "$$$$$$$$$$$$$$$$$$$$$ " << response.request.method << END  << std::endl;
 		if (!response.location_it->index.empty())
 		{
 			content_it = std::find(content.begin(), content.end(), response.location_it->index);
