@@ -246,6 +246,7 @@ int get_request(int fd, HttpRequest &request)
 
 void dump_request(HttpRequest &request)
 {
+	std::cout << GREEN;
 	std::cout << "method: " << request.method << std::endl;
 	std::cout << "url: " << request.url << std::endl;
 	std::cout << "version: " << request.version << std::endl;
@@ -281,4 +282,5 @@ void dump_request(HttpRequest &request)
 		std::cout << std::endl;
 	}
 	std::cout << "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv" << std::endl;
+	std::cout << END;
 }

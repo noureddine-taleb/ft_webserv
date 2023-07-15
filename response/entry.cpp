@@ -17,7 +17,6 @@ int	send_response(int fd, HttpRequest& request, HttpResponse& response, int stat
 	}
 	else
 	{
-
 		int ret = read_File(response);
 		// std::cout <<RED << "*******> =" << response.path_file << status_code << END << std::endl; 
 		// exit(0);
@@ -27,11 +26,10 @@ int	send_response(int fd, HttpRequest& request, HttpResponse& response, int stat
 		}
 		if(response.finish_reading)
 		{
-			if (request.headers["Connection"] == "keep-alive")
+			if (response.request.headers["Connection"] == "keep-alive")
 				*response.close_connexion = false;
-			else if (request.headers["Connection"] == "close")
+			else if (response.request.headers["Connection"] == "close")
 				*response.close_connexion = true;
-			*response.close_connexion = true;
 			delete_generated_file(response);
 			return (1);
 		}

@@ -70,3 +70,37 @@ unlink@GLIBC_2.2.5
 
 
 on send check for 0 sent
+when a file is uploaded it is deleted
+http/1.1 not defaulting to closing connection
+is it possible to serve short requests in one iteration
+
+TOTEST:
+test http status codes
+multip servers
+hostnames
+default error pages
+max body size
+locations to different dir
+index
+autoindex
+define certain methods for certain dirs
+test each method
+unknowen methods
+file upload using raw body or form-data
+
+simple cgi tests get/post/delete
+The CGI should be run in the correct directory for relative path file access.
+create scripts with errors/infinite loops and what not
+
+
+headers should be compatible with normal nginx
+
+
+wtf: Launch multiple servers at the same time with different configurations but with common ports. Does it work? If it does, ask why the server should work if one of the configurations isn't functional. Keep going.
+
+siege -c 100 -t 1M -b http://localhost:8080 > 99.5
+
+test cookie system
+
+multiple cgi's
+

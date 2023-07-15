@@ -74,7 +74,7 @@ int main(int argc, char **argv)
 		switch (status_code)
 		{
 		case REQ_CONN_BROKEN:
-			// std::cout << "status = connexion broken" << std::endl;
+			// debug("status = connexion broken");
 			goto close_socket;
 			break;
 		case REQ_TO_BE_CONT:
