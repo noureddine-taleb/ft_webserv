@@ -103,7 +103,7 @@ public:
 
 class HttpResponse: public SchedulableEntity {
 	public:
-		HttpResponse () : get_length(false), finish_reading(false){}
+		HttpResponse () : get_length(false), finish_reading(false), is_loop(false){}
 		std::string version;
 		int code;
 		std::string reason_phrase;
@@ -119,6 +119,8 @@ class HttpResponse: public SchedulableEntity {
 		int size_file;
 		bool finish_reading;
 		HttpRequest request;
+    int start;
+    bool is_loop;
 		// int byte_reading;
 		int byte_reading;
 		int	fd;
@@ -129,6 +131,7 @@ class HttpResponse: public SchedulableEntity {
 		std::string cookies;
 		int nbr_env;
 		bool *close_connexion;
+    std::string name_out;
 		// std::string name_output;
 		enum SchedulableEntityTypes get_type() {
 			return RESPONSE;

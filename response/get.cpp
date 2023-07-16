@@ -76,8 +76,9 @@ int get_req(HttpResponse &response)
 	std::string content;
 	int i(0);
 
-	if (response_get(response))
+	if (response_get(response) )
 	{
+		std::cout <<PURPLE <<  " ||||||||||| " << response.path_file <<" |||||||||||||||" << END<< std::endl; 
 		read_File(response);
 		content_length = ft_tostring(response.size_file);
 		if (response.size_file < (BUFF_SIZE / 10))
@@ -99,7 +100,8 @@ int get_req(HttpResponse &response)
 	}
 	else
 	{
-		*response.close_connexion = true;
+		if (!response.is_loop)
+			*response.close_connexion = true;
 		return (1);
 	}
 	return (0);

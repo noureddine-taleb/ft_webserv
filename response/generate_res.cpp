@@ -20,6 +20,8 @@ void init_response(HttpResponse& response, HttpRequest& request, int fd)
 	response.finish_reading = false;
 	response.url_changed = false;
 	response.pid = -1;
+	response.is_loop = 0;
+	response.start = 0;
 	response.server_it = server(response.request);
 	// std::cout << YELLOW<< "***********>reser  " << response.server_it->ip<< " || "<< response.server_it->port << END << std::endl; 
 	response.location_it = location(response.request, response.server_it, response);
