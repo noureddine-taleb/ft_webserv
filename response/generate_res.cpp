@@ -22,7 +22,7 @@ void init_response(HttpResponse& response, HttpRequest& request, int fd)
 	response.pid = -1;
 	response.server_it = server(response.request);
 	// std::cout << YELLOW<< "***********>reser  " << response.server_it->ip<< " || "<< response.server_it->port << END << std::endl; 
-	response.location_it = location(response.request, response.server_it);
+	response.location_it = location(response.request, response.server_it, response);
 	// std::cout << YELLOW<< "***********> location = " << response.location_it->target  << END << std::endl; 
 }
 
@@ -81,7 +81,7 @@ void fill_response(int status_code, HttpResponse& response)
 	response.version = response.request.version;
 	response.code = status_code;
 	response.reason_phrase = get_reason_phase(status_code);
-	response.headers["Connection"] = "Close";
+	response.headers["Connection"] = "keep-alive";
 	response.headers["Content-type"] = get_content_type(response.path_file);
 }
 

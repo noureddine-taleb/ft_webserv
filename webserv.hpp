@@ -168,7 +168,7 @@ unsigned int ft_stoi_base_16(std::string str);
 //----------------------------------------------------------------------------
 //iterators
 std::vector<Server>::iterator server(HttpRequest& request);
-std::vector<Location>::iterator	location(HttpRequest& req, std::vector<Server>::iterator server);
+std::vector<Location>::iterator	location(HttpRequest& req, std::vector<Server>::iterator server, HttpResponse &response);
 
 //lib
 int				ft_atoi(std::string s);
@@ -194,7 +194,7 @@ int				res_content_dir(int status_code, HttpResponse& response);
 //generate response
 int 			new_request(HttpRequest &request, HttpResponse &response, int status_code);
 void			init_response(HttpResponse& response, HttpRequest& request, int fd);
-int				check_req_line_headers(HttpRequest &request);
+int				check_req_line_headers(HttpRequest &request, HttpResponse& response );
 std::string		res_content(int status_code, HttpResponse& response);
 void			fill_response(int status_code, HttpResponse& response);
 std::string		get_reason_phase(int status_code);

@@ -46,7 +46,7 @@ std::vector<Server>::iterator server(HttpRequest& request)
 	return (config.servers.begin());
 }
 
-std::vector<Location>::iterator location(HttpRequest& req, std::vector<Server>::iterator server)
+std::vector<Location>::iterator location(HttpRequest& req, std::vector<Server>::iterator server, HttpResponse &response)
 {
 	unsigned long	length_location(0);
 	std::vector<Location>::iterator location = server->routes.end();
@@ -75,6 +75,7 @@ std::vector<Location>::iterator location(HttpRequest& req, std::vector<Server>::
 
 				if (find_from != std::string::npos && find_to == std::string::npos)
 				{
+					response.url_changed = true;
 					req.url = req.url.substr(0,find_from) + redirection_it->to + req.url.substr((find_from + redirection_it->from.length()),req.url.length());
 					break;
 				}

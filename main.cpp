@@ -90,7 +90,7 @@ int main(int argc, char **argv)
 			break;
 		}
 	response:
-		dump_request(request);
+		// dump_request(request);
 		// goto close_socket;
 		finished =
 			send_response(fd, request, response, status_code, &close_connexion);

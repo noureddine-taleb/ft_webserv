@@ -61,24 +61,27 @@ void	upload_exist(HttpResponse& response, std::string& upload_path)
 		ft_send_error(404, response);
 		return ;
 	}
-	if (!response.request.files.empty())
+	if (!response.request.files.empty() || !response.request.vars.empty())
 	{
-		for(std::vector<File>::iterator file_it = response.request.files.begin(); file_it != response.request.files.end(); file_it++)
+		if (!response.request.files.empty())
 		{
-			file_name = file_it->name;
-			if(!fill_uplaod_file(response, upload_path, file_name, file_it->content))
-				return ;
+			for(std::vector<File>::iterator file_it = response.request.files.begin(); file_it != response.request.files.end(); file_it++)
+			{
+				file_name = file_it->name;
+				if(!fill_uplaod_file(response, upload_path, file_name, file_it->content))
+					return ;
+			}
 		}
-	}
-	else if (!response.request.vars.empty())
-	{
-		for(std::vector<Var>::iterator vars_it = response.request.vars.begin(); vars_it != response.request.vars.end(); vars_it++)
+		if (!response.request.vars.empty())
 		{
-			file_name = vars_it->key;
-			if (vars_it->key.substr(vars_it->key.find_last_of(".") + 1, vars_it->key.length()) != "txt")
-				file_name += ".txt";
-			if(!fill_uplaod_file(response, upload_path, file_name, vars_it->value))
-				return ;
+			for(std::vector<Var>::iterator vars_it = response.request.vars.begin(); vars_it != response.request.vars.end(); vars_it++)
+			{
+				file_name = vars_it->key;
+				if (vars_it->key.substr(vars_it->key.find_last_of(".") + 1, vars_it->key.length()) != "txt")
+					file_name += ".txt";
+				if(!fill_uplaod_file(response, upload_path, file_name, vars_it->value))
+					return ;
+			}
 		}
 	}
 	else if (!response.request.content.empty())

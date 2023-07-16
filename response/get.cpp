@@ -12,8 +12,6 @@ int	response_get(HttpResponse& response)
 	if (get_path(response))
 	{
 		type_rep = type_repo(response.path_file);
-		std::cout << RED << "/////////////////////> PATH == " << response.path_file << END << std::endl;
-		std::cout << RED << "/////////////////////> type == " << type_rep << END << std::endl;
 		if (type_rep == "is_file")
 		{
 			if (response.location_it->cgi.empty())
@@ -45,13 +43,10 @@ int	response_get(HttpResponse& response)
 		}
 		else if (type_rep == "is_directory")
 		{
-			if (*response.path_file.rbegin() != '/')
+			if (*response.request.url.rbegin() != '/')
 			{
 				fill_response(301, response);
-				if (response.request.url != "/")
-					response.headers["Location"] = response.request.url + "/";
-				else
-					response.headers["Location"] = response.path_file;
+				response.headers["Location"] = response.request.url + "/";
 				response.url_changed = true;
 				std::string response_buffer = generate_http_response(response);
 				if (check_connexion(response.fd) < 0)
@@ -69,10 +64,7 @@ int	response_get(HttpResponse& response)
 				return (1);
 		}
 		else
-		{
-			std::cout << SKY << "root = {3335%%%55225252"<< END << "}" << std::endl;
 			ft_send_error(404, response);
-		}
 	}
 	return (0);
 }

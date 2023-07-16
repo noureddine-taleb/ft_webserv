@@ -89,7 +89,7 @@ int	res_content_dir(int status_code, HttpResponse& response)
 	(void) status_code;
 	if (content_dir(response.path_file, response, content) == "found")
 	{
-		if (*response.path_file.rbegin() != '/')
+		if (*response.request.url.rbegin() != '/')
 		{
 			fill_response(301, response);
 			response.headers["Location"] = response.request.url + "/";

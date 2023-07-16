@@ -24,7 +24,6 @@ char** get_env(HttpResponse& response)
     size_t i;
     for (i = 0; i < vect.size(); ++i)
     {
-        std::cout <<BLUE <<  vect[i] <<END <<std::endl;
         env[i] = new char[vect[i].length() + 1];
         strcpy(env[i], vect[i].c_str());
     }
@@ -75,11 +74,20 @@ void cgi_response_content(HttpResponse & response, std::string &name_output)
     }
 
 }
+void delete_env(char **env)
+{
+    int i(0);
+    while (env[i])
+    {
+        delete[] env[i++];
+    }
+    delete[] env[i];
+    delete[] env;
+}
 
 int    execute_cgi(HttpResponse &response)
 {
      int output_fd = 0;
-    		std::cout << RED << "/////////////////////> PATH == " << response.path_file << END << std::endl;
     std::string name_output = "output";
     if (response.pid == -1)
     {
@@ -87,7 +95,7 @@ int    execute_cgi(HttpResponse &response)
         static int i;
         name_output = generate_filename(name_output, &i);
         output_fd = open(name_output.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
-        response.file_name_genarated.push_back(name_output);///////////////////
+        response.file_name_genarated.push_back(name_output);
             char **env;
             env = get_env(response);
         if (response.pid == 0)
@@ -132,51 +140,24 @@ int    execute_cgi(HttpResponse &response)
             {
                 // std::cerr << SKY << "waitfeailed" << END << std::endl;
                 ft_send_error(500, response);
+                delete_env(env);
+                delete[] env;
                 close(output_fd);
                 return (1);
             }
             else  if (result && response.pid != -1)
             {
-
                 cgi_response_content(response, name_output);
-
             }
             else
             {
                 close(output_fd);
+                delete_env(env);
                 return (0);
             }
-            close(output_fd);
         }
+        delete_env(env);
+        close(output_fd);
     }
     return (1);
 }
-
-
-// void parse_query_string(HttpResponse &response)
-// {
-// 	std::string query_str_parsed;
-// 	std::vector<std::string> space;
-// 	space.push_back("%20");
-// 	space.push_back("%2B");
-// 	space.push_back("+");
-// 	int find = true;
-
-//     query_str_parsed += response.query_str;
-// 	while (find)
-// 	{
-// 		find = false;
-// 		for (std::vector<std::string>::iterator space_it = space.begin(); space_it != space.end(); space_it++)
-// 		{
-// 			if (query_str_parsed.find(*space_it) != std::string::npos)
-// 			{
-// 				query_str_parsed = query_str_parsed.substr(0,query_str_parsed.find(*space_it)) + " "
-//                     + query_str_parsed.substr(query_str_parsed.find(*space_it) + (*space_it).length(), query_str_parsed.length());
-//                 std::cout << "\033[33m" << "query_parsed == {" << query_str_parsed << "}" << "\033[00m" << std::endl;
-// 				find = true;
-//                 break ;
-// 			}
-// 		}
-// 	}
-// 	std::cout << "\033[32m" << "*******> {" << query_str_parsed << "\033[0m" << std::endl;
-// }

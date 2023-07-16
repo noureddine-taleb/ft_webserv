@@ -1,11 +1,11 @@
 #include "../webserv.hpp"
 #include "../config.hpp"
 
-int	check_req_line_headers(HttpRequest &request)
+int	check_req_line_headers(HttpRequest &request, HttpResponse &response)
 {
 	
 	std::vector<Server>::iterator server_it = server(request);
-	std::vector<Location>::iterator location_it = location(request, server_it);
+	std::vector<Location>::iterator location_it = location(request, server_it, response);
 	std::vector<std::string>::iterator methods_it;
 
 	if(location_it != server_it->routes.end())

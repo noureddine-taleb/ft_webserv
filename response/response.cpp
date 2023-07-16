@@ -26,11 +26,13 @@ std::string		res_content(int status_code, HttpResponse& response)
 int response_Http_Request(int status_code , HttpResponse& response)
 {
 	if (!response.url_changed)
-		fill_response(status_code, response);
+		fill_response(status_code, response); 
 	else
 	{
-		if (status_code != 301 && status_code != 302)
-			fill_response(302, response);
+		// if (status_code != 301 && status_code != 302)
+		// 	fill_response(302, response);
+		if(response.url_changed)
+			fill_response(301, response);
 		else
 			fill_response(status_code, response);
 		return (response_rewrite(response));

@@ -32,11 +32,11 @@ form data: upload files
   => handel infinit loop 
 
 
-  => check all and clean the code
-  => protection for the functions
-  => handel / in the post
-	=> check if the socket would block in send side
-=> if cgi not create a file 
+	=> rewrite
+	=> status code 404 in return
+	=> check open 
+  	=> check all and clean the code
+ 	=> protection for the functions
 
 exit@GLIBC_2.2.5
 inet_addr@GLIBC_2.2.5
