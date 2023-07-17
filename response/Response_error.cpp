@@ -74,6 +74,8 @@ void response_Http_Request_error(int status_code, HttpResponse& response)
 			get_content_error(response, status_code , std::string("www/409.html"));
 		case 504:
 			get_content_error(response, status_code , std::string("www/504.html"));
+		case 508:
+			get_content_error(response, status_code , std::string("www/508.html"));
 	}
 	response.headers["Content-Length"] = ft_tostring(response.content_error.length());
 }

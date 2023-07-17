@@ -82,8 +82,6 @@ int parse_http_headers(HttpRequest &request, int &parsed, bool *done) {
 		parsed += HTTP_DEL_LEN;
 		if (request.method == "GET" || request.method == "DELETE")
 			*done = true;
-		if (ft_stoi(request.headers["Content-Length"]) == 0)
-			*done = true;
 		return 0;
 	}
 	std::vector<std::string> headerv = split(http_line, ":", 1);

@@ -44,7 +44,7 @@ void spawn_servers(int wfd) {
 		   "setsockopt: " << strerror(errno));
 
 	assert_msg(bind(sock, res->ai_addr, res->ai_addrlen) == 0,
-		   "bind(" << it->ip.c_str() << ":" << it->port.c_str() << ") failed = " << strerror(errno));
+		   "bind() failed");
 
 	assert_msg(listen(sock, BACKLOG_SIZE) == 0, "listen: " << strerror(errno));
 	debug("listening on: " << it->ip << ":" << it->port);
@@ -64,7 +64,7 @@ skip:
 	}
 }
 
-int accept_connection(int wfd, int server) {
+void accept_connection(int wfd, int server) {
   struct sockaddr_in caddress;
   socklen_t len = sizeof caddress;
   int client = accept(server, (struct sockaddr *)&caddress, &len);
@@ -78,5 +78,4 @@ int accept_connection(int wfd, int server) {
 
   debug("connection received " << inet_ntoa(caddress.sin_addr) << ":"
 							   << ntohs(caddress.sin_port));
-	return client;
 }

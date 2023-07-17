@@ -28,7 +28,7 @@ int	send_response(int fd, HttpRequest& request, HttpResponse& response, int stat
 			else if (response.cgi_it->file_extension == "py")
 			{
 				delete_generated_file(response);
-				ft_send_error(504, response);
+				ft_send_error(508, response);
 			}
 			*response.close_connexion = true;
 		}
@@ -96,6 +96,8 @@ int new_request(HttpRequest &request, HttpResponse &response, int status_code) {
 			if(!response_delete(response))
 				return (1);
 		}
+		else
+			ft_send_error(status_code, response);
 	}
 	else
 	{

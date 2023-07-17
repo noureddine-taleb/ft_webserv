@@ -5,6 +5,7 @@
 #include <cstring>
 #include <cstdio>
 #include <sys/time.h>
+#include <signal.h>
 
 char** get_env(HttpResponse& response)
 {
@@ -44,7 +45,7 @@ void cgi_response_content(HttpResponse & response, std::string &name_output)
             out = generate_filename(out, &i);
             response.file_name_genarated.push_back(out);
             std::string line;
-            std::cout << SKY << "||||||||||||||||| " << line << " |||||||||||||||||" << END << std::endl;   
+            // std::cout << SKY << "||||||||||||||||| " << line << " |||||||||||||||||" << END << std::endl;   
             while(std::getline(out_file, line) && line != "\r")
             {
                 int length = line.find(";") - (line.find(" ") + 1);
@@ -99,6 +100,7 @@ int    execute_cgi(HttpResponse &response)
         cgi_response_content(response, response.name_out);
         response.is_loop = 0;
         *response.close_connexion =1;
+        kill(response.pid, SIGKILL); //!tzadt
         return (0);
     }
     if (response.pid == -1)

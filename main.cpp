@@ -16,16 +16,6 @@ void ignore(int sig)
 	(void)sig;
 }
 
-Server &get_server(int fd) {
-	for (std::vector<Server>::iterator it = config.servers.begin(); it != config.servers.end(); it++) {
-		if (it->__fd == fd)
-			return *it;
-	}
-	die("unreachable: source server for a request cannot be found");
-	Server *dummy = new Server();
-	return *dummy;
-}
-
 int main(int argc, char **argv)
 {
 	if (argc != 2)
@@ -33,14 +23,13 @@ int main(int argc, char **argv)
 
 	signal(SIGPIPE, SIG_IGN);
 	parse_config(argv[1]);
-	dump_config(config);
+	// dump_config(config);
 
 	int wfd = init_watchlist();
 	spawn_servers(wfd);
 
 	int finished = 0;
 	std::map<int, SchedulableEntity *> tasks;
-	std::map<int, Server &> connexion_srcs;
 	bool close_connexion = false;
 
 	while (1)
@@ -54,8 +43,7 @@ int main(int argc, char **argv)
 
 		if (fd > 2 && fd <= config.max_server_fd)
 		{
-			int conn = accept_connection(wfd, fd);
-			connexion_srcs[conn] = get_server(fd);
+			accept_connection(wfd, fd);
 			continue;
 		}
 		// no new request, serve pending ones
@@ -78,10 +66,8 @@ int main(int argc, char **argv)
 				goto response;
 			}
 		}
-		else {
-			request.server = &connexion_srcs[fd];
+		else
 			debug("received new request");
-		}
 
 	request:
 		status_code = get_request(fd, request);
@@ -104,7 +90,7 @@ int main(int argc, char **argv)
 			break;
 		}
 	response:
-		// dump_request(request);
+		dump_request(request);
 		// goto close_socket;
 		finished =
 			send_response(fd, request, response, status_code, &close_connexion);
