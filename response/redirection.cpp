@@ -38,7 +38,11 @@ int	response_redirect(HttpResponse& response)
 			int ret = send(response.fd, response_buffer.c_str(), response_buffer.size(), 0);
 			if (ret == 0)
 				*response.close_connexion = true;
-			
+			if (ret < 0) {
+				*response.close_connexion = false;
+				return 0;
+			}
+
 			return (0);
 		}
 		else if (response_Http_Request(301, response))
@@ -57,6 +61,11 @@ int	response_redirect(HttpResponse& response)
 		int ret = send(response.fd, response_buffer.c_str(), response_buffer.size(), 0);
 		if (ret == 0)
 			return (0);
+		if (ret < 0) {
+			*response.close_connexion = false;
+			return 0;
+		}
+
 	};
 	return (0);
 }
@@ -70,6 +79,10 @@ int	response_rewrite(HttpResponse&  response)
 	int ret = send(response.fd, response_buffer.c_str(), response_buffer.size(), 0);
 	if (ret == 0)
 		*response.close_connexion = true;
+	if (ret < 0) {
+		*response.close_connexion = false;
+		return 0;
+	}
 	return (0);
 	// return (1);
 }

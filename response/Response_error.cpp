@@ -88,7 +88,7 @@ void	ft_send_error(int status_code, HttpResponse& response)
 	response_buffer = generate_http_response(response);
 	response_buffer += response.content_error;
 	*response.close_connexion = true;
-	// std::cout << PURPLE <<"|||||||| "<< response_buffer << " ||||||||||||"<< END << std::endl; 
+	std::cout << PURPLE <<"|||||||| "<< response_buffer << " ||||||||||||"<< END << std::endl; 
 	if (check_connexion(response.fd) < 0)
 	{
 		*response.close_connexion = true;

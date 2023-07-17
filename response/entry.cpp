@@ -26,7 +26,7 @@ int	send_response(int fd, HttpRequest& request, HttpResponse& response, int stat
 					return(0);
 				}
 				if (ret < 0)
-					*response.close_connexion = true;
+					*response.close_connexion = false;
 				delete_generated_file(response);
 				return(1) ;
 			}
@@ -110,6 +110,7 @@ int new_request(HttpRequest &request, HttpResponse &response, int status_code) {
 	}
 	else
 	{
+		std::cout << "++++++++++>" << status_code << std::endl;
 		*response.close_connexion = true;
 		ft_send_error(status_code, response);
 		return (1);

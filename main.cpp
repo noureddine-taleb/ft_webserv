@@ -16,9 +16,12 @@ void ignore(int sig)
 	(void)sig;
 }
 
-Server get_server(int fd) {
-	for (std::vector<Server>::iterator it = config.servers.begin(); it != config.servers.end(); it++) {
-		if (it->__fd == fd) {
+Server get_server(int fd)
+{
+	for (std::vector<Server>::iterator it = config.servers.begin(); it != config.servers.end(); it++)
+	{
+		if (it->__fd == fd)
+		{
 			return *it;
 		}
 	}
@@ -79,7 +82,8 @@ int main(int argc, char **argv)
 				goto response;
 			}
 		}
-		else {
+		else
+		{
 			debug("received new request");
 			request.ip = connexion_srcs[fd].__ip;
 			request.port = connexion_srcs[fd].__port;
@@ -90,16 +94,16 @@ int main(int argc, char **argv)
 		switch (status_code)
 		{
 		case REQ_CONN_BROKEN:
-			// debug("status = connexion broken");
+			debug("status = connexion broken");
 			goto close_socket;
 			break;
 		case REQ_TO_BE_CONT:
-			// debug("status = to be continued");
+			debug("status = to be continued");
 			copy_request = new HttpRequest(request);
 			sched_queue_task(tasks, fd, copy_request);
 			continue;
 		default:
-			// debug("status = finished with:" << status_code);
+			debug("status = finished with:" << status_code);
 			if (status_code == 0)
 				debug(request.method << " " << request.url << " " << request.version);
 			sched_unqueue_task(tasks, fd);
@@ -135,8 +139,3 @@ int main(int argc, char **argv)
 		close(fd);
 	}
 }
-
-
-
-
-
