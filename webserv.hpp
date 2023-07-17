@@ -99,8 +99,9 @@ public:
   bool __http_top_header_parsed;
   bool __http_headers_end;
 
-  // server
-  Server *server; // ip:port
+  // src server
+  int ip;
+  int port;
   enum SchedulableEntityTypes get_type() { return REQUEST; }
 };
 

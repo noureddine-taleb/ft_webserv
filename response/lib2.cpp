@@ -41,7 +41,7 @@ std::vector<Server>::iterator server(HttpRequest& request)
 	std::string ip = request.headers["Host"].substr(0, position);
 	std::string port = request.headers["Host"].substr(position + 1);
 	for (std::vector<Server>::iterator it = config.servers.begin(); it != config.servers.end(); it++)
-		if (it->ip == ip && it->port == port)
+		if (it->config_ip == ip && it->config_port == port)
 			return (it);
 	return (config.servers.begin());
 }

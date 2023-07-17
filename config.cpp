@@ -155,8 +155,8 @@ void parse_server(std::vector<std::string> &lines, Server &server,
 			std::string listen_raw = lines[i].substr(7);
 			std::vector<std::string> listen = split(trim(listen_raw), ":");
 			assert_msg(listen.size() == 2, "invalid listen directive");
-			server.ip = listen[0];
-			server.port = listen[1];
+			server.config_ip = listen[0];
+			server.config_port = listen[1];
 			int port;
 			try
 			{
@@ -267,8 +267,8 @@ void dump_config(Config config)
 	for (uint32_t i = 0; i < config.servers.size(); i++)
 	{
 		std::cout << "server:" << std::endl;
-		std::cout << "\tlisten: " << config.servers[i].ip << ":"
-				  << config.servers[i].port << std::endl;
+		std::cout << "\tlisten: " << config.servers[i].config_ip << ":"
+				  << config.servers[i].config_port << std::endl;
 
 		if (config.servers[i].root.length())
 			std::cout << "\troot: " << config.servers[i].root << std::endl;

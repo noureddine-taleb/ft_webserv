@@ -25,15 +25,17 @@ void spawn_servers(int wfd) {
 	std::memset(&hints, 0, sizeof(hints));
 	hints.ai_family = PF_INET;
 	hints.ai_socktype = SOCK_STREAM;
-	error = getaddrinfo(it->ip.c_str(), it->port.c_str(), &hints, &res);
+	error = getaddrinfo(it->config_ip.c_str(), it->config_port.c_str(), &hints, &res);
 	if (error)
 		die(gai_strerror(error));
 
-	for (std::vector<struct addrinfo *>::iterator it = servers.begin(); it < servers.end(); it++) {
-		struct sockaddr_in *cur = (struct sockaddr_in *)res->ai_addr;
-		struct sockaddr_in *target = (struct sockaddr_in *)(*it)->ai_addr;
-		if (target->sin_addr.s_addr == cur->sin_addr.s_addr && target->sin_port == cur->sin_port) {
-			debug("skip = server=" << cur->sin_addr.s_addr << ":" << ntohs(cur->sin_port) << " same as server=" << target->sin_addr.s_addr << ":" << ntohs(target->sin_port));
+	struct sockaddr_in *cur = (struct sockaddr_in *)res->ai_addr;
+	it->__ip = cur->sin_addr.s_addr;
+	it->__port = cur->sin_port;
+	for (std::vector<struct addrinfo *>::iterator it2 = servers.begin(); it2 < servers.end(); it2++) {
+		struct sockaddr_in *target = (struct sockaddr_in *)(*it2)->ai_addr;
+		if (target->sin_addr.s_addr == it->__ip && target->sin_port == it->__port) {
+			debug("skip = server=" << it->__ip << ":" << ntohs(it->__port) << " same as server=" << target->sin_addr.s_addr << ":" << ntohs(target->sin_port));
 			freeaddrinfo(res);
 			goto skip;
 		}
@@ -44,10 +46,10 @@ void spawn_servers(int wfd) {
 		   "setsockopt: " << strerror(errno));
 
 	assert_msg(bind(sock, res->ai_addr, res->ai_addrlen) == 0,
-		   "bind(" << it->ip.c_str() << ":" << it->port.c_str() << ") failed = " << strerror(errno));
+			"two identical servers bind(" << it->config_ip.c_str() << ":" << it->config_port.c_str() << ") failed = " << strerror(errno));
 
 	assert_msg(listen(sock, BACKLOG_SIZE) == 0, "listen: " << strerror(errno));
-	debug("listening on: " << it->ip << ":" << it->port);
+	debug("listening on: " << it->config_ip << ":" << it->config_port);
 #ifdef __APPLE__
 	watchlist_add_fd(wfd, sock, EVFILT_READ);
 #elif __linux__

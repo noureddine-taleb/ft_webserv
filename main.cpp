@@ -16,12 +16,13 @@ void ignore(int sig)
 	(void)sig;
 }
 
-Server &get_server(int fd) {
+Server get_server(int fd) {
 	for (std::vector<Server>::iterator it = config.servers.begin(); it != config.servers.end(); it++) {
-		if (it->__fd == fd)
+		if (it->__fd == fd) {
 			return *it;
+		}
 	}
-	die("unreachable: source server for a request cannot be found");
+	die("unreachable: source server for a request cannot be found fd = " << fd);
 	Server *dummy = new Server();
 	return *dummy;
 }
@@ -40,7 +41,7 @@ int main(int argc, char **argv)
 
 	int finished = 0;
 	std::map<int, SchedulableEntity *> tasks;
-	std::map<int, Server &> connexion_srcs;
+	std::map<int, Server> connexion_srcs;
 	bool close_connexion = false;
 
 	while (1)
@@ -79,8 +80,9 @@ int main(int argc, char **argv)
 			}
 		}
 		else {
-			request.server = &connexion_srcs[fd];
 			debug("received new request");
+			request.ip = connexion_srcs[fd].__ip;
+			request.port = connexion_srcs[fd].__port;
 		}
 
 	request:

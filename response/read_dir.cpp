@@ -29,9 +29,9 @@ std::string content_dir(std::string dir,HttpResponse& response, std::vector<std:
 					if (response.request.method == "GET")
 					{
 						if (*response.request.url.rbegin() != '/')
-							file << "<li><a href=\"" << "http://"<< response.server_it->ip << ":" << response.server_it->port << response.request.url << '/' << content_dir->d_name << "\">" << content_dir->d_name << "</a></li>\n";
+							file << "<li><a href=\"" << "http://"<< response.server_it->config_ip << ":" << response.server_it->config_port << response.request.url << '/' << content_dir->d_name << "\">" << content_dir->d_name << "</a></li>\n";
 						else
-							file << "<li><a href=\"" << "http://"<< response.server_it->ip << ":" << response.server_it->port << response.request.url << content_dir->d_name << "\">" << content_dir->d_name << "</a></li>\n";
+							file << "<li><a href=\"" << "http://"<< response.server_it->config_ip << ":" << response.server_it->config_port << response.request.url << content_dir->d_name << "\">" << content_dir->d_name << "</a></li>\n";
 					}
 					content.push_back(content_dir->d_name);
 				}
