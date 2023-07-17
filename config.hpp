@@ -52,7 +52,7 @@ public:
 class Server
 {
 public:
-	Server() : ip("0.0.0.0"), port("0"), root("") {}
+	Server() : ip("0.0.0.0"), port("0"), root(""), __fd(-1) {}
 	std::string ip;
 	std::string port;
 	std::string root;

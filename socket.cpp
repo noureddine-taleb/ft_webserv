@@ -53,6 +53,7 @@ void spawn_servers(int wfd) {
 #elif __linux__
 	watchlist_add_fd(wfd, sock, EPOLLIN);
 #endif
+	it->__fd = sock;
 	config.max_server_fd = sock;
 	servers.push_back(res);
 skip:
