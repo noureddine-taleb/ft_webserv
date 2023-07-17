@@ -83,7 +83,7 @@ class HttpRequest : public SchedulableEntity {
 public:
   HttpRequest()
       : method(""), url(""), version(""), __http_top_header_parsed(false),
-        __http_headers_end(false) {}
+        __http_headers_end(false), finished(false) {}
   std::string method;
   std::string url;
   std::string version;
@@ -100,8 +100,10 @@ public:
   bool __http_headers_end;
 
   // src server
-  int ip;
-  int port;
+  unsigned int ip;
+  unsigned int port;
+
+  bool finished;
   enum SchedulableEntityTypes get_type() { return REQUEST; }
 };
 

@@ -73,6 +73,8 @@ int main(int argc, char **argv)
 				// debug("schedule pending requests");
 				copy_request = dynamic_cast<HttpRequest *>(tasks[fd]);
 				request = *copy_request;
+				if (request.finished)
+					goto response;
 				goto request;
 			}
 			else if (tasks[fd]->get_type() == RESPONSE)
@@ -106,7 +108,9 @@ int main(int argc, char **argv)
 			debug("status = finished with:" << status_code);
 			if (status_code == 0)
 				debug(request.method << " " << request.url << " " << request.version);
-			sched_unqueue_task(tasks, fd);
+			request.finished = true;
+			sched_queue_task(tasks, fd, new HttpRequest(request));
+			continue;
 			break;
 		}
 	response:
