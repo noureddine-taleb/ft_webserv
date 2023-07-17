@@ -208,40 +208,28 @@ int parse_partial_http_request(HttpRequest &request, bool *done)
 int get_request(int fd, HttpRequest &request)
 {
 	int ret;
-	char buffer[255];
-	bool done;
-	int iter = 0;
-	int max_iter = 5;
+	char buffer[1024];
+	bool done = false;
 
-	while (1)
-	{
-		done = false;
-		if (check_connexion(fd) < 0)
-			return REQ_CONN_BROKEN;
+	if (check_connexion(fd) < 0)
+		return REQ_CONN_BROKEN;
 
-		ret = recv(fd, buffer, sizeof(buffer) - 1, 0);
-		// EAGAIN case
-		if (ret < 0)
-			return REQ_TO_BE_CONT;
-		// connexion broken
-		if (ret == 0)
-		{
-			debug("recv == 0\n");
-			return REQ_CONN_BROKEN;
-		}
-		int last_size = request.http_buffer.size();
-		request.http_buffer.resize(last_size + ret);
-		std::memcpy(&request.http_buffer[last_size], buffer, ret);
-		int ret = parse_partial_http_request(request, &done);
-		if (ret < 0)
-			return -ret;
-		if (done)
-			break;
-		iter++;
-		if (iter >= max_iter)
-			return REQ_TO_BE_CONT;
-	}
-	return 0;
+	ret = recv(fd, buffer, sizeof(buffer) - 1, 0);
+	// EAGAIN case
+	if (ret < 0)
+		return REQ_TO_BE_CONT;
+	// connexion broken
+	if (ret == 0)
+		return REQ_CONN_BROKEN;
+	int last_size = request.http_buffer.size();
+	request.http_buffer.resize(last_size + ret);
+	std::memcpy(&request.http_buffer[last_size], buffer, ret);
+	ret = parse_partial_http_request(request, &done);
+	if (ret < 0)
+		return -ret;
+	if (done)
+		return 0;
+	return REQ_TO_BE_CONT;
 }
 
 void dump_request(HttpRequest &request)
