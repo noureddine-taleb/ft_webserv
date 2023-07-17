@@ -102,8 +102,10 @@ int	res_content_dir(int status_code, HttpResponse& response)
 				return (0);
 			}
 			int ret = send(response.fd, response_buffer.c_str(), response_buffer.size(), 0);
-			if (ret <= 0)
-					return 0;
+			if (ret == 0)
+				*response.close_connexion = true;
+			if (ret < 0)
+					return (0);////!chek
 			*response.close_connexion = true;
 			return (0);
 		}

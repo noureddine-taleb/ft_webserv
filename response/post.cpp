@@ -41,11 +41,13 @@ void send_201_response (HttpResponse &response)
 		return ;
 	}	
 	int ret = send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
-	if (ret <= 0)
-	{
-		std::cerr << RED <<  "!!!!!!!!!!send feiled!!!!!!!!!!!!" << END << std::endl;
+	if (ret == 0)
 		*response.close_connexion = true;
-	}
+	// else if (ret < 0)
+	// {
+	// 	std::cerr << RED <<  "!!!!!!!!!!send feiled!!!!!!!!!!!!" << END << std::endl;
+	// 	// *response.close_connexion = true;
+	// }
 }
 
 void	upload_exist(HttpResponse& response, std::string& upload_path)
@@ -171,11 +173,15 @@ int post_req(HttpResponse &response)
 		if (check_connexion(response.fd) < 0)
 			return (-1);
 		int ret = send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
-		if (ret <= 0)
-		{
+		if (ret == 0)
 			*response.close_connexion = true;
+		if (ret < 0)
 			return (1);
-		}
+		// if (ret <= 0)
+		// {
+		// 	*response.close_connexion = true;
+		// 	return (1);
+		// }
 	}
 	else
 		return (1);

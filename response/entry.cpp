@@ -19,9 +19,16 @@ int	send_response(int fd, HttpRequest& request, HttpResponse& response, int stat
 					*response.close_connexion = true;
 					return(0);
 				}
-				send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
+				int ret = send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
+				if (ret == 0)
+				{
+					*response.close_connexion = true;
+					return(0);
+				}
+				if (ret > 0)
+					*response.close_connexion = true;
+
 				// if (ret <= 0)
-				*response.close_connexion = true;
 				delete_generated_file(response);
 				return(1) ;
 			}
@@ -45,7 +52,7 @@ int	send_response(int fd, HttpRequest& request, HttpResponse& response, int stat
 			// else
 			if(response.is_loop)
 				return (0);
-				*close_connexion = true;
+			// *close_connexion = true;
 			return (1);
 		}
 	}

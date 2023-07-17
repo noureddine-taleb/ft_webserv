@@ -93,7 +93,12 @@ int get_req(HttpResponse &response)
 		if (check_connexion(response.fd) < 0)
 			return (-1);
 		int ret = send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
-		if (ret <= 0)
+		if (ret == 0)
+		{
+			*response.close_connexion = true;
+			return (-1);
+		}
+		if (ret < 0)
 			return (1);
 		if (i)
 			return (1);
