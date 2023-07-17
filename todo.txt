@@ -32,11 +32,16 @@ form data: upload files
   => handel infinit loop 
 
 
-	=> rewrite
-	=> status code 404 in return
-	=> check open 
-  	=> check all and clean the code
- 	=> protection for the functions
+  => check all and clean the code
+  => protection for the functions
+  => handel / in the post
+	=> check if the socket would block in send side
+=> / not exist => done 
+=> when a file is uploaded it is deleted
+=> send = 0
+
+abort of sanitize
+
 
 exit@GLIBC_2.2.5
 inet_addr@GLIBC_2.2.5
@@ -50,12 +55,14 @@ perror@GLIBC_2.2.5
 remove@GLIBC_2.2.5
 rename@GLIBC_2.2.5
 stat
-strcmp
+=> strcmp
 strcpy
 strlen
 strtol
 unlink@GLIBC_2.2.5
 
+default error pages are required
+khawla => fix config dir not ending with / leads to 302
 
 is it possible to serve short requests in one iteration
 
@@ -88,4 +95,6 @@ siege -c 100 -t 1M -b http://localhost:8080 > 99.5
 test cookie system
 
 multiple cgi's
+
+=> upload text
 
