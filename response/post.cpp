@@ -33,7 +33,7 @@ void send_201_response (HttpResponse &response)
 
 	response.path_file = "www/201.html";
 	fill_response(201, response);
-	response.content_error = read_File_error(response.path_file);
+	response.content_error = read_File_error(response.path_file, response);
 	response.headers["content-length"] = ft_tostring(response.content_error.length());
 	response_buffer = generate_http_response(response);
 	response_buffer += response.content_error;

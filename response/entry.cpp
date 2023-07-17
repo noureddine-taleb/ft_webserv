@@ -11,7 +11,7 @@ int	send_response(int fd, HttpRequest& request, HttpResponse& response, int stat
 			if (response.cgi_it->file_extension == "php")
 			{
 				std::string		response_buffer;
-				std::string content = read_File_error(response.path_file);
+				std::string content = read_File_error(response.path_file, response);
 				response_buffer = generate_http_response(response);
 				response_buffer += content;
 				if (check_connexion(response.fd) < 0)
@@ -45,19 +45,14 @@ int	send_response(int fd, HttpRequest& request, HttpResponse& response, int stat
 		init_response(response, request, fd);
 		if (new_request(request, response, status_code))
 		{
-			// if (response.url_changed)
-			// 	*close_connexion = false;
-			// else
 			if(response.is_loop)
 				return (0);
-			// *close_connexion = true;
 			return (1);
 		}
 	}
 	else if(!response.is_loop)
 	{
 		int ret = read_File(response);
-		// exit(0);
 		if (ret < 0) {
 			*close_connexion = true;
 			return 1;
@@ -84,6 +79,7 @@ int new_request(HttpRequest &request, HttpResponse &response, int status_code) {
 	std::string response_buffer;
 	std::string content_length;
 
+	std::cout << YELLOW << "||||||||||||||||||||||||||||||||| " << status_code << " ||||||||||||||||||||||||||" <<END  << std::endl;
 	if (!status_code)
 	{
 		status_code = check_req_line_headers(request, response);
@@ -110,7 +106,6 @@ int new_request(HttpRequest &request, HttpResponse &response, int status_code) {
 	}
 	else
 	{
-		std::cout << "++++++++++>" << status_code << std::endl;
 		*response.close_connexion = true;
 		ft_send_error(status_code, response);
 		return (1);

@@ -114,16 +114,10 @@ int main(int argc, char **argv)
 			break;
 		}
 	response:
-		dump_request(request);
+		// dump_request(request);
 		// goto close_socket;
 		finished =
 			send_response(fd, request, response, status_code, &close_connexion);
-		// std::cout<< YELLOW << "*********************>finished = "<< END << finished << std::endl;
-		///////////////////////////////////////////////////////////////////////////////////////////////////////
-		//////////////////////////////////////////////////////////////////////////////////////////////////////
-		// finished = send_response(fd, request, response, status_code);
-		// finished = send_response(fd, request, response, status_code, &close);
-		// std::cout << close_connexion << "= " << std::endl;
 		if (finished || close_connexion)
 		{
 			sched_unqueue_task(tasks, fd);

@@ -39,6 +39,11 @@ std::string content_dir(std::string dir,HttpResponse& response, std::vector<std:
 			if (response.request.method == "GET")
 				file << "</ul>\n" << "</body>\n" << "</html>\n";
 		}
+		else
+		{
+			fill_response(500, response);
+			ft_send_error(500, response);
+		}
 		file.close();
 		closedir(directory);
 		return("found");
@@ -98,7 +103,6 @@ int	res_content_dir(int status_code, HttpResponse& response)
 			response.headers["Location"] = response.request.url + "/";
 			response.url_changed = true;
 			response_buffer = generate_http_response(response);
-			// std::cout << SKY << response_buffer << END << std::endl;
 			if (check_connexion(response.fd) < 0)
 			{
 				*response.close_connexion = true;
@@ -108,7 +112,7 @@ int	res_content_dir(int status_code, HttpResponse& response)
 			if (ret == 0)
 				*response.close_connexion = true;
 			if (ret < 0)
-					return (0);////!chek
+					return (0);
 			*response.close_connexion = true;
 			return (0);
 		}
@@ -144,74 +148,3 @@ int	res_content_dir(int status_code, HttpResponse& response)
 	ft_send_error(404, response);
 	return(0);
 }
-
-
-
-
-
-
-
-
-
-// int	res_content_dir(int status_code, HttpResponse& response)
-// {
-// 	std::vector<std::string>			content;
-// 	std::vector<std::string>::iterator	content_it;
-// 	std::string							response_buffer;
-	
-// 	(void) status_code;
-// 	if (content_dir(response.path_file, response, content) == "found")
-// 	{
-// 		// std::cout << "response.location_it->index == " << response.location_it->index << std::endl;
-// 		if (!response.location_it->index.empty())
-// 		{
-// 			if (response.request.method == "POST")
-// 			{
-// 				if (*response.path_file.rbegin()!= '/')
-// 					response.path_file += "/" +response.location_it->index;
-// 				else
-// 					response.path_file += response.location_it->index;
-// 				return (1);
-// 			}
-// 			content_it = std::find(content.begin(), content.end(), response.location_it->index);
-// 			if (content_it != content.end())
-// 			{
-// 				response.code = 200;
-// 				response.reason_phrase = "ok";
-// 				response.path_file += response.location_it->index;
-// 				response.headers["Content-Type"] = get_content_type(response.path_file);
-// 				return(1) ;
-// 			}
-// 		}
-// 		content_it = std::find(content.begin(), content.end(), "index.html");
-// 		if (content_it != content.end())
-// 		{
-// 			if (response.request.method == "POST")
-// 			{
-// 				if (*response.path_file.rbegin()!= '/')
-// 					response.path_file += "/index.html";
-// 				else
-// 					response.path_file += "index.html";
-// 				return (1);
-// 			}
-// 			response.code = 200;
-// 			response.reason_phrase = "ok";
-// 			response.path_file += "index.html";
-// 			response.headers["Content-Type"] = get_content_type(response.path_file);
-// 			return(1) ;
-// 		}
-// 		if (response.location_it->autoindex && response.request.method == "GET")
-// 		{
-// 			response.path_file = "content_dir.html";
-// 			fill_response(200, response);
-// 			return (1);
-// 		}
-// 		else
-// 		{
-// 			ft_send_error(403, response);
-// 			return(0);
-// 		}
-// 	}
-// 	ft_send_error(500, response);
-// 	return(0);
-// }

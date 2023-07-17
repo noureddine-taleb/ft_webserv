@@ -35,7 +35,7 @@ void get_content_error(HttpResponse &response, int status_code,const std::string
 	if (response.content_error == "not found")
 	{
 		response.headers["Content-type"] = get_content_type(path);
-		response.content_error = read_File_error(path);
+		response.content_error = read_File_error(path, response);
 	}
 }
 
@@ -84,11 +84,10 @@ void	ft_send_error(int status_code, HttpResponse& response)
 {
 	std::string		response_buffer;
 	
+	*response.close_connexion = true;
 	response_Http_Request_error(status_code, response);
 	response_buffer = generate_http_response(response);
 	response_buffer += response.content_error;
-	*response.close_connexion = true;
-	std::cout << PURPLE <<"|||||||| "<< response_buffer << " ||||||||||||"<< END << std::endl; 
 	if (check_connexion(response.fd) < 0)
 	{
 		*response.close_connexion = true;

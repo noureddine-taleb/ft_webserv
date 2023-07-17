@@ -1,14 +1,28 @@
 #include "../webserv.hpp"
 #include "../config.hpp"
 
-std::string read_File_error(std::string Path)
+std::string read_File_error(std::string Path, HttpResponse &response)
 {
 	std::ifstream file(Path.c_str());
 	std::stringstream buffer;
 
 	if (!file)
-		return ("not found");
-	buffer << file.rdbuf();
+	{
+		fill_response(500, response);
+		buffer << "<!DOCTYPE html>\n";
+		buffer << "<html>\n";
+		buffer << "<head>\n";
+		buffer << "<title>500 Internal Server Error</title>\n";
+		buffer << "</head>\n";
+		buffer << "<body>\n";
+		buffer << " <center>\n";
+		buffer << "<h1>500 Internal Server Error</h1>\n";
+		buffer << "</center>\n";
+		buffer << "</body>\n";
+		buffer << "</html>\n";
+	}
+	else
+		buffer << file.rdbuf();
 	return buffer.str();
 }
 
@@ -65,6 +79,11 @@ int read_File(HttpResponse& response)
 			return 0;
 		}
 		file.close();
+	}
+	else
+	{
+		fill_response(500, response);
+		ft_send_error(500, response);
 	}
 	return 0;
 }

@@ -41,11 +41,15 @@ void cgi_response_content(HttpResponse & response, std::string &name_output)
         if (response.cgi_it->file_extension == "php")
         {
             std::ifstream out_file(name_output, std::ifstream::binary);
+            if (!out_file)
+            {
+                fill_response(500, response);
+                ft_send_error(500, response);
+            }
             std::string out = "out";
             out = generate_filename(out, &i);
             response.file_name_genarated.push_back(out);
-            std::string line;
-            // std::cout << SKY << "||||||||||||||||| " << line << " |||||||||||||||||" << END << std::endl;   
+            std::string line;  
             while(std::getline(out_file, line) && line != "\r")
             {
                 int length = line.find(";") - (line.find(" ") + 1);
@@ -60,6 +64,11 @@ void cgi_response_content(HttpResponse & response, std::string &name_output)
                 response.headers[key] = value;
             }
             std::ofstream file(out);
+            if (!file)
+            {
+                fill_response(500, response);
+                ft_send_error(500, response);
+            }
             while (std::getline(out_file, line))
             {
                 line += "\n";
@@ -77,6 +86,7 @@ void cgi_response_content(HttpResponse & response, std::string &name_output)
     }
 
 }
+
 void delete_env(char **env)
 {
     int i(0);

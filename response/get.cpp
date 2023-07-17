@@ -86,7 +86,7 @@ int get_req(HttpResponse &response)
 		content_length = ft_tostring(response.size_file);
 		if (response.size_file < (BUFF_SIZE / 10))
 		{
-			content = read_File_error(response.path_file);
+			content = read_File_error(response.path_file, response);
 			*response.close_connexion = true;
 			i = 1;
 		}

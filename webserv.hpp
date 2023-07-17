@@ -192,7 +192,7 @@ void 			delete_generated_file(HttpResponse &response);
 
 //read file
 int     			read_File(HttpResponse& response);
-std::string		read_File_error(std::string Path);
+std::string read_File_error(std::string Path, HttpResponse &response);
 std::string		res_content_file(int status_code, HttpRequest& request, HttpResponse& response, std::string path);
 std::string		ft_tostring(int nbr);
 
