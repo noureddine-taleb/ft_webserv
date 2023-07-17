@@ -74,9 +74,9 @@ int accept_connection(int wfd, int server) {
   assert_msg(client != -1, "accept: " << strerror(errno));
   assert_msg (fcntl(client, F_SETFL, O_NONBLOCK) >= 0, "fcntl: " << strerror(errno));
 #ifdef __APPLE__
-  watchlist_add_fd(wfd, client, EVFILT_READ);
+  watchlist_add_fd(wfd, client, EVFILT_READ|EVFILT_WRITE);
 #elif __linux__
-  watchlist_add_fd(wfd, client, EPOLLIN);
+  watchlist_add_fd(wfd, client, EPOLLIN|EPOLLOUT);
 #endif
 
   debug("connection received " << inet_ntoa(caddress.sin_addr) << ":"
