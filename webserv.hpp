@@ -98,6 +98,9 @@ public:
   std::vector<char> http_buffer;
   bool __http_top_header_parsed;
   bool __http_headers_end;
+
+  // server
+  Server *server; // ip:port
   enum SchedulableEntityTypes get_type() { return REQUEST; }
 };
 
@@ -144,7 +147,7 @@ extern Config config;
 
 // socket
 void spawn_servers(int wfd);
-void accept_connection(int wfd, int server);
+int accept_connection(int wfd, int server);
 int get_request(int fd, HttpRequest &request);
 
 // http
