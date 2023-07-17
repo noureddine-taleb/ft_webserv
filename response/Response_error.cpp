@@ -72,6 +72,8 @@ void response_Http_Request_error(int status_code, HttpResponse& response)
 			break ;
 		case 409:
 			get_content_error(response, status_code , std::string("www/409.html"));
+		case 504:
+			get_content_error(response, status_code , std::string("www/504.html"));
 	}
 	response.headers["Content-Length"] = ft_tostring(response.content_error.length());
 }
@@ -83,6 +85,7 @@ void	ft_send_error(int status_code, HttpResponse& response)
 	response_Http_Request_error(status_code, response);
 	response_buffer = generate_http_response(response);
 	response_buffer += response.content_error;
+	// std::cout << PURPLE <<"|||||||| "<< response_buffer << " ||||||||||||"<< END << std::endl; 
 	if (check_connexion(response.fd) < 0)
 	{
 		*response.close_connexion = true;

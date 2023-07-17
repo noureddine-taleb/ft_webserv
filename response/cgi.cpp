@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <cstring>
 #include <cstdio>
+#include <sys/time.h>
 
 char** get_env(HttpResponse& response)
 {
@@ -43,6 +44,7 @@ void cgi_response_content(HttpResponse & response, std::string &name_output)
             out = generate_filename(out, &i);
             response.file_name_genarated.push_back(out);
             std::string line;
+            std::cout << SKY << "||||||||||||||||| " << line << " |||||||||||||||||" << END << std::endl;   
             while(std::getline(out_file, line) && line != "\r")
             {
                 int length = line.find(";") - (line.find(" ") + 1);
@@ -85,19 +87,33 @@ void delete_env(char **env)
     delete[] env;
 }
 
+
 int    execute_cgi(HttpResponse &response)
 {
      int output_fd = 0;
     std::string name_output = "output";
+    struct timeval endTime;
+    gettimeofday(&endTime, NULL);
+    if (endTime.tv_sec - response.start == 35)
+    {
+        cgi_response_content(response, response.name_out);
+        response.is_loop = 0;
+        *response.close_connexion =1;
+        return (0);
+    }
     if (response.pid == -1)
     {
+        struct timeval startTime, endTime;
+        gettimeofday(&startTime, NULL);
+        response.start = startTime.tv_sec; 
         response.pid = fork();
         static int i;
         name_output = generate_filename(name_output, &i);
+        response.name_out = name_output;
         output_fd = open(name_output.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
         response.file_name_genarated.push_back(name_output);
-            char **env;
-            env = get_env(response);
+        char **env;
+        env = get_env(response);
         if (response.pid == 0)
         {
             std::string path = response.path_file;
@@ -116,7 +132,6 @@ int    execute_cgi(HttpResponse &response)
             close(output_fd);
             if (input_fd > 0 && dup2(input_fd, STDIN_FILENO) < 0) 
             {
-                // std::cerr << "Error duplicating input file descriptor." << std::endl;
                 ft_send_error(500, response);
                 close(input_fd);
                 return (1);
@@ -124,7 +139,6 @@ int    execute_cgi(HttpResponse &response)
             close(input_fd);
             if (execve(argv[0], argv, env) < 0)
             {
-                    // std::cerr << RED << "Error executing CGI script."<< END << std::endl;
                     ft_send_error(500, response);
                     close(output_fd);
                     return (1);
@@ -136,12 +150,12 @@ int    execute_cgi(HttpResponse &response)
 
             sleep(1);
             int result = waitpid(response.pid, &status, WNOHANG);
+            gettimeofday(&endTime, NULL);
+            
             if(result < 0)
             {
-                // std::cerr << SKY << "waitfeailed" << END << std::endl;
                 ft_send_error(500, response);
                 delete_env(env);
-                delete[] env;
                 close(output_fd);
                 return (1);
             }
@@ -151,6 +165,7 @@ int    execute_cgi(HttpResponse &response)
             }
             else
             {
+                response.is_loop = 1;
                 close(output_fd);
                 delete_env(env);
                 return (0);

@@ -4,7 +4,36 @@
 int	send_response(int fd, HttpRequest& request, HttpResponse& response, int status_code, bool *close_connexion)
 {
 	*close_connexion = false;
-	if (!request.method.empty())
+	if (response.is_loop)
+	{
+		if (!execute_cgi(response))
+		{
+			if (response.cgi_it->file_extension == "php")
+			{
+				std::string		response_buffer;
+				std::string content = read_File_error(response.path_file);
+				response_buffer = generate_http_response(response);
+				response_buffer += content;
+				if (check_connexion(response.fd) < 0)
+				{
+					*response.close_connexion = true;
+					return(0);
+				}
+				send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
+				// if (ret <= 0)
+				*response.close_connexion = true;
+				delete_generated_file(response);
+				return(1) ;
+			}
+			else if (response.cgi_it->file_extension == "py")
+			{
+				delete_generated_file(response);
+				ft_send_error(504, response);
+			}
+			*response.close_connexion = true;
+		}
+	}
+	else if(!request.method.empty() &&  !response.is_loop)
 	{	
 		response.old_url = request.url;
 		response.close_connexion = close_connexion;
@@ -14,11 +43,13 @@ int	send_response(int fd, HttpRequest& request, HttpResponse& response, int stat
 			// if (response.url_changed)
 			// 	*close_connexion = false;
 			// else
+			if(response.is_loop)
+				return (0);
 				*close_connexion = true;
 			return (1);
 		}
 	}
-	else
+	else if(!response.is_loop)
 	{
 		int ret = read_File(response);
 		// exit(0);
