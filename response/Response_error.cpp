@@ -87,6 +87,7 @@ void	ft_send_error(int status_code, HttpResponse& response)
 	response_Http_Request_error(status_code, response);
 	response_buffer = generate_http_response(response);
 	response_buffer += response.content_error;
+	*response.close_connexion = true;
 	// std::cout << PURPLE <<"|||||||| "<< response_buffer << " ||||||||||||"<< END << std::endl; 
 	if (check_connexion(response.fd) < 0)
 	{
@@ -96,6 +97,11 @@ void	ft_send_error(int status_code, HttpResponse& response)
 	int ret = send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
 	if (ret == 0)
 		*response.close_connexion = true;
+	else if (ret < 0)
+	{
+		*response.close_connexion = false;
+		response.finish_reading = false;
+	}
 	return ;
 
 }

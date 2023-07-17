@@ -12,6 +12,7 @@ int fill_uplaod_file(HttpResponse &response, std::string &upload_path, std::stri
 		std::string destination = upload_path + file_name;
 		if (std::rename(path.c_str(), destination.c_str()))
 		{
+			*response.close_connexion = true;
 			ft_send_error(500, response);
 			file.close();
 			return(0);
@@ -19,6 +20,7 @@ int fill_uplaod_file(HttpResponse &response, std::string &upload_path, std::stri
 	}
 	else
 	{
+		*response.close_connexion = true;
 		ft_send_error(404, response);
 		return(0);
 	}
@@ -43,11 +45,11 @@ void send_201_response (HttpResponse &response)
 	int ret = send(response.fd, response_buffer.c_str(), response_buffer.length(), 0);
 	if (ret == 0)
 		*response.close_connexion = true;
-	// else if (ret < 0)
-	// {
-	// 	std::cerr << RED <<  "!!!!!!!!!!send feiled!!!!!!!!!!!!" << END << std::endl;
-	// 	// *response.close_connexion = true;
-	// }
+	if ( ret < 0)
+	{
+		*response.close_connexion = false;
+		response.finish_reading = false;
+	}
 }
 
 void	upload_exist(HttpResponse& response, std::string& upload_path)
@@ -60,6 +62,7 @@ void	upload_exist(HttpResponse& response, std::string& upload_path)
 	if ((response.request.files.empty() && response.request.content.empty()) 
 		|| type_rep == "is_file" || type_rep == "not found")
 	{
+		*response.close_connexion = true;
 		ft_send_error(404, response);
 		return ;
 	}
@@ -104,31 +107,38 @@ int upload_not_exist_file(HttpResponse &response)
 
 	if (response.location_it->cgi.empty())
 	{
+		*response.close_connexion = true;
 		ft_send_error(403, response);
 		return(0);
 	}
 	else
 	{
 		check_extention(response);
-		if (response.cgi_it == response.location_it->cgi.end()
+		if ((response.cgi_it == response.location_it->cgi.end()
 			&& (path.substr(path.find_last_of(".") + 1, path.length()) == "php"
-			|| path.substr(path.find_last_of(".") + 1, path.length()) == "py"))
+			|| path.substr(path.find_last_of(".") + 1, path.length()) == "py")) 
+			|| response.cgi_it == response.location_it->cgi.end())
 			{
-				ft_send_error(404,response);
+				*response.close_connexion = true;
+				ft_send_error(403,response);
 				return (0);
 			}
-		if (response.cgi_it == response.location_it->cgi.end())
-		{
-			ft_send_error(403, response);
-			return(0);
-		}
+		// if (response.cgi_it == response.location_it->cgi.end())
+		// {
+		// 	*response.close_connexion = true;
+		// 	ft_send_error(403, response);
+		// 	return(0);
+		// }
 	}
 	fill_response(200, response);
 	if (!response.request.content.empty())
 	{
 		std::ofstream content("cgi.txt");
 		if (!content.is_open())
+		{
+			*response.close_connexion = true;
 			ft_send_error(500, response);
+		}
 		else
 		{
 			response.file_name_genarated.push_back("cgi.txt");
@@ -155,7 +165,10 @@ int	upload_not_exist(HttpResponse& response)
 				return (1);
 		}
 		else
+		{
+			*response.close_connexion = true;
 			ft_send_error(404, response);
+		}
 	}
 	return (0);
 }
@@ -210,6 +223,7 @@ int response_post(HttpResponse& response)
 		}
 		else
 		{
+			*response.close_connexion = true;
 			ft_send_error(404, response);
 			return (0);
 		}

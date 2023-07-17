@@ -25,19 +25,17 @@ int	send_response(int fd, HttpRequest& request, HttpResponse& response, int stat
 					*response.close_connexion = true;
 					return(0);
 				}
-				if (ret > 0)
+				if (ret < 0)
 					*response.close_connexion = true;
-
-				// if (ret <= 0)
 				delete_generated_file(response);
 				return(1) ;
 			}
 			else if (response.cgi_it->file_extension == "py")
 			{
 				delete_generated_file(response);
+				*response.close_connexion = true;
 				ft_send_error(508, response);
 			}
-			*response.close_connexion = true;
 		}
 	}
 	else if(!request.method.empty() &&  !response.is_loop)
@@ -91,6 +89,7 @@ int new_request(HttpRequest &request, HttpResponse &response, int status_code) {
 		status_code = check_req_line_headers(request, response);
 		if (status_code == 404)
 		{
+			*response.close_connexion = true;
 			ft_send_error(404, response);
 			return (1);
 		}
@@ -104,10 +103,14 @@ int new_request(HttpRequest &request, HttpResponse &response, int status_code) {
 				return (1);
 		}
 		else
+		{
+			*response.close_connexion = true;
 			ft_send_error(status_code, response);
+		}
 	}
 	else
 	{
+		*response.close_connexion = true;
 		ft_send_error(status_code, response);
 		return (1);
 	}

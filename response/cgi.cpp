@@ -99,7 +99,7 @@ int    execute_cgi(HttpResponse &response)
     {
         cgi_response_content(response, response.name_out);
         response.is_loop = 0;
-        *response.close_connexion =1;
+        *response.close_connexion = true;
         kill(response.pid, SIGKILL); //!tzadt
         return (0);
     }
@@ -127,6 +127,7 @@ int    execute_cgi(HttpResponse &response)
             if (dup2(output_fd, 1) == -1 || dup2(output_fd, 2) == -1) 
             {
                 std::cerr << "Error duplicating file descriptor." << std::endl;
+                *response.close_connexion = true;
                 ft_send_error(500, response);
                 close(output_fd);
                 return(1);
@@ -134,6 +135,7 @@ int    execute_cgi(HttpResponse &response)
             close(output_fd);
             if (input_fd > 0 && dup2(input_fd, STDIN_FILENO) < 0) 
             {
+                *response.close_connexion = true;
                 ft_send_error(500, response);
                 close(input_fd);
                 return (1);
@@ -141,9 +143,10 @@ int    execute_cgi(HttpResponse &response)
             close(input_fd);
             if (execve(argv[0], argv, env) < 0)
             {
-                    ft_send_error(500, response);
-                    close(output_fd);
-                    return (1);
+                *response.close_connexion = true;
+                ft_send_error(500, response);
+                close(output_fd);
+                return (1);
             }
         }
         else
@@ -156,15 +159,14 @@ int    execute_cgi(HttpResponse &response)
             
             if(result < 0)
             {
+                *response.close_connexion = true;
                 ft_send_error(500, response);
                 delete_env(env);
                 close(output_fd);
                 return (1);
             }
             else  if (result && response.pid != -1)
-            {
                 cgi_response_content(response, name_output);
-            }
             else
             {
                 response.is_loop = 1;

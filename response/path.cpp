@@ -49,6 +49,7 @@ int get_path(HttpResponse& response)
 			parse_path(response, root);
 		return (1);
 	}
+	*response.close_connexion = true;
 	ft_send_error(404, response);
 	return (0);
 }

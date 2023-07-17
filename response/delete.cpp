@@ -28,17 +28,22 @@ void	del_content_dir(HttpResponse& response, std::string& path_dir)
 					remove(file_path.c_str());
 				}
 				else
+				{
+					*response.close_connexion = true;
 					ft_send_error(500, response);
+				}
 			}
 		}
 	}
 	else
 	{
+		*response.close_connexion = true;
 		ft_send_error(403, response);
 		return ;
 	}
 	closedir(directory);
 	remove(path_dir.c_str());
+	*response.close_connexion = true;
 	ft_send_error(204, response);
 }
 
@@ -53,17 +58,24 @@ int response_delete(HttpResponse& response)
 		if (type_rep == "is_file")
 		{
 				unlink(response.path_file.c_str());
+				*response.close_connexion = true;
 				ft_send_error(204, response);
 		}
 		if(type_rep == "is_directory")
 		{
 			if (*response.path_file.rbegin() != '/')
+			{
+				*response.close_connexion = true;
 				ft_send_error(409, response);
+			}
 			else
 				del_content_dir(response, response.path_file);
 		}
 		else
+		{
+			*response.close_connexion = true;
 			ft_send_error(500, response);
+		}
 	}
 	return(0);
 }

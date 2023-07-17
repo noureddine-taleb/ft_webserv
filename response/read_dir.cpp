@@ -65,7 +65,10 @@ int content_index_file(HttpResponse &response)
 		if (response.cgi_it == response.location_it->cgi.end()
 			&& (path.substr(path.find_last_of(".") + 1, path.length()) == "php"
 			|| path.substr(path.find_last_of(".") + 1, path.length()) == "py"))
-			ft_send_error(404,response);
+			{
+				*response.close_connexion = true;
+				ft_send_error(404,response);
+			}
 		if ((!response.location_it->cgi.empty() && response.cgi_it == response.location_it->cgi.end()))
 		{
 			if(response_Http_Request(200, response))
@@ -132,10 +135,12 @@ int	res_content_dir(int status_code, HttpResponse& response)
 		}
 		else
 		{
+			*response.close_connexion = true;
 			ft_send_error(403, response);
 			return(0);
 		}
 	}
+	*response.close_connexion = true;
 	ft_send_error(404, response);
 	return(0);
 }

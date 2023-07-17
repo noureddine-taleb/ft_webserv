@@ -22,13 +22,13 @@ int	response_get(HttpResponse& response)
 			if(!response.location_it->cgi.empty())
 			{
 				check_extention(response);
-				if (response.cgi_it == response.location_it->cgi.end()
-					&& (path.substr(path.find_last_of(".") + 1, path.length()) == "php"
-						|| path.substr(path.find_last_of(".") + 1, path.length()) == "py"))
-				{
-					ft_send_error(404,response);
-					return (0);
-				}
+				// if (response.cgi_it == response.location_it->cgi.end()
+				// 	&& (path.substr(path.find_last_of(".") + 1, path.length()) == "php"
+				// 		|| path.substr(path.find_last_of(".") + 1, path.length()) == "py"))
+				// {
+				// 	ft_send_error(404,response);
+				// 	return (0);
+				// }
 				if (!response.location_it->cgi.empty() && response.cgi_it == response.location_it->cgi.end())
 				{
 					if(response_Http_Request(200, response))
@@ -64,7 +64,10 @@ int	response_get(HttpResponse& response)
 				return (1);
 		}
 		else
+		{
+			*response.close_connexion = true;
 			ft_send_error(404, response);
+		}
 	}
 	return (0);
 }
