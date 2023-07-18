@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include <vector>
 #include <fcntl.h>
+#include "sched.hpp"
 
 #define BACKLOG_SIZE 32
 #define HTTP_DEL "\r\n"
@@ -166,6 +167,7 @@ void watchlist_del_fd(int efd, int fd);
 int watchlist_wait_fd(int efd);
 void parse_config(std::string config_file);
 void dump_config(Config config);
+void watchlist_insert(int wfd, int fd);
 
 // lib
 std::vector<char>::iterator find(std::string str, std::vector<char> &vec);

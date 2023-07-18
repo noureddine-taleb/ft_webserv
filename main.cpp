@@ -54,8 +54,10 @@ int main(int argc, char **argv)
 		HttpResponse response;
 		HttpRequest *copy_request;
 
+		// debug("entering watchlist");
 		int fd = watchlist_wait_fd(wfd);
 
+		// debug("watchlist returned = " << fd);
 		if (fd > 2 && fd <= config.max_server_fd)
 		{
 			int conn = accept_connection(wfd, fd);
@@ -63,11 +65,8 @@ int main(int argc, char **argv)
 			continue;
 		}
 		// no new request, serve pending ones
-		if (fd == WATCHL_NO_PENDING || tasks.find(fd) != tasks.end())
+		if (tasks.find(fd) != tasks.end())
 		{
-			fd = sched_get_starved(tasks);
-			if (fd == Q_EMPTY)
-				continue;
 			if (tasks[fd]->get_type() == REQUEST)
 			{
 				// debug("schedule pending requests");
@@ -86,7 +85,7 @@ int main(int argc, char **argv)
 		}
 		else
 		{
-			debug("received new request");
+			// debug("received new request");
 			request.ip = connexion_srcs[fd].__ip;
 			request.port = connexion_srcs[fd].__port;
 		}
@@ -96,22 +95,24 @@ int main(int argc, char **argv)
 		switch (status_code)
 		{
 		case REQ_CONN_BROKEN:
-			debug("status = connexion broken");
+			// debug("status = connexion broken");
 			goto close_socket;
 			break;
 		case REQ_TO_BE_CONT:
-			debug("status = to be continued");
+			// debug("status = to be continued");
 			copy_request = new HttpRequest(request);
 			sched_queue_task(tasks, fd, copy_request);
 			continue;
 		default:
-			debug("status = finished with:" << status_code);
+			debug(YELLOW << "status = finished with:" << status_code << END);
 			if (status_code == 0)
-				debug(request.method << " " << request.url << " " << request.version);
+				debug(YELLOW << request.method << " " << request.url << " " << request.version << END);
 			request.finished = true;
 			request.status_code = status_code;
 			// debug("queueing request");
 			sched_queue_task(tasks, fd, new HttpRequest(request));
+			watchlist_add_fd(wfd, fd, EVFILT_WRITE);
+			// debug("queued request");
 			continue;
 			break;
 		}
@@ -125,6 +126,8 @@ int main(int argc, char **argv)
 			sched_unqueue_task(tasks, fd);
 			if (close_connexion)
 				goto close_socket;
+			else
+				watchlist_insert(wfd, fd);
 		}
 		else
 		{
@@ -133,7 +136,7 @@ int main(int argc, char **argv)
 
 		continue;
 	close_socket:
-		debug("closing socket");
+		debug(RED << "closing socket" << END);
 		sched_unqueue_task(tasks, fd);
 		watchlist_del_fd(wfd, fd);
 		close(fd);

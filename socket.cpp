@@ -73,13 +73,8 @@ int accept_connection(int wfd, int server) {
   int client = accept(server, (struct sockaddr *)&caddress, &len);
   assert_msg(client != -1, "accept: " << strerror(errno));
   assert_msg (fcntl(client, F_SETFL, O_NONBLOCK) >= 0, "fcntl: " << strerror(errno));
-#ifdef __APPLE__
-  watchlist_add_fd(wfd, client, EVFILT_READ|EVFILT_WRITE);
-#elif __linux__
-  watchlist_add_fd(wfd, client, EPOLLIN|EPOLLOUT);
-#endif
+  watchlist_insert(wfd, client);
 
-  debug("connection received " << inet_ntoa(caddress.sin_addr) << ":"
-							   << ntohs(caddress.sin_port));
-	return client;
+  debug(GREEN << "connection received " << inet_ntoa(caddress.sin_addr) << ":" << ntohs(caddress.sin_port) << END);
+  return client;
 }

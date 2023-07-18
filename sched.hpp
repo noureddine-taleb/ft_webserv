@@ -15,12 +15,10 @@ enum SchedulableEntityTypes
 class SchedulableEntity
 {
 public:
-	int index;
 	virtual enum SchedulableEntityTypes get_type() = 0;
 	virtual ~SchedulableEntity(){};
 };
 
-int sched_get_starved(std::map<int, SchedulableEntity *> &tasks);
 void sched_queue_task(std::map<int, SchedulableEntity *> &tasks, int fd, SchedulableEntity *task);
 void sched_unqueue_task(std::map<int, SchedulableEntity *> &tasks, int fd);
 
