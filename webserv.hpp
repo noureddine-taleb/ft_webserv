@@ -31,13 +31,13 @@
 #define REQ_CONN_BROKEN -1
 #define REQ_TO_BE_CONT -2
 /////////////////////////////////////color//////////////////////////////////////////////
-#define GRAY "\033[90m"
-#define RED "\033[91m"
-#define GREEN "\033[92m"
-#define YELLOW "\033[93m"
-#define BLUE "\033[94m"
-#define PURPLE "\033[95m"
-#define SKY "\033[96m"
+#define GRAY "\033[90m\033[1m"
+#define RED "\033[91m\033[1m"
+#define GREEN "\033[92m\033[1m"
+#define YELLOW "\033[93m\033[1m"
+#define BLUE "\033[94m\033[1m"
+#define PURPLE "\033[95m\033[1m"
+#define SKY "\033[96m\033[1m"
 
 #define END "\033[00m"
 
