@@ -54,7 +54,7 @@ int	response_redirect(HttpResponse& response)
 			fill_response(response.location_it->creturn.code, response);
 		else
 			fill_response(302, response);
-		response.headers["location"] = response.location_it->creturn.to;
+		response.headers["Location"] = response.location_it->creturn.to;
 		if (check_connexion(response.fd) < 0)
 			return (0);
 		response_buffer = generate_http_response(response);
