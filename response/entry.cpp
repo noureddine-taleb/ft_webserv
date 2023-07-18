@@ -45,7 +45,8 @@ int	send_response(int fd, HttpRequest& request, HttpResponse& response, int stat
 		init_response(response, request, fd);
 		if (new_request(request, response, status_code))
 		{
-			if(!response.headers["Location"].empty())
+			// std::cout << "######################### >" <<response.path_file<<std::endl;
+			if(!response.headers["Location"].empty() && !response.url_changed)
 				*close_connexion = false;
 			if(response.is_loop)
 				return (0);
