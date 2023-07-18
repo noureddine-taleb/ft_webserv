@@ -136,7 +136,8 @@ int main(int argc, char **argv)
 
 		continue;
 	close_socket:
-		debug(RED << "closing socket" << END);
+		debug(RED << "---" << END);
+		// debug(RED << "closing socket" << END);
 		sched_unqueue_task(tasks, fd);
 		watchlist_del_fd(wfd, fd);
 		close(fd);

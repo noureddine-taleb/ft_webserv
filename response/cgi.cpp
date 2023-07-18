@@ -110,7 +110,7 @@ int    execute_cgi(HttpResponse &response)
         cgi_response_content(response, response.name_out);
         response.is_loop = 0;
         *response.close_connexion = true;
-        kill(response.pid, SIGKILL); //!tzadt
+        kill(response.pid, SIGKILL);
         return (0);
     }
     if (response.pid == -1)

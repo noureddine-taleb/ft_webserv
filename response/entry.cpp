@@ -45,12 +45,10 @@ int	send_response(int fd, HttpRequest& request, HttpResponse& response, int stat
 		init_response(response, request, fd);
 		if (new_request(request, response, status_code))
 		{
-			// std::cout << "######################### >" <<response.path_file<<std::endl;
 			if(!response.headers["Location"].empty() && !response.url_changed)
 				*close_connexion = false;
 			if(response.is_loop)
 				return (0);
-			std::cout << PURPLE << "|||||||||| " << *response.close_connexion << "||||||||||||"<< END<< std::endl;
 			return (1);
 		}
 	}
@@ -83,7 +81,6 @@ int new_request(HttpRequest &request, HttpResponse &response, int status_code) {
 	std::string response_buffer;
 	std::string content_length;
 
-	std::cout << YELLOW << "||||||||||||||||||||||||||||||||| " << status_code << " ||||||||||||||||||||||||||" <<END  << std::endl;
 	if (!status_code)
 	{
 		status_code = check_req_line_headers(request, response);
