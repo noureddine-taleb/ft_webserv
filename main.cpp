@@ -109,6 +109,8 @@ int main(int argc, char **argv)
 			if (status_code == 0)
 				debug(request.method << " " << request.url << " " << request.version);
 			request.finished = true;
+			request.status_code = status_code;
+			// debug("queueing request");
 			sched_queue_task(tasks, fd, new HttpRequest(request));
 			continue;
 			break;
@@ -117,7 +119,7 @@ int main(int argc, char **argv)
 		// dump_request(request);
 		// goto close_socket;
 		finished =
-			send_response(fd, request, response, status_code, &close_connexion);
+			send_response(fd, request, response, request.status_code, &close_connexion);
 		if (finished || close_connexion)
 		{
 			sched_unqueue_task(tasks, fd);

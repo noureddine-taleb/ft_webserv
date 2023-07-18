@@ -104,6 +104,7 @@ public:
   unsigned int port;
 
   bool finished;
+  int status_code;
   enum SchedulableEntityTypes get_type() { return REQUEST; }
 };
 
