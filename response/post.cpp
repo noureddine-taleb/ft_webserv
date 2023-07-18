@@ -20,7 +20,6 @@ int fill_uplaod_file(HttpResponse &response, std::string &upload_path, std::stri
 	}
 	else
 	{
-		// std::cout << PURPLE << "|||||||||||||||| " << response.request.content.data()<< " ||||||||||||||" << END << std::endl;
 		*response.close_connexion = true;
 		ft_send_error(404, response);
 		return(0);
@@ -124,12 +123,6 @@ int upload_not_exist_file(HttpResponse &response)
 				ft_send_error(403,response);
 				return (0);
 			}
-		// if (response.cgi_it == response.location_it->cgi.end())
-		// {
-		// 	*response.close_connexion = true;
-		// 	ft_send_error(403, response);
-		// 	return(0);
-		// }
 	}
 	fill_response(200, response);
 	if (!response.request.content.empty())
@@ -201,7 +194,7 @@ int response_post(HttpResponse& response)
 {
 	std::string upload_path;
 
-	// std::cout << SKY << "||||||||||||||| " << response.location_it->upload<< " |||||||||||||" << END  << std::endl;
+
 	if (response.location_it->upload)
 	{
 		if (!response.location_it->dir.empty())
