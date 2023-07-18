@@ -7,7 +7,7 @@ NAME = webserv
 
 CPP = c++
 
-CPPFLAGS = -Wall -Wextra -Werror -Iincludes -fsanitize=address -std=c++98 
+CPPFLAGS = -Wall -Wextra -Werror -Iincludes -std=c++98 
 
 OBJS = $(SRCS:.cpp=.o)
 
