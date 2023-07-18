@@ -6,8 +6,10 @@ if (isset($_GET['name'])) {
 
     // Display a greeting with the provided name
     echo "Hello, " . $name . "!";
-} else {
-    // 'name' parameter is not provided, display a generic message
-    echo "Please provide a name via the 'name' parameter.";
-}
+} 
+echo $name;
+// else {
+//     // 'name' parameter is not provided, display a generic message
+//     echo "Please provide a name via the 'name' parameter.";
+// }
 ?>

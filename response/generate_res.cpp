@@ -25,7 +25,7 @@ void init_response(HttpResponse& response, HttpRequest& request, int fd)
 	response.server_it = server(response.request);
 	// std::cout << YELLOW<< "***********>reser  " << response.server_it->ip<< " || "<< response.server_it->port << END << std::endl; 
 	response.location_it = location(response.request, response.server_it, response);
-	// std::cout << YELLOW<< "***********> location = " << response.location_it->target  << END << std::endl; 
+	std::cout << YELLOW<< "***********> location = " << response.location_it->target  << END << std::endl; 
 }
 
 std::string get_content_type(std::string path)
@@ -49,6 +49,10 @@ std::string get_content_type(std::string path)
 	content_type["mp4"] = "video/mp4";
 	content_type["c"] = "text/x-csrc";
 	content_type["cpp"] = "text/x-c++src";
+	content_type["csv"] = "text/csv";
+	content_type["zip"] = "application/zip";
+	content_type["py"] = "text/x-python";
+	content_type["php"] = "text/x-php";
 
 	if (content_type.find(type) != content_type.end())
 		return (content_type[type]);
@@ -85,6 +89,18 @@ void fill_response(int status_code, HttpResponse& response)
 	response.reason_phrase = get_reason_phase(status_code);
 	response.headers["Connection"] = "keep-alive";
 	response.headers["Content-type"] = get_content_type(response.path_file);
+	if (status_code == 405)
+	{
+		std::string methods;
+		for(std::vector<std::string>::iterator method_it = response.location_it->methods.begin(); method_it != response.location_it->methods.end(); method_it++)
+		{
+			if (method_it + 1 == response.location_it->methods.end())
+				methods += *method_it;
+			else
+				methods += *method_it + ", ";
+		}
+		response.headers["Allow"] = methods;
+	}
 }
 
 int check_connexion(int fd)

@@ -45,6 +45,14 @@ int	send_response(int fd, HttpRequest& request, HttpResponse& response, int stat
 		init_response(response, request, fd);
 		if (new_request(request, response, status_code))
 		{
+			if (response.request.headers["Connection"] == "keep-alive")
+				*response.close_connexion = false;
+			else if (response.request.headers["Connection"] == "close")
+				*response.close_connexion = true;
+			else if (response.request.version == "HTTP/1.1")
+				*response.close_connexion = true; 
+			else if (response.request.version == "HTTP/2")
+				*response.close_connexion = false; 
 			if(response.is_loop)
 				return (0);
 			return (1);

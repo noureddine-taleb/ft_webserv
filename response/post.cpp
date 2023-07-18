@@ -20,6 +20,7 @@ int fill_uplaod_file(HttpResponse &response, std::string &upload_path, std::stri
 	}
 	else
 	{
+		// std::cout << PURPLE << "|||||||||||||||| " << response.request.content.data()<< " ||||||||||||||" << END << std::endl;
 		*response.close_connexion = true;
 		ft_send_error(404, response);
 		return(0);
@@ -59,11 +60,11 @@ void	upload_exist(HttpResponse& response, std::string& upload_path)
 	std::string file_name;
 
 	type_rep = type_repo(upload_path);
-	if ((response.request.files.empty() && response.request.content.empty()) 
+	if ((response.request.files.empty() && response.request.content.empty() && response.request.vars.empty()) 
 		|| type_rep == "is_file" || type_rep == "not found")
 	{
 		*response.close_connexion = true;
-		ft_send_error(404, response);
+		ft_send_error(500, response);
 		return ;
 	}
 	if (!response.request.files.empty() || !response.request.vars.empty())
@@ -190,11 +191,6 @@ int post_req(HttpResponse &response)
 			*response.close_connexion = true;
 		if (ret < 0)
 			return (1);
-		// if (ret <= 0)
-		// {
-		// 	*response.close_connexion = true;
-		// 	return (1);
-		// }
 	}
 	else
 		return (1);
@@ -205,6 +201,7 @@ int response_post(HttpResponse& response)
 {
 	std::string upload_path;
 
+	// std::cout << SKY << "||||||||||||||| " << response.location_it->upload<< " |||||||||||||" << END  << std::endl;
 	if (response.location_it->upload)
 	{
 		if (!response.location_it->dir.empty())

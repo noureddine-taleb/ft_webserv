@@ -130,6 +130,13 @@ int    execute_cgi(HttpResponse &response)
         {
             std::string path = response.path_file;
             std::string path_executable = response.cgi_it->cgi_pass;
+            if ((response.cgi_it->file_extension == "php" && response.cgi_it->cgi_pass != "response/cgi-bin/php-cgi")
+                || (response.cgi_it->file_extension == "py" && response.cgi_it->cgi_pass != "/usr/bin/python"))
+            {
+                ft_send_error(500, response);
+                close(output_fd);
+                return(1);
+            }
             int input_fd  = 0;
             if (response.request.method == "POST")
                 input_fd = open("cgi.txt", O_RDONLY , 0666);
