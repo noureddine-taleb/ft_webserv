@@ -3,3 +3,4 @@ webserv
 *.o
 webserv.dSYM
 **/.DS_Store
+dir_content.html
